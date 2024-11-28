@@ -1,5 +1,5 @@
-import { ETHEREUM_NETWORK_ID, SEPOLIA_NETWORK_ID } from '$env/networks.env';
-import { INFURA_NETWORK_HOMESTEAD, INFURA_NETWORK_SEPOLIA } from '$env/networks.eth.env';
+import { BITFINITY_NETWORK_ID, ETHEREUM_NETWORK_ID, SEPOLIA_NETWORK_ID } from '$env/networks.env';
+import { INFURA_NETWORK_BITFINITY, INFURA_NETWORK_HOMESTEAD, INFURA_NETWORK_SEPOLIA } from '$env/networks.eth.env';
 import { INFURA_API_KEY } from '$env/rest/infura.env';
 import { i18n } from '$lib/stores/i18n.store';
 import type { EthAddress } from '$lib/types/address';
@@ -10,16 +10,21 @@ import type { BigNumber } from '@ethersproject/bignumber';
 import type { Networkish } from '@ethersproject/networks';
 import {
 	InfuraProvider as InfuraProviderLib,
+	JsonRpcProvider,
 	type FeeData,
 	type TransactionResponse
 } from '@ethersproject/providers';
 import { get } from 'svelte/store';
 
 export class InfuraProvider {
-	private readonly provider: InfuraProviderLib;
+	private readonly provider: InfuraProviderLib | JsonRpcProvider;
 
 	constructor(private readonly network: Networkish) {
-		this.provider = new InfuraProviderLib(this.network, INFURA_API_KEY);
+		if (network === INFURA_NETWORK_BITFINITY) {
+			this.provider = new JsonRpcProvider('https://mainnet.bitfinity.network');
+		} else {
+			this.provider = new InfuraProviderLib(this.network, INFURA_API_KEY);
+		}
 	}
 
 	balance = (address: EthAddress): Promise<BigNumber> => this.provider.getBalance(address);
@@ -35,9 +40,10 @@ export class InfuraProvider {
 	getBlockNumber = (): Promise<number> => this.provider.getBlockNumber();
 }
 
-const providers: Record<NetworkId, InfuraProvider> = {
+const providers: Record<NetworkId, InfuraProvider > = {
 	[ETHEREUM_NETWORK_ID]: new InfuraProvider(INFURA_NETWORK_HOMESTEAD),
-	[SEPOLIA_NETWORK_ID]: new InfuraProvider(INFURA_NETWORK_SEPOLIA)
+	[SEPOLIA_NETWORK_ID]: new InfuraProvider(INFURA_NETWORK_SEPOLIA),
+	[BITFINITY_NETWORK_ID]: new InfuraProvider(INFURA_NETWORK_BITFINITY)
 };
 
 export const infuraProviders = (networkId: NetworkId): InfuraProvider => {

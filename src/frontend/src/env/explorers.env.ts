@@ -1,5 +1,6 @@
 const EXPLORER_URLS = {
 	ETHEREUM: 'https://etherscan.io',
+	BITFINITY: 'https://explorer.mainnet.bitfinity.network',
 	SEPOLIA: 'https://sepolia.etherscan.io',
 	ICP: 'https://dashboard.internetcomputer.org',
 	CKETH: 'https://dashboard.internetcomputer.org/ethereum',
@@ -13,6 +14,7 @@ const EXPLORER_URLS = {
 
 export const {
 	ETHEREUM: ETHEREUM_EXPLORER_URL,
+	BITFINITY: BITFINITY_EXPLORER_URL,
 	SEPOLIA: SEPOLIA_EXPLORER_URL,
 	ICP: ICP_EXPLORER_URL,
 	CKETH: CKETH_EXPLORER_URL,

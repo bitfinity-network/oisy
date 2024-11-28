@@ -1,6 +1,7 @@
-import { ETHEREUM_NETWORK, SEPOLIA_NETWORK } from '$env/networks.env';
+import { BITFINITY_NETWORK, ETHEREUM_NETWORK, SEPOLIA_NETWORK } from '$env/networks.env';
 import { ETH_MAINNET_ENABLED } from '$env/networks.eth.env';
 import eth from '$icp-eth/assets/eth.svg';
+import bitfinity from '$icp-eth/assets/bitfinity.svg';
 import type { RequiredTokenWithLinkedData, TokenId } from '$lib/types/token';
 import { parseTokenId } from '$lib/validation/token.validation';
 
@@ -23,6 +24,24 @@ export const ETHEREUM_TOKEN: RequiredTokenWithLinkedData = {
 	buy: {
 		onramperId: 'eth'
 	}
+};
+
+export const BITFINITY_DEFAULT_DECIMALS = 18;
+
+const BITFINITY_SYMBOL = 'BTF';
+
+export const BITFINITY_TOKEN_ID: TokenId = parseTokenId(BITFINITY_SYMBOL);
+
+export const BITFINITY_TOKEN: RequiredTokenWithLinkedData = {
+	id: BITFINITY_TOKEN_ID,
+	network: BITFINITY_NETWORK,
+	standard: 'ethereum',
+	category: 'default',
+	name: 'Bitfinity',
+	symbol: BITFINITY_SYMBOL,
+	decimals: BITFINITY_DEFAULT_DECIMALS,
+	icon: bitfinity,
+	twinTokenSymbol: 'ckBTF'
 };
 
 export const SEPOLIA_SYMBOL = 'SepoliaETH';
@@ -48,6 +67,6 @@ export const SEPOLIA_TOKEN: RequiredTokenWithLinkedData = {
 export const SUPPORTED_ETHEREUM_TOKENS: [
 	...RequiredTokenWithLinkedData[],
 	RequiredTokenWithLinkedData
-] = [...(ETH_MAINNET_ENABLED ? [ETHEREUM_TOKEN] : []), SEPOLIA_TOKEN];
+] = [...(ETH_MAINNET_ENABLED ? [ETHEREUM_TOKEN, BITFINITY_TOKEN] : []), SEPOLIA_TOKEN];
 
 export const SUPPORTED_ETHEREUM_TOKEN_IDS: symbol[] = SUPPORTED_ETHEREUM_TOKENS.map(({ id }) => id);

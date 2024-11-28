@@ -1,4 +1,4 @@
-import { ETHEREUM_NETWORK, SEPOLIA_NETWORK } from '$env/networks.env';
+import { ETHEREUM_NETWORK, BITFINITY_NETWORK, SEPOLIA_NETWORK } from '$env/networks.env';
 import { ETH_MAINNET_ENABLED } from '$env/networks.eth.env';
 import type { EthereumNetwork } from '$eth/types/network';
 import { testnets } from '$lib/derived/testnets.derived';
@@ -8,7 +8,7 @@ import { derived, type Readable } from 'svelte/store';
 export const enabledEthereumNetworks: Readable<EthereumNetwork[]> = derived(
 	[testnets],
 	([$testnets]) => [
-		...(ETH_MAINNET_ENABLED ? [ETHEREUM_NETWORK] : []),
+		...(ETH_MAINNET_ENABLED ? [ETHEREUM_NETWORK, BITFINITY_NETWORK] : []),
 		...($testnets ? [SEPOLIA_NETWORK] : [])
 	]
 );
