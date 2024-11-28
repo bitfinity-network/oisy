@@ -1,11 +1,13 @@
 import type { BitcoinNetwork } from '$btc/types/network';
 import {
+	BITFINITY_EXPLORER_URL,
 	BTC_MAINNET_EXPLORER_URL,
 	BTC_TESTNET_EXPLORER_URL,
 	ETHEREUM_EXPLORER_URL,
 	SEPOLIA_EXPLORER_URL
 } from '$env/explorers.env';
 import { ETH_MAINNET_ENABLED } from '$env/networks.eth.env';
+import bitfinity from '$eth/assets/bitfinity.svg';
 import sepolia from '$eth/assets/sepolia.svg';
 import type { EthereumChainId, EthereumNetwork } from '$eth/types/network';
 import eth from '$icp-eth/assets/eth.svg';
@@ -14,6 +16,7 @@ import bitcoinTestnet from '$icp/assets/bitcoin_testnet.svg';
 import icpLight from '$icp/assets/icp_light.svg';
 import bitcoinMainnetBW from '$lib/assets/networks/bitcoin-mainnet-bw.svg';
 import bitcoinTestnetBW from '$lib/assets/networks/bitcoin-testnet-bw.svg';
+import bitfinityBW from '$lib/assets/networks/bitfinity-bw.svg';
 import ethereumBW from '$lib/assets/networks/ethereum-bw.svg';
 import icpBW from '$lib/assets/networks/icp-bw.svg';
 import sepoliaBW from '$lib/assets/networks/sepolia-bw.svg';
@@ -57,6 +60,22 @@ export const SEPOLIA_NETWORK: EthereumNetwork = {
 
 export const { chainId: SEPOLIA_NETWORK_CHAIN_ID } = SEPOLIA_NETWORK;
 
+export const BITFINITY_NETWORK_SYMBOL = 'BTF';
+
+export const BITFINITY_NETWORK_ID: NetworkId = parseNetworkId(BITFINITY_NETWORK_SYMBOL);
+
+export const BITFINITY_NETWORK: EthereumNetwork = {
+	id: BITFINITY_NETWORK_ID,
+	env: 'mainnet',
+	name: 'Bitfinity',
+	chainId: 355110n,
+	icon: bitfinity,
+	iconBW: bitfinityBW,
+	explorerUrl: BITFINITY_EXPLORER_URL
+};
+
+export const { chainId: BITFINITY_NETWORK_CHAIN_ID } = BITFINITY_NETWORK;
+
 /**
  * Some functions, such as when we load the user's custom tokens, require knowing all the networks.
  * However, from a UX perspective, we use a store to enable the list of networks based on the testnets flag.
@@ -64,7 +83,8 @@ export const { chainId: SEPOLIA_NETWORK_CHAIN_ID } = SEPOLIA_NETWORK;
  */
 export const SUPPORTED_ETHEREUM_NETWORKS: [...EthereumNetwork[], EthereumNetwork] = [
 	...(ETH_MAINNET_ENABLED ? [ETHEREUM_NETWORK] : []),
-	SEPOLIA_NETWORK
+	SEPOLIA_NETWORK,
+	BITFINITY_NETWORK
 ];
 
 export const SUPPORTED_ETHEREUM_NETWORKS_IDS: symbol[] = SUPPORTED_ETHEREUM_NETWORKS.map(

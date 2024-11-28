@@ -1,6 +1,9 @@
+import { BITFINITY_NETWORK_ID } from '$env/networks.env';
 import { SUPPORTED_ETHEREUM_TOKENS } from '$env/tokens/tokens.eth.env';
 import { infuraErc20Providers } from '$eth/providers/infura-erc20.providers';
 import { infuraProviders } from '$eth/providers/infura.providers';
+import { jsonRpcErc20Providers } from '$eth/providers/jsonrpc-erc20.provider';
+import { jsonRpcProviders } from '$eth/providers/jsonrpc.provider';
 import type { Erc20Token } from '$eth/types/erc20';
 import { isSupportedEthTokenId } from '$eth/utils/eth.utils';
 import { ethAddress as addressStore } from '$lib/derived/address.derived';
@@ -47,7 +50,8 @@ export const loadBalance = async ({
 	}
 
 	try {
-		const { balance } = infuraProviders(networkId);
+		const { balance } =
+			networkId === BITFINITY_NETWORK_ID ? jsonRpcProviders(networkId) : infuraProviders(networkId);
 		const data = await balance(address);
 
 		balancesStore.set({ tokenId, data: { data, certified: false } });
@@ -89,7 +93,10 @@ const loadErc20Balance = async ({
 	}
 
 	try {
-		const { balance } = infuraErc20Providers(contract.network.id);
+		const { balance } =
+			contract.network.id === BITFINITY_NETWORK_ID
+				? jsonRpcErc20Providers(contract.network.id)
+				: infuraErc20Providers(contract.network.id);
 		const data = await balance({ address, contract });
 		balancesStore.set({ tokenId: contract.id, data: { data, certified: false } });
 	} catch (err: unknown) {

@@ -16,6 +16,8 @@
 	import { toastsError } from '$lib/stores/toasts.store';
 	import type { Network } from '$lib/types/network';
 	import { isNullishOrEmpty } from '$lib/utils/input.utils';
+	import { jsonRpcErc20Providers } from '$eth/providers/jsonrpc-erc20.provider';
+	import { BITFINITY_NETWORK_ID } from '$env/networks.env';
 
 	export let contractAddress: string | undefined;
 	export let metadata: Erc20Metadata | undefined;
@@ -54,7 +56,8 @@
 		}
 
 		try {
-			const { metadata: metadataApi } = infuraErc20Providers(network.id);
+			const provider = network.id === BITFINITY_NETWORK_ID ? jsonRpcErc20Providers(network.id): infuraErc20Providers(network.id)
+			const { metadata: metadataApi } = provider;
 			metadata = await metadataApi({ address: contractAddress });
 
 			if (isNullish(metadata?.symbol) || isNullish(metadata?.name)) {

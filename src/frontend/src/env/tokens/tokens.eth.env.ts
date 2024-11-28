@@ -1,4 +1,4 @@
-import { ETHEREUM_NETWORK, SEPOLIA_NETWORK } from '$env/networks.env';
+import { BITFINITY_NETWORK, ETHEREUM_NETWORK, SEPOLIA_NETWORK } from '$env/networks.env';
 import { ETH_MAINNET_ENABLED } from '$env/networks.eth.env';
 import eth from '$icp-eth/assets/eth.svg';
 import type { RequiredTokenWithLinkedData, TokenId } from '$lib/types/token';
@@ -41,6 +41,22 @@ export const SEPOLIA_TOKEN: RequiredTokenWithLinkedData = {
 	twinTokenSymbol: 'ckSepoliaETH'
 };
 
+export const BITFINITY_SYMBOL = 'BTF';
+
+export const BITFINITY_TOKEN_ID: TokenId = parseTokenId(BITFINITY_SYMBOL);
+
+export const BITFINITY_TOKEN: RequiredTokenWithLinkedData = {
+	id: BITFINITY_TOKEN_ID,
+	network: BITFINITY_NETWORK,
+	standard: 'ethereum',
+	category: 'default',
+	name: 'BTF',
+	symbol: BITFINITY_SYMBOL,
+	decimals: ETHEREUM_DEFAULT_DECIMALS,
+	icon: BITFINITY_NETWORK.icon!,
+	twinTokenSymbol: 'ckBTF'
+};
+
 /**
  * The tokens store is useful for enabling and disabling features based on the testnets flag. However, constants are handy and not too verbose for testing if a token ID belongs to an Ethereum token.
  *
@@ -48,6 +64,6 @@ export const SEPOLIA_TOKEN: RequiredTokenWithLinkedData = {
 export const SUPPORTED_ETHEREUM_TOKENS: [
 	...RequiredTokenWithLinkedData[],
 	RequiredTokenWithLinkedData
-] = [...(ETH_MAINNET_ENABLED ? [ETHEREUM_TOKEN] : []), SEPOLIA_TOKEN];
+] = [...(ETH_MAINNET_ENABLED ? [ETHEREUM_TOKEN] : []), SEPOLIA_TOKEN, BITFINITY_TOKEN];
 
 export const SUPPORTED_ETHEREUM_TOKEN_IDS: symbol[] = SUPPORTED_ETHEREUM_TOKENS.map(({ id }) => id);
