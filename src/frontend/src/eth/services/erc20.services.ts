@@ -1,10 +1,12 @@
 import type { UserToken } from '$declarations/backend/backend.did';
 import {
+	BITFINITY_NETWORK_ID,
 	SUPPORTED_ETHEREUM_NETWORKS,
 	SUPPORTED_ETHEREUM_NETWORKS_CHAIN_IDS
 } from '$env/networks.env';
 import { ERC20_CONTRACTS, ERC20_TWIN_TOKENS } from '$env/tokens.erc20.env';
 import { infuraErc20Providers } from '$eth/providers/infura-erc20.providers';
+import { jsonRpcErc20Providers } from '$eth/providers/jsonrpc-erc20.provider';
 import { erc20DefaultTokensStore } from '$eth/stores/erc20-default-tokens.store';
 import { erc20UserTokensStore } from '$eth/stores/erc20-user-tokens.store';
 import type { Erc20Contract, Erc20Metadata, Erc20Token } from '$eth/types/erc20';
@@ -37,14 +39,18 @@ const loadDefaultErc20Tokens = async (): Promise<ResultSuccess> => {
 			Partial<Pick<Erc20Token, 'id'>>;
 
 		const loadKnownContracts = (): Promise<ContractData>[] =>
-			ERC20_CONTRACTS.map(
-				async ({ network, ...contract }): Promise<ContractData> => ({
+			ERC20_CONTRACTS.map(async ({ network, ...contract }): Promise<ContractData> => {
+				const metadata =
+					network.id === BITFINITY_NETWORK_ID
+						? await jsonRpcErc20Providers(network.id).metadata(contract)
+						: await infuraErc20Providers(network.id).metadata(contract);
+				return {
 					...contract,
 					network,
 					category: 'default',
-					...(await infuraErc20Providers(network.id).metadata(contract))
-				})
-			);
+					...metadata
+				};
+			});
 
 		const contracts = await Promise.all(loadKnownContracts());
 		erc20DefaultTokensStore.set([...ERC20_TWIN_TOKENS, ...contracts.map(mapErc20Token)]);
@@ -112,6 +118,11 @@ const loadErc20UserTokens = async (params: {
 						({ chainId }) => chainId === chain_id
 					) as EthereumNetwork;
 
+					const metadata =
+						network.id === BITFINITY_NETWORK_ID
+							? await jsonRpcErc20Providers(network.id).metadata({ address })
+							: await infuraErc20Providers(network.id).metadata({ address });
+
 					return {
 						...{
 							address,
@@ -124,7 +135,7 @@ const loadErc20UserTokens = async (params: {
 						// 1. TODO(GIX-2740): check uf user token is actually a match in the environment static metadata
 						// +
 						// 2. TODO(GIX-2740): check if metadata for address already loaded in store and reuse - using Infura is not a certified call anyway
-						...(await infuraErc20Providers(network.id).metadata({ address }))
+						...metadata
 					};
 				}
 			);

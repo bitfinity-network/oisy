@@ -18,3 +18,5 @@ export const ALCHEMY_JSON_RPC_URL_SEPOLIA = 'https://eth-sepolia.g.alchemy.com/v
 
 export const ALCHEMY_NETWORK_MAINNET: Network = Network.ETH_MAINNET;
 export const ALCHEMY_NETWORK_SEPOLIA: Network = Network.ETH_SEPOLIA;
+
+export const BITFINITY_JSON_RPC_URL_MAINNET = 'https://mainnet.bitfinity.network';

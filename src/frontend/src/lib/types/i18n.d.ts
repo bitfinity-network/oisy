@@ -130,9 +130,11 @@ interface I18nInit {
 		no_etherscan_provider: string;
 		no_etherscan_rest_api: string;
 		no_infura_provider: string;
+		no_json_rpc_provider: string;
 		no_infura_cketh_provider: string;
 		no_infura_erc20_provider: string;
 		no_infura_erc20_icp_provider: string;
+		no_jsonrpc_erc20_provider: string;
 		eth_address_unknown: string;
 		loading_address: string;
 		loading_balance: string;
