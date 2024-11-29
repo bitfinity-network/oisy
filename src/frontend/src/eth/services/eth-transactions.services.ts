@@ -14,6 +14,8 @@ import { replacePlaceholders } from '$lib/utils/i18n.utils';
 import { randomWait } from '$lib/utils/time.utils';
 import { isNullish } from '@dfinity/utils';
 import { get } from 'svelte/store';
+import { BITFINITY_NETWORK_ID } from '$env/networks.env';
+import { blockscoutProviders } from '$eth/providers/blockscout.provider';
 
 export const loadEthereumTransactions = ({
 	networkId,
@@ -53,7 +55,11 @@ const loadEthTransactions = async ({
 	}
 
 	try {
-		const { transactions: transactionsProviders } = etherscanProviders(networkId);
+		const { transactions: transactionsProviders } =
+			networkId === BITFINITY_NETWORK_ID
+				? blockscoutProviders(networkId)
+				: etherscanProviders(networkId);
+
 		const transactions = await transactionsProviders({ address });
 		ethTransactionsStore.set({ tokenId, transactions });
 	} catch (err: unknown) {
