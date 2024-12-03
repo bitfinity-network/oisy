@@ -1,5 +1,5 @@
 import { enabledBitcoinTokens } from '$btc/derived/tokens.derived';
-import { ETHEREUM_TOKEN, SEPOLIA_TOKEN } from '$env/tokens/tokens.eth.env';
+import { BITFINITY_TOKEN, ETHEREUM_TOKEN, SEPOLIA_TOKEN } from '$env/tokens/tokens.eth.env';
 import { ICP_TOKEN } from '$env/tokens/tokens.icp.env';
 import { enabledErc20Tokens } from '$eth/derived/erc20.derived';
 import { enabledIcrcTokens } from '$icp/derived/icrc.derived';
@@ -27,7 +27,8 @@ export const pageToken: Readable<OptionToken> = derived(
 			...$erc20Tokens,
 			...$icrcTokens,
 			ETHEREUM_TOKEN,
-			SEPOLIA_TOKEN
+			SEPOLIA_TOKEN,
+			BITFINITY_TOKEN
 		].find(({ name }) => name === $routeToken);
 	}
 );
