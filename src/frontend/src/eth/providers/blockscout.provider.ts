@@ -102,6 +102,28 @@ interface AddressTransactionsBlockscout {
 	};
 }
 
+export interface BlockscoutRestTransaction {
+	blockHash: string;
+	blockNumber: string;
+	confirmations: string;
+	contractAddress: string;
+	cumulativeGasUsed: string;
+	from: string;
+	gas: string;
+	gasPrice: string;
+	gasUsed: string;
+	hash: string;
+	input: string;
+	nonce: string;
+	timeStamp: string;
+	to: string;
+	tokenDecimal: string;
+	tokenName: string;
+	tokenSymbol: string;
+	transactionIndex: string;
+	value: string;
+}
+
 export class BlockscoutProvider {
 	constructor(
 		private chainId: number,
@@ -120,6 +142,7 @@ export class BlockscoutProvider {
 	}): Promise<Transaction[]> => {
 		const query = `${this.explorerUrl}/api/v2/addresses/${address}/transactions`;
 
+		// TODO: remove { mode: 'cors' }
 		const response: Response = await fetch(query, { mode: 'cors' });
 		const body = (await response.json()) as AddressTransactionsBlockscout;
 
@@ -145,6 +168,66 @@ export class BlockscoutProvider {
 		}
 
 		return [];
+	};
+
+	tokenTransactions = async ({
+		address,
+		contract: { address: contractAddress }
+	}: {
+		address: string; // Address of the user
+		contract: { address: string }; // ERC20 Token Contract Address
+	}): Promise<Transaction[]> => {
+		const url = new URL(`${this.explorerUrl}/api`);
+		url.searchParams.set('module', 'account');
+		url.searchParams.set('action', 'tokentx');
+		url.searchParams.set('contractaddress', contractAddress);
+		url.searchParams.set('address', address);
+		url.searchParams.set('startblock', '0');
+		url.searchParams.set('endblock', '99999999');
+		url.searchParams.set('sort', 'desc');
+
+		// Send the request to the Blockscout API
+		// TODO: remove { mode: 'cors' }
+		const response = await fetch(url, { mode: 'cors' });
+
+		if (!response.ok) {
+			throw new Error(`Fetching transactions with Blockscout API failed.`);
+		}
+
+		const { result }: { result: BlockscoutRestTransaction[] | string } = await response.json();
+
+		if (typeof result === 'string') {
+			throw new Error(result);
+		}
+
+		return result.map(
+			({
+				nonce,
+				gas,
+				gasPrice,
+				hash,
+				blockNumber,
+				blockHash,
+				timeStamp,
+				confirmations,
+				from,
+				to,
+				value
+			}) => ({
+				hash,
+				blockNumber: parseInt(blockNumber),
+				blockHash,
+				timestamp: parseInt(timeStamp),
+				confirmations,
+				from,
+				to,
+				nonce: parseInt(nonce),
+				gasLimit: BigNumber.from(gas),
+				gasPrice: BigNumber.from(gasPrice),
+				value: BigNumber.from(value),
+				chainId: this.chainId
+			})
+		);
 	};
 }
 
