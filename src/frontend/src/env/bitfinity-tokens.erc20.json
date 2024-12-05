@@ -1,0 +1,122 @@
+[
+	{
+		"address": "0x51cCdE9Ca75d95BB55eCe1775fCBFF91324B18A6",
+		"exchange": "erc20"
+	},
+	{
+		"address": "0x56bF74Ef5d4aD161D2D8D5d576E70108F152Cd35",
+		"exchange": "erc20"
+	},
+	{
+		"address": "0x48EC6A9Bc2EEEe2E13ff7e4A5E6634F7Fe46dabc",
+		"exchange": "erc20"
+	},
+	{
+		"address": "0xb37B60166AC1677a50D0ef158541c441bFf3D09A",
+		"exchange": "erc20"
+	},
+	{
+		"address": "0x440eEedbeCB4474A9C3964570B6Bf0C2d5E96d65",
+		"exchange": "erc20"
+	},
+	{
+		"address": "0xDf5253c4bC09e0e3FFa160C6346D0781b8dA1789",
+		"exchange": "erc20"
+	},
+	{
+		"address": "0x6C0C0dC629bDcE41591a126AcC90485737e2ca41",
+		"exchange": "erc20"
+	},
+	{
+		"address": "0x4B6bcCA9a8D707DaCA69485d14836779AeD947E5",
+		"exchange": "erc20"
+	},
+	{
+		"address": "0x649b08Ad696D9E4AEEC913DE6154BC8b78c70a0A",
+		"exchange": "erc20"
+	},
+	{
+		"address": "0x491016BF872D35a798c601d53442775c621BF91A",
+		"exchange": "erc20"
+	},
+	{
+		"address": "0x3662AFEF38c94a6184CDFCE8DCC60E7C305b8299",
+		"exchange": "erc20"
+	},
+	{
+		"address": "0x889f41FFc38C46559EBC9937Ba69EFAA8f4DaBD6",
+		"exchange": "erc20"
+	},
+	{
+		"address": "0xb584d157bb8C3cbAf0A5Ce3CB8689e82412dE5B4",
+		"exchange": "erc20"
+	},
+	{
+		"address": "0x794607c8301CdD19F561597f7B08D3b404c0Aa96",
+		"exchange": "erc20"
+	},
+	{
+		"address": "0xe140df9AB7840E3B3B605438a3f1ad5Ba09D35A5",
+		"exchange": "erc20"
+	},
+	{
+		"address": "0x798F6635121325b3C7F9Cf0c8fdD74Ffc0e486E3",
+		"exchange": "erc20"
+	},
+	{
+		"address": "0x49268A71865d659a7d9219B42ea3b3cF57600a6a",
+		"exchange": "erc20"
+	},
+	{
+		"address": "0xB0A06a9553bb8397feae9DF2AE35E10166F899e1",
+		"exchange": "erc20"
+	},
+	{
+		"address": "0x042C10b817CD1f97C0F66ffccb333856e43a2dFa",
+		"exchange": "erc20"
+	},
+	{
+		"address": "0xeEB38CFDF9FBA0495B3d6367Ada371D9A2387d74",
+		"exchange": "erc20"
+	},
+	{
+		"address": "0x6F48a420e9BD59E70A2a020432d6cfeDace6947C",
+		"exchange": "erc20"
+	},
+	{
+		"address": "0x871316A0A4bBF8f8de3408c588686aFf29E74252",
+		"exchange": "erc20"
+	},
+	{
+		"address": "0xe613EBD1eAe99D824Da8A6C33eC833A62bC04B5a",
+		"exchange": "erc20"
+	},
+	{
+		"address": "0xFD4dE66ECA49799bDdE66eB33654E2198Ab7bba4",
+		"exchange": "erc20"
+	},
+	{
+		"address": "0x828E13498b39D17976063541ECc4aF5D97aD863C",
+		"exchange": "erc20"
+	},
+	{
+		"address": "0x2a78A5f819393105a54F21AdeB4a8b68C5030b02",
+		"exchange": "erc20"
+	},
+	{
+		"address": "0x17021c0FcBD153E93Aa964624B56c89200e8fd80",
+		"exchange": "erc20"
+	},
+	{
+		"address": "0x2D200C18dEb2FB50B9b98B60F18A5D02b631b811",
+		"exchange": "erc20"
+	},
+	{
+		"address": "0x9b616A6B58cebC4C2Bb1254C135a25da4083FEA0",
+		"exchange": "erc20"
+	},
+	{
+		"address": "0x4e1481e697c67A5E543b225D9D0e3Ec757761Bb4",
+		"exchange": "erc20"
+	}
+]

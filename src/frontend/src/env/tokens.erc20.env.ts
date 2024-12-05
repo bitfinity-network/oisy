@@ -1,4 +1,5 @@
-import { ETHEREUM_NETWORK, SEPOLIA_NETWORK } from '$env/networks.env';
+import bitfinityTokens from '$env/bitfinity-tokens.erc20.json';
+import { BITFINITY_NETWORK, ETHEREUM_NETWORK, SEPOLIA_NETWORK } from '$env/networks.env';
 import { ETH_MAINNET_ENABLED } from '$env/networks.eth.env';
 import { EURC_TOKEN } from '$env/tokens-erc20/tokens.eurc.env';
 import { LINK_TOKEN, SEPOLIA_LINK_TOKEN } from '$env/tokens-erc20/tokens.link.env';
@@ -14,6 +15,7 @@ import { XAUT_TOKEN } from '$env/tokens-erc20/tokens.xaut.env';
 import type { Erc20Contract, RequiredErc20Token } from '$eth/types/erc20';
 import type { EthereumNetwork } from '$eth/types/network';
 import { mapAddressStartsWith0x } from '$icp-eth/utils/eth.utils';
+import type { Exchange } from '$lib/types/exchange';
 import type { TokenId } from '$lib/types/token';
 
 // TODO: remember to remove the ERC20 from here once the ckERC20 is implemented. Following the normal flow, the ERC20 variables should be created on a separate file.
@@ -80,6 +82,10 @@ export const ERC20_CONTRACTS_SEPOLIA: Erc20Contract[] = [
 	}
 ];
 
+export const ERC20_CONTRACTS_BITFINITY: Erc20Contract[] = [
+	...bitfinityTokens.map(({ address, exchange }) => ({ address, exchange: exchange as Exchange }))
+];
+
 export const ERC20_CONTRACT_ICP_GOERLI: Erc20Contract = {
 	// ICP
 	address: '0x8c283B98Edeb405816FD1D321005dF4d3AA956ba',
@@ -109,7 +115,8 @@ export const ERC20_CONTRACTS: (Erc20Contract & { network: EthereumNetwork })[] =
 	...(ETH_MAINNET_ENABLED
 		? ERC20_CONTRACTS_PRODUCTION.map((contract) => ({ ...contract, network: ETHEREUM_NETWORK }))
 		: []),
-	...ERC20_CONTRACTS_SEPOLIA.map((contract) => ({ ...contract, network: SEPOLIA_NETWORK }))
+	...ERC20_CONTRACTS_SEPOLIA.map((contract) => ({ ...contract, network: SEPOLIA_NETWORK })),
+	...ERC20_CONTRACTS_BITFINITY.map((contract) => ({ ...contract, network: BITFINITY_NETWORK }))
 ];
 
 export const ERC20_CONTRACTS_ADDRESSES = ERC20_CONTRACTS.map(({ address }) =>

@@ -1,4 +1,6 @@
+import { BITFINITY_NETWORK_ID } from '$env/networks.env';
 import { enabledErc20Tokens } from '$eth/derived/erc20.derived';
+import { blockscoutProviders } from '$eth/providers/blockscout.provider';
 import { etherscanProviders } from '$eth/providers/etherscan.providers';
 import { etherscanRests } from '$eth/rest/etherscan.rest';
 import { ethTransactionsStore } from '$eth/stores/eth-transactions.store';
@@ -14,8 +16,6 @@ import { replacePlaceholders } from '$lib/utils/i18n.utils';
 import { randomWait } from '$lib/utils/time.utils';
 import { isNullish } from '@dfinity/utils';
 import { get } from 'svelte/store';
-import { BITFINITY_NETWORK_ID } from '$env/networks.env';
-import { blockscoutProviders } from '$eth/providers/blockscout.provider';
 
 export const loadEthereumTransactions = ({
 	networkId,
@@ -122,7 +122,11 @@ const loadErc20Transactions = async ({
 	}
 
 	try {
-		const { transactions: transactionsRest } = etherscanRests(networkId);
+		const transactionsRest =
+			networkId === BITFINITY_NETWORK_ID
+				? blockscoutProviders(networkId).tokenTransactions
+				: etherscanRests(networkId).transactions;
+
 		const transactions = await retry({
 			request: async () => await transactionsRest({ contract: token, address }),
 			onRetry: async () => await randomWait({})
