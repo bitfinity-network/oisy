@@ -174,8 +174,8 @@ export class BlockscoutProvider {
 		address,
 		contract: { address: contractAddress }
 	}: {
-		address: string; // Address of the user
-		contract: { address: string }; // ERC20 Token Contract Address
+		address: string;
+		contract: { address: string };
 	}): Promise<Transaction[]> => {
 		const url = new URL(`${this.explorerUrl}/api`);
 		url.searchParams.set('module', 'account');
@@ -186,7 +186,6 @@ export class BlockscoutProvider {
 		url.searchParams.set('endblock', '99999999');
 		url.searchParams.set('sort', 'desc');
 
-		// Send the request to the Blockscout API
 		// TODO: remove { mode: 'cors' }
 		const response = await fetch(url, { mode: 'cors' });
 
