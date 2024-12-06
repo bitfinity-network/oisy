@@ -6,6 +6,7 @@
 	import { ethAddress } from '$lib/derived/address.derived';
 	import type { OptionEthAddress } from '$lib/types/address';
 	import type { Token } from '$lib/types/token';
+	import { BITFINITY_NETWORK_ID } from '$env/networks.env';
 
 	export let token: Token;
 
@@ -15,6 +16,10 @@
 		await listener?.disconnect();
 
 		if (isNullish(address)) {
+			return;
+		}
+
+		if (token.network.id === BITFINITY_NETWORK_ID) {
 			return;
 		}
 
