@@ -133,11 +133,14 @@
 		}
 
 		debounceUpdateFeeData();
-		listener = initMinedTransactionsListener({
-			// eslint-disable-next-line require-await
-			callback: async () => debounceUpdateFeeData(),
-			networkId: sourceNetwork.id
-		});
+
+		if (sourceNetwork.id !== BITFINITY_NETWORK_ID) {
+			listener = initMinedTransactionsListener({
+				// eslint-disable-next-line require-await
+				callback: async () => debounceUpdateFeeData(),
+				networkId: sourceNetwork.id
+			});
+		}
 	};
 
 	onMount(() => debounceUpdateFeeData());
