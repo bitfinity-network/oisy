@@ -1,3 +1,4 @@
+import { BITFINITY_NETWORK_ID } from '$env/networks.env';
 import { alchemyProviders } from '$eth/providers/alchemy.providers';
 import { reloadBalance } from '$eth/services/balance.services';
 import { ethTransactionsStore } from '$eth/stores/eth-transactions.store';
@@ -11,6 +12,7 @@ import { isNullish, nonNullish } from '@dfinity/utils';
 import type { TransactionResponse } from '@ethersproject/abstract-provider';
 import type { BigNumber } from '@ethersproject/bignumber';
 import { get } from 'svelte/store';
+import { jsonRpcProviders } from '$eth/providers/jsonrpc.provider';
 
 export const processTransactionSent = async ({
 	token,
@@ -59,7 +61,10 @@ const processPendingTransaction = async ({
 	token: Token;
 	value?: BigNumber;
 }) => {
-	const { getTransaction } = alchemyProviders(token.network.id);
+	const { getTransaction } =
+		token.network.id === BITFINITY_NETWORK_ID
+			? jsonRpcProviders(token.network.id)
+			: alchemyProviders(token.network.id);
 	const transaction = await getTransaction(hash);
 
 	if (isNullish(transaction)) {
@@ -106,7 +111,10 @@ const processMinedTransaction = async ({
 	token: Token;
 	value?: BigNumber;
 }) => {
-	const { getTransaction } = alchemyProviders(token.network.id);
+	const { getTransaction } =
+		token.network.id === BITFINITY_NETWORK_ID
+			? jsonRpcProviders(token.network.id)
+			: alchemyProviders(token.network.id);
 	const minedTransaction = await getTransaction(hash);
 
 	if (isNullish(minedTransaction)) {

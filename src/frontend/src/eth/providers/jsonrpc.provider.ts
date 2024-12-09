@@ -53,6 +53,10 @@ export class JsonRpcProvider {
 		this.provider.getTransactionCount(address, 'pending');
 
 	getBlockNumber = (): Promise<number> => this.provider.getBlockNumber();
+
+	getTransaction = async (hash: string): Promise<TransactionResponse | null>  => {
+		return this.provider.getTransaction(hash);
+	}
 }
 
 const providers: Record<NetworkId, JsonRpcProvider> = {
