@@ -30,6 +30,8 @@
 	import type { Token } from '$lib/types/token';
 	import { isNetworkICP } from '$lib/utils/network.utils';
 	import { parseToken } from '$lib/utils/parse.utils';
+	import { jsonRpcProviders } from '$eth/providers/jsonrpc.provider';
+	import { BITFINITY_NETWORK_ID } from '$env/networks.env';
 
 	export let observe: boolean;
 	export let destination = '';
@@ -59,7 +61,10 @@
 				from: mapAddressStartsWith0x($ethAddress!)
 			};
 
-			const { getFeeData } = infuraProviders($sendToken.network.id);
+			const { getFeeData } =
+				$sendToken.network.id === BITFINITY_NETWORK_ID
+					? jsonRpcProviders($sendToken.network.id)
+					: infuraProviders($sendToken.network.id);
 
 			if (isSupportedEthTokenId($sendTokenId)) {
 				feeStore.setFee({
@@ -128,11 +133,14 @@
 		}
 
 		debounceUpdateFeeData();
-		listener = initMinedTransactionsListener({
-			// eslint-disable-next-line require-await
-			callback: async () => debounceUpdateFeeData(),
-			networkId: sourceNetwork.id
-		});
+
+		if (sourceNetwork.id !== BITFINITY_NETWORK_ID) {
+			listener = initMinedTransactionsListener({
+				// eslint-disable-next-line require-await
+				callback: async () => debounceUpdateFeeData(),
+				networkId: sourceNetwork.id
+			});
+		}
 	};
 
 	onMount(() => debounceUpdateFeeData());

@@ -3,7 +3,8 @@ import { CKETH_FEE } from '$eth/constants/cketh.constants';
 import { ERC20_FALLBACK_FEE } from '$eth/constants/erc20.constants';
 import { ETH_BASE_FEE } from '$eth/constants/eth.constants';
 import { infuraErc20IcpProviders } from '$eth/providers/infura-erc20-icp.providers';
-import { infuraErc20Providers } from '$eth/providers/infura-erc20.providers';
+import { InfuraErc20Provider, infuraErc20Providers } from '$eth/providers/infura-erc20.providers';
+import { jsonRpcProviders } from '$eth/providers/jsonrpc.provider';
 import type { Erc20ContractAddress } from '$eth/types/erc20';
 import type { EthereumNetwork } from '$eth/types/network';
 import { isDestinationContractAddress } from '$eth/utils/send.utils';
@@ -11,6 +12,7 @@ import type { EthAddress, OptionEthAddress } from '$lib/types/address';
 import type { Network, NetworkId } from '$lib/types/network';
 import { isNetworkIdICP } from '$lib/utils/network.utils';
 import { BigNumber } from '@ethersproject/bignumber';
+import { BITFINITY_NETWORK_ID } from '$env/networks.env';
 
 export interface GetFeeData {
 	from: EthAddress;
@@ -43,9 +45,20 @@ export const getErc20FeeData = async ({
 	try {
 		const targetNetworkId: NetworkId | undefined = targetNetwork?.id;
 
-		const { getFeeData: fn } = isNetworkIdICP(targetNetworkId)
-			? infuraErc20IcpProviders(targetNetworkId)
-			: infuraErc20Providers(targetNetworkId ?? sourceNetworkId);
+		let fn: InfuraErc20Provider['getFeeData'];
+
+		if (targetNetworkId === BITFINITY_NETWORK_ID) {
+			const { getFeeContractData } = jsonRpcProviders(targetNetworkId);
+
+			fn = getFeeContractData;
+		} else {
+			const { getFeeData } = isNetworkIdICP(targetNetworkId)
+				? infuraErc20IcpProviders(targetNetworkId)
+				: infuraErc20Providers(targetNetworkId ?? sourceNetworkId);
+
+			fn = getFeeData;
+		}
+
 		const fee = await fn(rest);
 
 		// The cross-chain team recommended adding 10% to the fee to provide some buffer for when the transaction is effectively executed.
