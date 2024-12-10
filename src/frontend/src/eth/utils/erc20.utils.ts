@@ -14,6 +14,7 @@ import rndr from '$eth/assets/rndr.svg';
 import sonic from '$eth/assets/sonic.svg';
 import weeth from '$eth/assets/weeth.svg';
 import weth from '$eth/assets/weth.svg';
+import sand from '$eth/assets/sand.svg';
 import type { Erc20Contract, Erc20Metadata, Erc20Token } from '$eth/types/erc20';
 import type { Erc20UserToken, EthereumUserToken } from '$eth/types/erc20-user-token';
 import type { EthereumNetwork } from '$eth/types/network';
@@ -94,9 +95,13 @@ const mapErc20Icon = (symbol: string): string | undefined => {
 			return chapx;
 		case 'sonic':
 		case 'sonictest1':
+		case 'sonictest2':
 			return sonic;
 		case 'ckusdc':
+		case 'lbftckusdc':
 			return ckusdc;
+		case 'sand':
+			return sand;
 		default:
 			return undefined;
 	}
