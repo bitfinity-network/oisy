@@ -1,10 +1,12 @@
 import type { EthSignTransactionRequest } from '$declarations/signer/signer.did';
+import { BITFINITY_NETWORK_ID } from '$env/networks.env';
 import { ETH_BASE_FEE } from '$eth/constants/eth.constants';
 import { infuraCkErc20Providers } from '$eth/providers/infura-ckerc20.providers';
 import { infuraCkETHProviders } from '$eth/providers/infura-cketh.providers';
 import { infuraErc20IcpProviders } from '$eth/providers/infura-erc20-icp.providers';
 import { infuraErc20Providers } from '$eth/providers/infura-erc20.providers';
 import { infuraProviders } from '$eth/providers/infura.providers';
+import { jsonRpcProviders } from '$eth/providers/jsonrpc.provider';
 import { processTransactionSent } from '$eth/services/transaction.services';
 import type {
 	CkEthPopulateTransaction,
@@ -327,7 +329,8 @@ const sendTransaction = async ({
 	}): Promise<TransactionResponse> => {
 	const { id: networkId, chainId } = sourceNetwork;
 
-	const { sendTransaction } = infuraProviders(networkId);
+	const { sendTransaction } =
+		networkId === BITFINITY_NETWORK_ID ? jsonRpcProviders(networkId) : infuraProviders(networkId);
 
 	const principalEthAddress = (): string => {
 		const {
@@ -462,7 +465,8 @@ const prepareAndSignApproval = async ({
 
 	progress?.(ProgressStepsSend.APPROVE);
 
-	const { sendTransaction } = infuraProviders(networkId);
+	const { sendTransaction } =
+		networkId === BITFINITY_NETWORK_ID ? jsonRpcProviders(networkId) : infuraProviders(networkId);
 
 	const { hash } = await sendTransaction(rawTransaction);
 
@@ -538,7 +542,8 @@ const approve = async ({
 
 	const { id: networkId } = sourceNetwork;
 
-	const { getTransactionCount } = infuraProviders(networkId);
+	const { getTransactionCount } =
+		networkId === BITFINITY_NETWORK_ID ? jsonRpcProviders(networkId) : infuraProviders(networkId);
 
 	const nonce = await getTransactionCount(from);
 
