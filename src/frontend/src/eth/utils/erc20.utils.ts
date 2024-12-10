@@ -1,11 +1,17 @@
 import oneInch from '$eth/assets/1inch.svg';
+import bitfinity from '$eth/assets/bitfinity.svg';
+import chapx from '$eth/assets/chapx.svg';
+import ckbtc from '$eth/assets/ckbtc.svg';
+import ckusdc from '$eth/assets/ckusdc.svg';
 import dai from '$eth/assets/dai.svg';
 import dmail from '$eth/assets/dmail.svg';
 import floki from '$eth/assets/floki.svg';
 import icpDark from '$eth/assets/icp_dark.svg';
 import jasmy from '$eth/assets/jasmy.svg';
+import lendfinity from '$eth/assets/lendfinity.png';
 import matic from '$eth/assets/matic.svg';
 import rndr from '$eth/assets/rndr.svg';
+import sonic from '$eth/assets/sonic.svg';
 import weeth from '$eth/assets/weeth.svg';
 import weth from '$eth/assets/weth.svg';
 import type { Erc20Contract, Erc20Metadata, Erc20Token } from '$eth/types/erc20';
@@ -68,7 +74,29 @@ const mapErc20Icon = (symbol: string): string | undefined => {
 		// ICP in production. ckICP was used on staging because the definitive name and symbol had not been decided.
 		case 'icp':
 		case 'ckicp':
+		case 'lbfticp':
+		case 'xicptest':
 			return icpDark;
+		// bitfinity
+		case 'ckbtc':
+		case 'lbftckbtc':
+			return ckbtc;
+		case 'lbftnicp':
+		case 'variabledebtbftckbtc':
+		case 'variabledebtbftckusdc':
+		case 'variabledebtbftckusdt':
+			return lendfinity;
+		case 'wbft':
+		case 'lbftwbft':
+			return bitfinity;
+		case 'chapx':
+		case 'lbftchapx':
+			return chapx;
+		case 'sonic':
+		case 'sonictest1':
+			return sonic;
+		case 'ckusdc':
+			return ckusdc;
 		default:
 			return undefined;
 	}
