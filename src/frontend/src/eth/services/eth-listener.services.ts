@@ -1,3 +1,4 @@
+import { BITFINITY_NETWORK_ID } from '$env/networks.env';
 import { alchemyErc20Providers } from '$eth/providers/alchemy-erc20.providers';
 import { initMinedTransactionsListener as initMinedTransactionsListenerProvider } from '$eth/providers/alchemy.providers';
 import { initWalletConnect } from '$eth/providers/wallet-connect.providers';
@@ -18,6 +19,12 @@ export const initTransactionsListener = ({
 	token: Token;
 	address: EthAddress;
 }): WebSocketListener => {
+	if (token.network.id === BITFINITY_NETWORK_ID) {
+		return {
+			disconnect: async () => {}
+		};
+	}
+
 	if (isSupportedEthTokenId(token.id)) {
 		return initMinedTransactionsListenerProvider({
 			toAddress: address,
@@ -44,11 +51,18 @@ export const initMinedTransactionsListener = ({
 }: {
 	callback: (tx: { removed: boolean; transaction: { has: string } }) => Promise<void>;
 	networkId: NetworkId;
-}): WebSocketListener =>
-	initMinedTransactionsListenerProvider({
+}): WebSocketListener => {
+	if (networkId === BITFINITY_NETWORK_ID) {
+		return {
+			disconnect: async () => {}
+		};
+	}
+
+	return initMinedTransactionsListenerProvider({
 		listener: callback,
 		networkId
 	});
+};
 
 export const initWalletConnectListener = (params: {
 	uri: string;
