@@ -1,16 +1,15 @@
+import { BITFINITY_TOKENS } from '$env/tokens.bitfinity.env';
 import { ProgressStepsAddToken } from '$lib/enums/progress-steps';
 import { i18n } from '$lib/stores/i18n.store';
 import { toastsError } from '$lib/stores/toasts.store';
 import type { RequiredTokenWithLinkedData } from '$lib/types/token';
 import type { TokenToggleable } from '$lib/types/token-toggleable';
-import type { Identity } from '@dfinity/agent';
 import { get } from 'svelte/store';
 
 export type SaveBitfinityToken = TokenToggleable<RequiredTokenWithLinkedData>;
 
 export interface SaveBitfinityTokensParams {
 	progress: (step: ProgressStepsAddToken) => void;
-	identity: Identity;
 	tokens: SaveBitfinityToken[];
 	modalNext: () => void;
 	onSuccess: () => void;
@@ -19,23 +18,29 @@ export interface SaveBitfinityTokensParams {
 
 export const saveBitfinityTokens = async ({
 	progress,
-	identity,
-	tokens,
+	tokens: updatedTokens,
 	modalNext,
 	onSuccess,
 	onError
 }: SaveBitfinityTokensParams): Promise<void> => {
 	try {
+		progress(ProgressStepsAddToken.INITIALIZATION);
 		progress(ProgressStepsAddToken.SAVE);
 
-		// TODO: Implement actual saving to backend
-		// For now, we'll just simulate saving
-		await new Promise((resolve) => setTimeout(resolve, 1000));
+		// Update BITFINITY_TOKENS with the new enabled states
+		BITFINITY_TOKENS.forEach((token) => {
+			const matchingToken = updatedTokens.find((t) => t.symbol === token.symbol);
+			if (matchingToken) {
+				token.enabled = matchingToken.enabled === true;
+			}
+		});
+
+		// Add a small delay to ensure UI updates are visible
+		await new Promise((resolve) => setTimeout(resolve, 500));
 
 		progress(ProgressStepsAddToken.UPDATE_UI);
 
-		// TODO: Implement UI update logic
-		// For now, we'll just simulate updating
+		// Add a small delay to ensure UI updates are visible
 		await new Promise((resolve) => setTimeout(resolve, 500));
 
 		progress(ProgressStepsAddToken.DONE);

@@ -11,12 +11,11 @@
 	export let tokens: TokenUiOrGroupUi[] | undefined = undefined;
 
 	let sortedTokens: TokenUi[];
-	$: sortedTokens = $combinedDerivedSortedNetworkTokensUi
-		.filter(
-			({ balance, usdBalance, enabled, symbol }) =>
-				(Number(balance ?? 0n) || (usdBalance ?? 0) || $showZeroBalances) &&
-				(!symbol.startsWith('o') || enabled)
-		);
+	$: sortedTokens = $combinedDerivedSortedNetworkTokensUi.filter(
+		({ balance, usdBalance, enabled, symbol }) =>
+			(Number(balance ?? 0n) || (usdBalance ?? 0) || $showZeroBalances) &&
+			(!symbol.startsWith('o') || enabled === true)
+	);
 
 	let groupedTokens: TokenUiOrGroupUi[];
 	$: groupedTokens = groupTokensByTwin(sortedTokens);

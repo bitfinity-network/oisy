@@ -17,7 +17,7 @@
 			enabled: checked,
 			version: undefined,
 			standard: 'ethereum',
-			category: 'custom'
+			category: 'default'
 		} as TokenToggleable<RequiredTokenWithLinkedData>);
 	};
 </script>

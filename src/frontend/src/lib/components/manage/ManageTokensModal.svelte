@@ -58,7 +58,11 @@
 
 	const saveTokens = async ({
 		detail: { icrc, erc20, bitfinity }
-	}: CustomEvent<{ icrc: IcrcCustomToken[]; erc20: Erc20UserToken[]; bitfinity: SaveBitfinityToken[] }>) => {
+	}: CustomEvent<{
+		icrc: IcrcCustomToken[];
+		erc20: Erc20UserToken[];
+		bitfinity: SaveBitfinityToken[];
+	}>) => {
 		if (icrc.length === 0 && erc20.length === 0 && bitfinity.length === 0) {
 			toastsShow({
 				text: $i18n.tokens.manage.info.no_changes,
@@ -68,6 +72,8 @@
 
 			return;
 		}
+
+		modal.set(3);
 
 		await Promise.allSettled([
 			...(icrc.length > 0 ? [saveIcrc(icrc)] : []),
@@ -140,17 +146,16 @@
 			identity: $authIdentity
 		});
 
-	const saveBitfinity = (tokens: RequiredTokenWithLinkedData[]): Promise<void> => {
+	const saveBitfinity = (tokens: SaveBitfinityToken[]): Promise<void> => {
 		if (isNullish($authIdentity)) {
 			throw new Error('No identity available');
 		}
 		return saveBitfinityTokens({
-			tokens: tokens.map(token => ({ ...token, enabled: true, version: undefined })),
+			tokens,
 			progress,
 			modalNext: () => modal.set(3),
 			onSuccess: close,
-			onError: () => modal.set(0),
-			identity: $authIdentity
+			onError: () => modal.set(0)
 		});
 	};
 
