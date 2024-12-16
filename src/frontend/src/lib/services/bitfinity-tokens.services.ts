@@ -19,6 +19,25 @@ export interface SaveBitfinityTokensParams {
 // Create a temporary array to hold original tokens
 const originalTokens = [...BITFINITY_TOKENS];
 
+// Local storage key for persisting token states
+const STORAGE_KEY = 'bitfinity-token-states';
+
+// Load persisted states on initialization
+const loadPersistedStates = () => {
+	const savedStates = localStorage.getItem(STORAGE_KEY);
+	if (savedStates) {
+		const states = JSON.parse(savedStates);
+		BITFINITY_TOKENS.forEach((token) => {
+			if (states[token.symbol] !== undefined) {
+				token.enabled = states[token.symbol];
+			}
+		});
+	}
+};
+
+// Initialize with persisted states
+loadPersistedStates();
+
 export const saveBitfinityTokens = async ({
 	progress,
 	tokens: updatedTokens,
@@ -41,6 +60,16 @@ export const saveBitfinityTokens = async ({
 		});
 
 		BITFINITY_TOKENS.push(...newTokens);
+
+		// Persist token states
+		const states = newTokens.reduce(
+			(acc, token) => ({
+				...acc,
+				[token.symbol]: token.enabled
+			}),
+			{}
+		);
+		localStorage.setItem(STORAGE_KEY, JSON.stringify(states));
 
 		await new Promise((resolve) => setTimeout(resolve, 500));
 		progress(ProgressStepsAddToken.UPDATE_UI);
