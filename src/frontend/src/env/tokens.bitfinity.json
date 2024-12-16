@@ -1,0 +1,219 @@
+{
+	"BTC": {
+		"symbol": "BTC",
+		"oSymbol": "oBTC",
+		"decimals": 8,
+		"name": "Bitcoin",
+		"oName": "Bitfinity Bitcoin"
+	},
+	"DOGE": {
+		"symbol": "DOGE",
+		"oSymbol": "oDOGE",
+		"decimals": 8,
+		"name": "Dogecoin",
+		"oName": "Bitfinity Dogecoin"
+	},
+	"ORDI": {
+		"symbol": "ORDI",
+		"oSymbol": "oORDI",
+		"decimals": 8,
+		"name": "Ordinal",
+		"oName": "Bitfinity Ordinal"
+	},
+	"BRC20": {
+		"symbol": "BRC20",
+		"oSymbol": "oBRC20",
+		"decimals": 8,
+		"name": "BRC-20 Token",
+		"oName": "Bitfinity BRC-20 Token"
+	},
+	"ckBTC": {
+		"symbol": "ckBTC",
+		"oSymbol": "ockBTC",
+		"decimals": 8,
+		"name": "Chain-key Bitcoin",
+		"oName": "Bitfinity Chain-key Bitcoin"
+	},
+	"ETH": {
+		"symbol": "ETH",
+		"oSymbol": "oETH",
+		"decimals": 18,
+		"name": "Ethereum",
+		"oName": "Bitfinity Ethereum"
+	},
+	"USDT": {
+		"symbol": "USDT",
+		"oSymbol": "oUSDT",
+		"decimals": 6,
+		"name": "Tether",
+		"oName": "Bitfinity Tether"
+	},
+	"USDC": {
+		"symbol": "USDC",
+		"oSymbol": "oUSDC",
+		"decimals": 6,
+		"name": "USD Coin",
+		"oName": "Bitfinity USD Coin"
+	},
+	"BNB": {
+		"symbol": "BNB",
+		"oSymbol": "oBNB",
+		"decimals": 18,
+		"name": "Binance Coin",
+		"oName": "Bitfinity Binance Coin"
+	},
+	"ADA": {
+		"symbol": "ADA",
+		"oSymbol": "oADA",
+		"decimals": 6,
+		"name": "Cardano",
+		"oName": "Bitfinity Cardano"
+	},
+	"SOL": {
+		"symbol": "SOL",
+		"oSymbol": "oSOL",
+		"decimals": 9,
+		"name": "Solana",
+		"oName": "Bitfinity Solana"
+	},
+	"XRP": {
+		"symbol": "XRP",
+		"oSymbol": "oXRP",
+		"decimals": 6,
+		"name": "Ripple",
+		"oName": "Bitfinity Ripple"
+	},
+	"DOT": {
+		"symbol": "DOT",
+		"oSymbol": "oDOT",
+		"decimals": 10,
+		"name": "Polkadot",
+		"oName": "Bitfinity Polkadot"
+	},
+	"LTC": {
+		"symbol": "LTC",
+		"oSymbol": "oLTC",
+		"decimals": 8,
+		"name": "Litecoin",
+		"oName": "Bitfinity Litecoin"
+	},
+	"LINK": {
+		"symbol": "LINK",
+		"oSymbol": "oLINK",
+		"decimals": 18,
+		"name": "Chainlink",
+		"oName": "Bitfinity Chainlink"
+	},
+	"MATIC": {
+		"symbol": "MATIC",
+		"oSymbol": "oMATIC",
+		"decimals": 18,
+		"name": "Polygon",
+		"oName": "Bitfinity Polygon"
+	},
+	"SHIB": {
+		"symbol": "SHIB",
+		"oSymbol": "oSHIB",
+		"decimals": 18,
+		"name": "Shiba Inu",
+		"oName": "Bitfinity Shiba Inu"
+	},
+	"UNI": {
+		"symbol": "UNI",
+		"oSymbol": "oUNI",
+		"decimals": 18,
+		"name": "Uniswap",
+		"oName": "Bitfinity Uniswap"
+	},
+	"AVAX": {
+		"symbol": "AVAX",
+		"oSymbol": "oAVAX",
+		"decimals": 18,
+		"name": "Avalanche",
+		"oName": "Bitfinity Avalanche"
+	},
+	"XLM": {
+		"symbol": "XLM",
+		"oSymbol": "oXLM",
+		"decimals": 7,
+		"name": "Stellar",
+		"oName": "Bitfinity Stellar"
+	},
+	"TRX": {
+		"symbol": "TRX",
+		"oSymbol": "oTRX",
+		"decimals": 6,
+		"name": "TRON",
+		"oName": "Bitfinity TRON"
+	},
+	"ATOM": {
+		"symbol": "ATOM",
+		"oSymbol": "oATOM",
+		"decimals": 6,
+		"name": "Cosmos",
+		"oName": "Bitfinity Cosmos"
+	},
+	"XMR": {
+		"symbol": "XMR",
+		"oSymbol": "oXMR",
+		"decimals": 12,
+		"name": "Monero",
+		"oName": "Bitfinity Monero"
+	},
+	"ICP": {
+		"symbol": "ICP",
+		"oSymbol": "oICP",
+		"decimals": 8,
+		"name": "Internet Computer",
+		"oName": "Bitfinity Internet Computer"
+	},
+	"FIL": {
+		"symbol": "FIL",
+		"oSymbol": "oFIL",
+		"decimals": 18,
+		"name": "Filecoin",
+		"oName": "Bitfinity Filecoin"
+	},
+	"ALGO": {
+		"symbol": "ALGO",
+		"oSymbol": "oALGO",
+		"decimals": 6,
+		"name": "Algorand",
+		"oName": "Bitfinity Algorand"
+	},
+	"VET": {
+		"symbol": "VET",
+		"oSymbol": "oVET",
+		"decimals": 18,
+		"name": "VeChain",
+		"oName": "Bitfinity VeChain"
+	},
+	"THETA": {
+		"symbol": "THETA",
+		"oSymbol": "oTHETA",
+		"decimals": 18,
+		"name": "Theta",
+		"oName": "Bitfinity Theta"
+	},
+	"XTZ": {
+		"symbol": "XTZ",
+		"oSymbol": "oXTZ",
+		"decimals": 6,
+		"name": "Tezos",
+		"oName": "Bitfinity Tezos"
+	},
+	"EGLD": {
+		"symbol": "EGLD",
+		"oSymbol": "oEGLD",
+		"decimals": 18,
+		"name": "Elrond",
+		"oName": "Bitfinity Elrond"
+	},
+	"CHAT": {
+		"symbol": "CHAT",
+		"oSymbol": "oCHAT",
+		"decimals": 18,
+		"name": "Chat",
+		"oName": "Bitfinity Chat"
+	}
+}

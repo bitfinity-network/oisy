@@ -28,6 +28,9 @@
 	import type { Network } from '$lib/types/network';
 	import { isNullishOrEmpty } from '$lib/utils/input.utils';
 	import { isNetworkIdEthereum, isNetworkIdICP } from '$lib/utils/network.utils';
+	import { saveBitfinityTokens } from '$lib/services/bitfinity-tokens.services';
+	import type { SaveBitfinityToken } from '$lib/services/bitfinity-tokens.services';
+	import type { RequiredTokenWithLinkedData } from '$lib/types/token';
 
 	const steps: WizardSteps = [
 		{
@@ -54,9 +57,9 @@
 	let modal: WizardModal;
 
 	const saveTokens = async ({
-		detail: { icrc, erc20 }
-	}: CustomEvent<{ icrc: IcrcCustomToken[]; erc20: Erc20UserToken[] }>) => {
-		if (icrc.length === 0 && erc20.length === 0) {
+		detail: { icrc, erc20, bitfinity }
+	}: CustomEvent<{ icrc: IcrcCustomToken[]; erc20: Erc20UserToken[]; bitfinity: SaveBitfinityToken[] }>) => {
+		if (icrc.length === 0 && erc20.length === 0 && bitfinity.length === 0) {
 			toastsShow({
 				text: $i18n.tokens.manage.info.no_changes,
 				level: 'info',
@@ -68,7 +71,8 @@
 
 		await Promise.allSettled([
 			...(icrc.length > 0 ? [saveIcrc(icrc)] : []),
-			...(erc20.length > 0 ? [saveErc20(erc20)] : [])
+			...(erc20.length > 0 ? [saveErc20(erc20)] : []),
+			...(bitfinity.length > 0 ? [saveBitfinity(bitfinity)] : [])
 		]);
 	};
 
@@ -135,6 +139,20 @@
 			onError: () => modal.set(0),
 			identity: $authIdentity
 		});
+
+	const saveBitfinity = (tokens: RequiredTokenWithLinkedData[]): Promise<void> => {
+		if (isNullish($authIdentity)) {
+			throw new Error('No identity available');
+		}
+		return saveBitfinityTokens({
+			tokens: tokens.map(token => ({ ...token, enabled: true, version: undefined })),
+			progress,
+			modalNext: () => modal.set(3),
+			onSuccess: close,
+			onError: () => modal.set(0),
+			identity: $authIdentity
+		});
+	};
 
 	const close = () => {
 		modalStore.close();

@@ -5,14 +5,18 @@
 	import type { TokenUi } from '$lib/types/token';
 	import type { TokenUiOrGroupUi } from '$lib/types/token-group';
 	import { groupTokensByTwin } from '$lib/utils/token-group.utils';
+	import { isRequiredTokenWithLinkedData } from '$lib/utils/token.utils';
 
 	// We start it as undefined to avoid showing an empty list before the first update.
 	export let tokens: TokenUiOrGroupUi[] | undefined = undefined;
 
 	let sortedTokens: TokenUi[];
-	$: sortedTokens = $combinedDerivedSortedNetworkTokensUi.filter(
-		({ balance, usdBalance }) => Number(balance ?? 0n) || (usdBalance ?? 0) || $showZeroBalances
-	);
+	$: sortedTokens = $combinedDerivedSortedNetworkTokensUi
+		.filter(
+			({ balance, usdBalance, enabled, symbol }) =>
+				(Number(balance ?? 0n) || (usdBalance ?? 0) || $showZeroBalances) &&
+				(!symbol.startsWith('o') || enabled)
+		);
 
 	let groupedTokens: TokenUiOrGroupUi[];
 	$: groupedTokens = groupTokensByTwin(sortedTokens);
