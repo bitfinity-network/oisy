@@ -16,6 +16,9 @@ export interface SaveBitfinityTokensParams {
 	onError: () => void;
 }
 
+// Create a temporary array to hold original tokens
+const originalTokens = [...BITFINITY_TOKENS];
+
 export const saveBitfinityTokens = async ({
 	progress,
 	tokens: updatedTokens,
@@ -27,22 +30,21 @@ export const saveBitfinityTokens = async ({
 		progress(ProgressStepsAddToken.INITIALIZATION);
 		progress(ProgressStepsAddToken.SAVE);
 
-		// Update BITFINITY_TOKENS with the new enabled states
-		BITFINITY_TOKENS.forEach((token) => {
-			const matchingToken = updatedTokens.find((t) => t.symbol === token.symbol);
-			if (matchingToken) {
-				token.enabled = matchingToken.enabled === true;
-			}
+		// Clear and update BITFINITY_TOKENS to force reactivity
+		BITFINITY_TOKENS.length = 0;
+		await new Promise((resolve) => setTimeout(resolve, 0));
+
+		// Update tokens with new enabled states
+		const newTokens = originalTokens.map((token) => {
+			const updatedToken = updatedTokens.find((t) => t.symbol === token.symbol);
+			return updatedToken ? { ...token, enabled: updatedToken.enabled } : token;
 		});
 
-		// Add a small delay to ensure UI updates are visible
-		await new Promise((resolve) => setTimeout(resolve, 500));
+		BITFINITY_TOKENS.push(...newTokens);
 
+		await new Promise((resolve) => setTimeout(resolve, 500));
 		progress(ProgressStepsAddToken.UPDATE_UI);
-
-		// Add a small delay to ensure UI updates are visible
 		await new Promise((resolve) => setTimeout(resolve, 500));
-
 		progress(ProgressStepsAddToken.DONE);
 
 		modalNext();
