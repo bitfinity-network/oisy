@@ -12,18 +12,15 @@
 	import TokensDisplayHandler from '$lib/components/tokens/TokensDisplayHandler.svelte';
 	import TokensSkeletons from '$lib/components/tokens/TokensSkeletons.svelte';
 	import { modalManageTokens } from '$lib/derived/modal.derived';
+	import { tokenGroups } from '$lib/stores/token-groups.store';
 	import type { TokenUiOrGroupUi } from '$lib/types/token-group';
 	import { isTokenUiGroup } from '$lib/utils/token-group.utils';
 
 	let tokens: TokenUiOrGroupUi[] | undefined;
-
 	let animating = false;
 
 	const handleAnimationStart = () => {
 		animating = true;
-
-		// The following is to guarantee that the function is triggered, even if 'animationend' event is not triggered.
-		// It may happen if the animation aborts before reaching completion.
 		debouncedHandleAnimationEnd();
 	};
 
@@ -41,26 +38,77 @@
 
 <TokensDisplayHandler bind:tokens>
 	<TokensSkeletons {loading}>
-		<div class="mb-3 flex flex-col gap-3">
-			{#each tokens ?? [] as token (token.id)}
-				<div
-					transition:fade
-					animate:flip={{ duration: 250 }}
-					on:animationstart={handleAnimationStart}
-					on:animationend={handleAnimationEnd}
-					class:pointer-events-none={animating}
-				>
-					{#if isTokenUiGroup(token)}
-						<TokenGroupCard tokenGroup={token} />
-					{:else}
-						<Listener {token}>
-							<TokenCardWithUrl {token}>
-								<TokenCardContent data={token} />
-							</TokenCardWithUrl>
-						</Listener>
-					{/if}
+		<div class="mb-3 flex flex-col gap-6">
+			{#if $tokenGroups.bridgeTokens.ckERC20.length > 0}
+				<div class="flex flex-col gap-3">
+					<h3 class="text-sm font-medium text-gray-500">Bridge Tokens</h3>
+					{#each $tokenGroups.bridgeTokens.ckERC20 as token, i (token.id)}
+						<div
+							transition:fade
+							animate:flip={{ duration: 250 }}
+							on:animationstart={handleAnimationStart}
+							on:animationend={handleAnimationEnd}
+							class:pointer-events-none={animating}
+						>
+							{#if isTokenUiGroup(token)}
+								<TokenGroupCard tokenGroup={token} />
+							{:else}
+								<Listener {token}>
+									<TokenCardWithUrl {token}>
+										<TokenCardContent data={token} />
+									</TokenCardWithUrl>
+								</Listener>
+							{/if}
+						</div>
+					{/each}
 				</div>
-			{/each}
+			{/if}
+
+			{#if $tokenGroups.nonBridgeTokens.native.length > 0 || $tokenGroups.nonBridgeTokens.sns.length > 0}
+				<div class="flex flex-col gap-3">
+					<h3 class="text-sm font-medium text-gray-500">Non-Bridge Tokens</h3>
+					
+					{#each $tokenGroups.nonBridgeTokens.native as token, i (token.id)}
+						<div
+							transition:fade
+							animate:flip={{ duration: 250 }}
+							on:animationstart={handleAnimationStart}
+							on:animationend={handleAnimationEnd}
+							class:pointer-events-none={animating}
+						>
+							{#if isTokenUiGroup(token)}
+								<TokenGroupCard tokenGroup={token} />
+							{:else}
+								<Listener {token}>
+									<TokenCardWithUrl {token}>
+										<TokenCardContent data={token} />
+									</TokenCardWithUrl>
+								</Listener>
+							{/if}
+						</div>
+					{/each}
+
+					{#each $tokenGroups.nonBridgeTokens.sns as token, i (token.id)}
+						<div
+							transition:fade
+							animate:flip={{ duration: 250 }}
+							on:animationstart={handleAnimationStart}
+							on:animationend={handleAnimationEnd}
+							class:pointer-events-none={animating}
+						>
+							{#if isTokenUiGroup(token)}
+								<TokenGroupCard tokenGroup={token} />
+							{:else}
+								<Listener {token}>
+									<TokenCardWithUrl {token}>
+										<TokenCardContent data={token} />
+									</TokenCardWithUrl>
+								</Listener>
+							{/if}
+						</div>
+					{/each}
+				</div>
+			{/if}
 		</div>
 
 		{#if tokens?.length === 0}
