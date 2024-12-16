@@ -30,7 +30,7 @@ export const createBitfinityToken = (config: BitfinityTokenConfig): BitfinityTok
 	decimals: config.decimals,
 	icon: BITFINITY_NETWORK.icon!,
 	twinTokenSymbol: config.symbol,
-	enabled: true,
+	enabled: false,
 	version: undefined
 });
 

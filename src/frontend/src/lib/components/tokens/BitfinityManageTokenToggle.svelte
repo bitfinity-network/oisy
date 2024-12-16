@@ -5,26 +5,25 @@
 	import type { TokenToggleable } from '$lib/types/token-toggleable';
 	import { i18n } from '$lib/stores/i18n.store';
 
-	export let token: RequiredTokenWithLinkedData & TokenToggleable<RequiredTokenWithLinkedData>;
-
-	let checked: boolean;
-	$: checked = token.enabled ?? false;
+	export let token: RequiredTokenWithLinkedData;
+	export let checked = false;
 
 	const dispatch = createEventDispatcher();
 
 	const toggle = () => {
-		const newState = !token.enabled;
+		checked = !checked;
 		dispatch('icShowOrHideToken', {
 			...token,
-			enabled: newState,
+			enabled: checked,
 			version: undefined,
-			standard: 'ethereum'
-		});
+			standard: 'ethereum',
+			category: 'custom'
+		} as TokenToggleable<RequiredTokenWithLinkedData>);
 	};
 </script>
 
 <Toggle
 	ariaLabel={checked ? $i18n.tokens.text.hide_token : $i18n.tokens.text.show_token}
-	checked={token.enabled ?? false}
+	bind:checked
 	on:nnsToggle={toggle}
-/> 
+/>

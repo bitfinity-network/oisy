@@ -103,22 +103,17 @@
 			},
 			...$enabledBitcoinTokens.map((token) => ({ ...token, enabled: true })),
 			...$enabledEthereumTokens.map((token) => ({ ...token, enabled: true })),
-			...BITFINITY_TOKENS.map((token) => {
-				const key = `${token.network.id.description}-${token.id.description}`;
-				const modifiedToken = modifiedTokens[key] as SaveBitfinityToken | undefined;
-				return {
-					...token,
-					enabled: modifiedToken?.enabled ?? token.enabled
-				};
-			}),
+			...BITFINITY_TOKENS.map((token) => ({
+				...token,
+				enabled: false,
+				version: undefined
+			})),
 			...(manageEthereumTokens ? allErc20Tokens : []),
 			...(manageIcTokens ? allIcrcTokens : [])
 		],
 		$selectedNetwork,
 		$pseudoNetworkChainFusion
-	]).filter((token, index, self) => 
-		index === self.findIndex((t) => t.symbol === token.symbol)
-	);
+	]).filter((token, index, self) => index === self.findIndex((t) => t.symbol === token.symbol));
 
 	let allTokensSorted: Token[] = [];
 	$: allTokensSorted = nonNullish(exchangesStaticData)
@@ -166,7 +161,9 @@
 			const bitfinityToken = token as BitfinityToken;
 			return {
 				...bitfinityToken,
-				enabled: modifiedToken ? (modifiedToken as SaveBitfinityToken).enabled : bitfinityToken.enabled,
+				enabled: modifiedToken
+					? (modifiedToken as SaveBitfinityToken).enabled
+					: bitfinityToken.enabled,
 				version: undefined
 			};
 		}
@@ -181,7 +178,7 @@
 		const { id, network, ...rest } = detail;
 		const { id: networkId } = network;
 		const key = `${networkId.description}-${id.description}`;
-		
+
 		modifiedTokens = {
 			...modifiedTokens,
 			[key]: { id, network, ...rest }
@@ -191,7 +188,11 @@
 	let saveDisabled = true;
 	$: saveDisabled = Object.keys(modifiedTokens).length === 0;
 
-	let groupModifiedTokens: { icrc: IcrcCustomToken[]; erc20: Erc20UserToken[]; bitfinity: SaveBitfinityToken[] } = {
+	let groupModifiedTokens: {
+		icrc: IcrcCustomToken[];
+		erc20: Erc20UserToken[];
+		bitfinity: SaveBitfinityToken[];
+	} = {
 		icrc: [],
 		erc20: [],
 		bitfinity: []
@@ -209,7 +210,9 @@
 			],
 			bitfinity: [
 				...bitfinity,
-				...(isRequiredTokenWithLinkedData(token) && token.symbol.startsWith('o') ? [token as SaveBitfinityToken] : [])
+				...(isRequiredTokenWithLinkedData(token) && token.symbol.startsWith('o')
+					? [token as SaveBitfinityToken]
+					: [])
 			]
 		}),
 		{ icrc: [], erc20: [], bitfinity: [] }
@@ -274,13 +277,10 @@
 
 					<svelte:fragment slot="action">
 						{#if isRequiredTokenWithLinkedData(token) && token.symbol.startsWith('o')}
-							<BitfinityManageTokenToggle 
-								token={{
-									...token,
-									enabled: modifiedTokens[`${token.network.id.description}-${token.id.description}`]?.enabled ?? false,
-									version: undefined,
-									standard: 'ethereum'
-								}}
+							<BitfinityManageTokenToggle
+								{token}
+								checked={modifiedTokens[`${token.network.id.description}-${token.id.description}`]
+									?.enabled ?? false}
 								on:icShowOrHideToken={onToggle}
 							/>
 						{:else if icTokenIcrcCustomToken(token)}
