@@ -173,7 +173,7 @@
 	let noTokensMatch = false;
 	$: noTokensMatch = tokens.length === 0;
 
-	let modifiedTokens: Record<string, Token | SaveBitfinityToken> = {};
+	let modifiedTokens: Record<string, TokenToggleable<Token> | SaveBitfinityToken> = {};
 	const onToggle = ({ detail }: CustomEvent<TokenToggleable<Token> & UserTokenState>) => {
 		const { id, network, ...rest } = detail;
 		const { id: networkId } = network;
