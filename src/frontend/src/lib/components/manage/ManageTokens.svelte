@@ -105,7 +105,10 @@
 			...$enabledEthereumTokens.map((token) => ({ ...token, enabled: true })),
 			...BITFINITY_TOKENS.map((token) => ({
 				...token,
-				enabled: false,
+				enabled: localStorage.getItem('bitfinity-token-states')
+					? (JSON.parse(localStorage.getItem('bitfinity-token-states') || '{}')[token.symbol] ??
+						false)
+					: false,
 				version: undefined
 			})),
 			...(manageEthereumTokens ? allErc20Tokens : []),
@@ -158,13 +161,17 @@
 				enabled: (modifiedToken as IcrcCustomToken)?.enabled ?? token.enabled
 			};
 		} else if (isBitfinityToken) {
-			const bitfinityToken = token as BitfinityToken;
+			const savedStates = localStorage.getItem('bitfinity-token-states');
+			const states = savedStates ? JSON.parse(savedStates) : {};
 			return {
-				...bitfinityToken,
-				enabled: modifiedToken
-					? (modifiedToken as SaveBitfinityToken).enabled
-					: bitfinityToken.enabled,
-				version: undefined
+				...token,
+				enabled:
+					modifiedToken !== undefined
+						? (modifiedToken as SaveBitfinityToken).enabled
+						: (states[token.symbol] ?? false),
+				version: undefined,
+				standard: 'ethereum',
+				category: 'default'
 			};
 		}
 		return token;

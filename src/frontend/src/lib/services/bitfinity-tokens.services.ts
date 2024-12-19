@@ -1,4 +1,5 @@
 import { BITFINITY_TOKENS } from '$env/tokens.bitfinity.env';
+import { bitfinityTokensStore } from '$lib/derived/tokens.derived';
 import { ProgressStepsAddToken } from '$lib/enums/progress-steps';
 import { i18n } from '$lib/stores/i18n.store';
 import { toastsError } from '$lib/stores/toasts.store';
@@ -16,9 +17,6 @@ export interface SaveBitfinityTokensParams {
 	onError: () => void;
 }
 
-// Create a temporary array to hold original tokens
-const originalTokens = [...BITFINITY_TOKENS];
-
 // Local storage key for persisting token states
 const STORAGE_KEY = 'bitfinity-token-states';
 
@@ -27,11 +25,11 @@ const loadPersistedStates = () => {
 	const savedStates = localStorage.getItem(STORAGE_KEY);
 	if (savedStates) {
 		const states = JSON.parse(savedStates);
-		BITFINITY_TOKENS.forEach((token) => {
-			if (states[token.symbol] !== undefined) {
-				token.enabled = states[token.symbol];
-			}
-		});
+		const updatedTokens = BITFINITY_TOKENS.map((token) => ({
+			...token,
+			enabled: states[token.symbol] ?? false
+		}));
+		bitfinityTokensStore.set(updatedTokens);
 	}
 };
 
@@ -49,31 +47,39 @@ export const saveBitfinityTokens = async ({
 		progress(ProgressStepsAddToken.INITIALIZATION);
 		progress(ProgressStepsAddToken.SAVE);
 
-		// Clear and update BITFINITY_TOKENS to force reactivity
-		BITFINITY_TOKENS.length = 0;
-		await new Promise((resolve) => setTimeout(resolve, 0));
+		// Get existing states
+		const savedStates = localStorage.getItem(STORAGE_KEY);
+		const existingStates = savedStates ? JSON.parse(savedStates) : {};
 
-		// Update tokens with new enabled states
-		const newTokens = originalTokens.map((token) => {
-			const updatedToken = updatedTokens.find((t) => t.symbol === token.symbol);
-			return updatedToken ? { ...token, enabled: updatedToken.enabled } : token;
-		});
+		// Update only the modified tokens while preserving others
+		const newStates = {
+			...existingStates,
+			...updatedTokens.reduce(
+				(acc, token) => ({
+					...acc,
+					[token.symbol]: token.enabled
+				}),
+				{}
+			)
+		};
 
-		BITFINITY_TOKENS.push(...newTokens);
+		// Save updated states
+		localStorage.setItem(STORAGE_KEY, JSON.stringify(newStates));
 
-		// Persist token states
-		const states = newTokens.reduce(
-			(acc, token) => ({
-				...acc,
-				[token.symbol]: token.enabled
-			}),
-			{}
-		);
-		localStorage.setItem(STORAGE_KEY, JSON.stringify(states));
+		// Update store with new states
+		const currentTokens = get(bitfinityTokensStore);
+		const updatedBitfinityTokens = currentTokens.map((token) => ({
+			...token,
+			enabled: newStates[token.symbol] ?? false
+		}));
+		bitfinityTokensStore.set(updatedBitfinityTokens);
 
 		await new Promise((resolve) => setTimeout(resolve, 500));
+
 		progress(ProgressStepsAddToken.UPDATE_UI);
+
 		await new Promise((resolve) => setTimeout(resolve, 500));
+
 		progress(ProgressStepsAddToken.DONE);
 
 		modalNext();

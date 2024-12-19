@@ -16,17 +16,32 @@ import {
 	filterEnabledTokens,
 	sumMainnetTokensUsdBalancesPerNetwork
 } from '$lib/utils/tokens.utils';
-import { derived, type Readable } from 'svelte/store';
+import { derived, writable, type Readable } from 'svelte/store';
+
+// Create a writable store for Bitfinity tokens
+export const bitfinityTokensStore = writable(BITFINITY_TOKENS);
 
 export const tokens: Readable<Token[]> = derived(
-	[erc20Tokens, sortedIcrcTokens, enabledEthereumTokens, enabledBitcoinTokens],
-	([$erc20Tokens, $icrcTokens, $enabledEthereumTokens, $enabledBitcoinTokens]) => [
+	[
+		erc20Tokens,
+		sortedIcrcTokens,
+		enabledEthereumTokens,
+		enabledBitcoinTokens,
+		bitfinityTokensStore
+	],
+	([
+		$erc20Tokens,
+		$icrcTokens,
+		$enabledEthereumTokens,
+		$enabledBitcoinTokens,
+		$bitfinityTokens
+	]) => [
 		ICP_TOKEN,
 		...$enabledBitcoinTokens,
 		...$enabledEthereumTokens,
 		...$erc20Tokens,
 		...$icrcTokens,
-		...BITFINITY_TOKENS
+		...$bitfinityTokens
 	]
 );
 
