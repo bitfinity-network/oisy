@@ -3,13 +3,15 @@ import bitfinityTokens from '$env/tokens.bitfinity.json';
 import type { RequiredTokenWithLinkedData } from '$lib/types/token';
 import type { TokenToggleable } from '$lib/types/token-toggleable';
 import { parseTokenId } from '$lib/validation/token.validation';
-
 export interface BitfinityTokenConfig {
 	symbol: string;
 	oSymbol: string;
 	decimals: number;
 	name: string;
 	oName: string;
+	address: string;
+	exchange: string;
+	standard: 'icp' | 'bitcoin' | 'ethereum' | 'erc20' | 'icrc';
 }
 
 export interface BitfinityTokensConfig {
@@ -17,21 +19,27 @@ export interface BitfinityTokensConfig {
 }
 
 export type BitfinityToken = RequiredTokenWithLinkedData &
-	TokenToggleable<RequiredTokenWithLinkedData>;
+	TokenToggleable<RequiredTokenWithLinkedData> & {
+		address: string;
+		exchange: string;
+		standard: string;
+	};
 
 // Create tokens for Bitfinity variants
 export const createBitfinityToken = (config: BitfinityTokenConfig): BitfinityToken => ({
 	id: parseTokenId(config.oSymbol),
 	network: BITFINITY_NETWORK,
-	standard: 'ethereum',
-	category: 'default',
+	standard: 'erc20',
+	exchange: 'erc20',
+	category: 'custom',
 	name: config.oName,
 	symbol: config.oSymbol,
 	decimals: config.decimals,
+	address: config.address,
 	icon: BITFINITY_NETWORK.icon!,
 	twinTokenSymbol: config.symbol,
 	enabled: false,
-	version: undefined
+	version: 1n
 });
 
 // Create all Bitfinity tokens
