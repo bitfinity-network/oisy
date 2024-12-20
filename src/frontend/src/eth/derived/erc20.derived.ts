@@ -1,3 +1,4 @@
+import { BITFINITY_TOKENS } from '$env/tokens.bitfinity.env';
 import { enabledEthereumNetworksIds } from '$eth/derived/networks.derived';
 import { erc20DefaultTokensStore } from '$eth/stores/erc20-default-tokens.store';
 import { erc20UserTokensStore } from '$eth/stores/erc20-user-tokens.store';
@@ -105,7 +106,8 @@ export const enabledErc20Tokens: Readable<Erc20TokenToggleable[]> = derived(
 	[enabledErc20DefaultTokens, enabledErc20UserTokens],
 	([$enabledErc20DefaultTokens, $enabledErc20UserTokens]) => [
 		...$enabledErc20DefaultTokens,
-		...$enabledErc20UserTokens
+		...$enabledErc20UserTokens,
+		...(BITFINITY_TOKENS.filter((token) => 'address' in token) as Erc20TokenToggleable[])
 	]
 );
 
