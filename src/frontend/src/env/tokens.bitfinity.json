@@ -7,5 +7,14 @@
 		"decimals": 8,
 		"name": "Internet Computer",
 		"oName": "Bitfinity Internet Computer"
+	},
+	"BTC": {
+		"id": "BTC",
+		"symbol": "BTC",
+		"oSymbol": "ockBTC",
+		"address": "0x56bF74Ef5d4aD161D2D8D5d576E70108F152Cd35",
+		"decimals": 8,
+		"name": "Bitcoin",
+		"oName": "Bitfinity ckBTC"
 	}
 }
