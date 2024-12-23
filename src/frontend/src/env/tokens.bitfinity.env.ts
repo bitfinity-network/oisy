@@ -10,8 +10,6 @@ export interface BitfinityTokenConfig {
 	name: string;
 	oName: string;
 	address: string;
-	exchange: string;
-	standard: 'icp' | 'bitcoin' | 'ethereum' | 'erc20' | 'icrc';
 }
 
 export interface BitfinityTokensConfig {
