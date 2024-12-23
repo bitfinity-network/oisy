@@ -1,11 +1,12 @@
-import { BITFINITY_NETWORK } from '$env/networks.env';
+import { BITFINITY_NETWORK, ETHEREUM_NETWORK_SYMBOL } from '$env/networks.env';
 import bitfinityTokens from '$env/tokens.bitfinity.json';
-import { BTC_MAINNET_TOKEN } from '$env/tokens/tokens.btc.env';
-import { ETHEREUM_TOKEN } from '$env/tokens/tokens.eth.env';
-import { ICP_TOKEN } from '$env/tokens/tokens.icp.env';
+import { BTC_MAINNET_SYMBOL } from '$env/tokens/tokens.btc.env';
+import { ICP_SYMBOL } from '$env/tokens/tokens.icp.env';
 import type { RequiredTokenWithLinkedData } from '$lib/types/token';
 import type { TokenToggleable } from '$lib/types/token-toggleable';
 import { parseTokenId } from '$lib/validation/token.validation';
+import { USDC_SYMBOL } from './tokens-erc20/tokens.usdc.env';
+import { USDT_SYMBOL } from './tokens-erc20/tokens.usdt.env';
 
 export interface BitfinityTokenConfig {
 	symbol: string;
@@ -23,7 +24,13 @@ export type BitfinityToken = RequiredTokenWithLinkedData &
 	TokenToggleable<RequiredTokenWithLinkedData>;
 
 // List of native tokens that are enabled by default
-const DEFAULT_ENABLED_TOKENS = [BTC_MAINNET_TOKEN.symbol, ETHEREUM_TOKEN.symbol, ICP_TOKEN.symbol];
+const DEFAULT_ENABLED_TOKENS = [
+	BTC_MAINNET_SYMBOL,
+	ETHEREUM_NETWORK_SYMBOL,
+	ICP_SYMBOL,
+	USDT_SYMBOL,
+	USDC_SYMBOL
+];
 
 // Create tokens for Bitfinity variants
 export const createBitfinityToken = (config: BitfinityTokenConfig): BitfinityToken => ({
