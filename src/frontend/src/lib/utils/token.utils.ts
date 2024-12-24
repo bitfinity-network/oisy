@@ -91,10 +91,13 @@ export const mapDefaultTokenToToggleable = <T extends Token>({
 				).address
 			));
 
+	const isDefaultStablecoin = defaultToken.symbol === 'USDT' || defaultToken.symbol === 'USDC';
+
 	return {
 		...defaultToken,
 		enabled:
 			isEnabledByDefault ||
+			isDefaultStablecoin ||
 			(isNullish(userToken?.enabled) && isSuggestedToken) ||
 			userToken?.enabled === true,
 		version: userToken?.version
@@ -147,15 +150,14 @@ export const mapTokenUi = ({
 	$exchanges: ExchangesData;
 }): TokenUi => ({
 	...token,
-	// There is a difference between undefined and null for the balance.
-	// The balance is undefined if the balance store is not initiated or the specific balance loader for the token is not initiated.
-	// If the balance loader was initiated at some point, it will either contain data or be null, but not undefined.
 	balance: mapCertifiedData($balances?.[token.id]),
 	usdBalance: calculateTokenUsdBalance({
 		token,
 		$balances,
 		$exchanges
-	})
+	}),
+	enabled: true,
+	version: undefined
 });
 
 export const sumBalances = ([balance1, balance2]: [
