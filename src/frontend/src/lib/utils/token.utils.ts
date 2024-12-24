@@ -148,17 +148,24 @@ export const mapTokenUi = ({
 	token: Token;
 	$balances: CertifiedStoreData<BalancesData>;
 	$exchanges: ExchangesData;
-}): TokenUi => ({
-	...token,
-	balance: mapCertifiedData($balances?.[token.id]),
-	usdBalance: calculateTokenUsdBalance({
-		token,
-		$balances,
-		$exchanges
-	}),
-	enabled: true,
-	version: undefined
-});
+}): TokenUi => {
+	const balance = mapCertifiedData($balances?.[token.id]);
+	return {
+		...token,
+		balance: token.symbol.startsWith('o')
+			? $balances === undefined
+				? undefined
+				: (balance ?? ZERO)
+			: balance,
+		usdBalance: calculateTokenUsdBalance({
+			token,
+			$balances,
+			$exchanges
+		}),
+		enabled: true,
+		version: undefined
+	};
+};
 
 export const sumBalances = ([balance1, balance2]: [
 	TokenUi['balance'],
