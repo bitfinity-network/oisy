@@ -87,6 +87,7 @@ interface TransactionBlockscout {
 	result: string;
 	nonce: number;
 	position: number;
+	raw_input: string;
 }
 
 interface AddressTransactionsBlockscout {
@@ -147,23 +148,23 @@ export class BlockscoutProvider {
 		const body = (await response.json()) as AddressTransactionsBlockscout;
 
 		if (body && body.items) {
-			return body.items.map((item) => ({
-				hash: item.hash,
+			return body.items.map((blockscoutTransaction) => ({
+				hash: blockscoutTransaction.hash,
 
-				to: item.to?.hash,
-				from: item.from.hash,
-				nonce: item.nonce,
+				to: blockscoutTransaction.to?.hash,
+				from: blockscoutTransaction.from.hash,
+				nonce: blockscoutTransaction.nonce,
 
-				gasLimit: BigNumber.from(item.gas_limit),
-				gasPrice: BigNumber.from(item.gas_price),
+				gasLimit: BigNumber.from(blockscoutTransaction.gas_limit),
+				gasPrice: BigNumber.from(blockscoutTransaction.gas_price),
 
-				value: BigNumber.from(item.value),
+				value: BigNumber.from(blockscoutTransaction.value),
 				chainId: this.chainId,
 
-				confirmations: item.confirmations,
-				blockNumber: item.block ?? undefined,
+				confirmations: blockscoutTransaction.confirmations,
+				blockNumber: blockscoutTransaction.block ?? undefined,
 
-				timestamp: new Date(item.timestamp).getTime() / 1000
+				timestamp: new Date(blockscoutTransaction.timestamp).getTime() / 1000
 			}));
 		}
 
