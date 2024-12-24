@@ -116,7 +116,7 @@
 		],
 		$selectedNetwork,
 		$pseudoNetworkChainFusion
-	]).filter((token, index, self) => index === self.findIndex((t) => t.symbol === token.symbol));
+	]);
 
 	let allTokensSorted: Token[] = [];
 	$: allTokensSorted = nonNullish(exchangesStaticData)
