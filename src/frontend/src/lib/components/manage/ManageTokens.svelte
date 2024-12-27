@@ -46,10 +46,10 @@
 
 	import { parseTokenId } from '$lib/validation/token.validation';
 	import BitfinityManageTokenToggle from '$lib/components/tokens/BitfinityManageTokenToggle.svelte';
-	import { BITFINITY_TOKENS } from '$env/omnity.bitfinity.env';
+	import { BITFINITY_TOKENS } from '$env/omnity-tokens.erc20.env';
 	import { isRequiredTokenWithLinkedData } from '$lib/utils/token.utils';
 	import type { SaveBitfinityToken } from '$lib/services/bitfinity-tokens.services';
-	import type { BitfinityToken } from '$env/omnity.bitfinity.env';
+	import type { BitfinityToken } from '$env/omnity-tokens.erc20.env';
 
 	const dispatch = createEventDispatcher();
 

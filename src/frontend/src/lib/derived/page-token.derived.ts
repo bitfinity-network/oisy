@@ -1,5 +1,5 @@
 import { enabledBitcoinTokens } from '$btc/derived/tokens.derived';
-import { BITFINITY_TOKENS } from '$env/omnity.bitfinity.env';
+import { BITFINITY_TOKENS } from '$env/omnity-tokens.erc20.env';
 import { BITFINITY_TOKEN, ETHEREUM_TOKEN, SEPOLIA_TOKEN } from '$env/tokens/tokens.eth.env';
 import { ICP_TOKEN } from '$env/tokens/tokens.icp.env';
 import { enabledErc20Tokens } from '$eth/derived/erc20.derived';
