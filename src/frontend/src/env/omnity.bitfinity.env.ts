@@ -1,5 +1,5 @@
 import { BITFINITY_NETWORK, ETHEREUM_NETWORK_SYMBOL } from '$env/networks.env';
-import bitfinityTokens from '$env/tokens.bitfinity.json';
+import bitfinityTokens from '$env/omnity.bitfinity.json';
 import { BTC_MAINNET_SYMBOL } from '$env/tokens/tokens.btc.env';
 import { ICP_SYMBOL } from '$env/tokens/tokens.icp.env';
 import type { RequiredTokenWithLinkedData } from '$lib/types/token';

@@ -1,4 +1,4 @@
-import { BITFINITY_TOKENS } from '$env/tokens.bitfinity.env';
+import { BITFINITY_TOKENS } from '$env/omnity.bitfinity.env';
 import { bitfinityTokensStore } from '$lib/derived/tokens.derived';
 import { ProgressStepsAddToken } from '$lib/enums/progress-steps';
 import { i18n } from '$lib/stores/i18n.store';

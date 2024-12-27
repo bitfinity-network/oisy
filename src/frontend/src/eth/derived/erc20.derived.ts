@@ -1,4 +1,4 @@
-import { BITFINITY_TOKENS } from '$env/tokens.bitfinity.env';
+import { BITFINITY_TOKENS } from '$env/omnity.bitfinity.env';
 import { enabledEthereumNetworksIds } from '$eth/derived/networks.derived';
 import { erc20DefaultTokensStore } from '$eth/stores/erc20-default-tokens.store';
 import { erc20UserTokensStore } from '$eth/stores/erc20-user-tokens.store';
