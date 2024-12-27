@@ -1,18 +1,6 @@
 [
 	{
-		"address": "0x51cCdE9Ca75d95BB55eCe1775fCBFF91324B18A6",
-		"exchange": "erc20"
-	},
-	{
-		"address": "0x56bF74Ef5d4aD161D2D8D5d576E70108F152Cd35",
-		"exchange": "erc20"
-	},
-	{
 		"address": "0x48EC6A9Bc2EEEe2E13ff7e4A5E6634F7Fe46dabc",
-		"exchange": "erc20"
-	},
-	{
-		"address": "0xb37B60166AC1677a50D0ef158541c441bFf3D09A",
 		"exchange": "erc20"
 	},
 	{
@@ -33,10 +21,6 @@
 	},
 	{
 		"address": "0x649b08Ad696D9E4AEEC913DE6154BC8b78c70a0A",
-		"exchange": "erc20"
-	},
-	{
-		"address": "0x491016BF872D35a798c601d53442775c621BF91A",
 		"exchange": "erc20"
 	},
 	{
@@ -88,19 +72,11 @@
 		"exchange": "erc20"
 	},
 	{
-		"address": "0xe613EBD1eAe99D824Da8A6C33eC833A62bC04B5a",
-		"exchange": "erc20"
-	},
-	{
 		"address": "0xFD4dE66ECA49799bDdE66eB33654E2198Ab7bba4",
 		"exchange": "erc20"
 	},
 	{
 		"address": "0x828E13498b39D17976063541ECc4aF5D97aD863C",
-		"exchange": "erc20"
-	},
-	{
-		"address": "0x2a78A5f819393105a54F21AdeB4a8b68C5030b02",
 		"exchange": "erc20"
 	},
 	{
