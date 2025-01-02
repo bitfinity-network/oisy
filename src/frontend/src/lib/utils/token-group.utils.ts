@@ -64,15 +64,9 @@ export const groupTokensByTwin = (tokens: TokenUi[]): TokenUiOrGroupUi[] => {
 			return token;
 		}
 
-		if (groupedTokenTwins.has(token.symbol)) {
-			return token;
-		}
-
 		// Check if this is a Bitfinity token and its base token exists
 		if (token.symbol.startsWith('o') && isRequiredTokenWithLinkedData(token)) {
-			const baseToken = tokens.find(
-				(t) => t.symbol === token.twinTokenSymbol && t.decimals === token.decimals
-			);
+			const baseToken = tokens.find((t) => t.symbol === token.twinTokenSymbol);
 			if (baseToken && !groupedTokenTwins.has(baseToken.symbol)) {
 				groupedTokenTwins.add(token.symbol);
 				groupedTokenTwins.add(baseToken.symbol);
@@ -81,6 +75,10 @@ export const groupTokensByTwin = (tokens: TokenUi[]): TokenUiOrGroupUi[] => {
 					tokens: [{ ...token, enabled: true }]
 				});
 			}
+			return token;
+		}
+
+		if (groupedTokenTwins.has(token.symbol)) {
 			return token;
 		}
 

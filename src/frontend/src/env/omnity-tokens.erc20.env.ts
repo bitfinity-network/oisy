@@ -37,6 +37,9 @@ const DEFAULT_ENABLED_TOKENS = [
 	USDC_SYMBOL
 ];
 
+// List of bitfinity tokens that are enabled by default
+const DEFAULT_ENABLED_BITFINITY_TOKENS = ['oBTC', 'oETH', 'oUSDT', 'oUSDC'];
+
 // Create tokens for Bitfinity variants
 export const createBitfinityToken = (config: BitfinityTokenConfig): BitfinityToken => ({
 	id: parseTokenId(config.oSymbol),
@@ -50,7 +53,9 @@ export const createBitfinityToken = (config: BitfinityTokenConfig): BitfinityTok
 	address: config.address,
 	icon: BITFINITY_NETWORK.icon!,
 	twinTokenSymbol: config.symbol,
-	enabled: DEFAULT_ENABLED_TOKENS.includes(config.symbol),
+	enabled:
+		DEFAULT_ENABLED_BITFINITY_TOKENS.includes(config.oSymbol) ||
+		DEFAULT_ENABLED_TOKENS.includes(config.symbol),
 	version: undefined
 });
 

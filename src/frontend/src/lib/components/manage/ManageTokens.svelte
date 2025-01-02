@@ -50,6 +50,7 @@
 	import { isRequiredTokenWithLinkedData } from '$lib/utils/token.utils';
 	import type { SaveBitfinityToken } from '$lib/services/bitfinity-tokens.services';
 	import type { BitfinityToken } from '$env/omnity-tokens.erc20.env';
+	import { bitfinityTokensStore } from '$lib/derived/tokens.derived';
 
 	const dispatch = createEventDispatcher();
 
@@ -94,9 +95,6 @@
 	let manageEthereumTokens = false;
 	$: manageEthereumTokens = $pseudoNetworkChainFusion || $networkEthereum;
 
-	// Default enabled Bitfinity tokens
-	const DEFAULT_ENABLED_TOKENS = ['oICP', 'oBTC'];
-
 	let allTokens: (TokenToggleable<Token> | BitfinityToken)[] = [];
 	$: allTokens = filterTokensForSelectedNetwork([
 		[
@@ -106,15 +104,7 @@
 			},
 			...$enabledBitcoinTokens.map((token) => ({ ...token, enabled: true })),
 			...$enabledEthereumTokens.map((token) => ({ ...token, enabled: true })),
-			...BITFINITY_TOKENS.map((token) => {
-				const savedStates = localStorage.getItem('bitfinity-token-states');
-				const states = savedStates ? JSON.parse(savedStates) : {};
-				return {
-					...token,
-					enabled: states[token.symbol] ?? DEFAULT_ENABLED_TOKENS.includes(token.symbol),
-					version: undefined
-				};
-			}),
+			...$bitfinityTokensStore,
 			...(manageEthereumTokens ? allErc20Tokens : []),
 			...(manageIcTokens ? allIcrcTokens : [])
 		],
@@ -165,12 +155,10 @@
 				enabled: (modifiedToken as IcrcCustomToken)?.enabled ?? token.enabled
 			};
 		} else if (isBitfinityToken) {
+			const storedToken = $bitfinityTokensStore.find((t) => t.symbol === token.symbol);
 			return {
 				...token,
-				enabled:
-					modifiedToken !== undefined
-						? (modifiedToken as SaveBitfinityToken).enabled
-						: token.enabled,
+				enabled: storedToken?.enabled ?? false,
 				version: undefined,
 				standard: 'ethereum',
 				category: 'default'

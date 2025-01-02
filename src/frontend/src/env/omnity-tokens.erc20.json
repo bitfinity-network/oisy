@@ -11,11 +11,11 @@
 	"BTC": {
 		"id": "BTC",
 		"symbol": "BTC",
-		"oSymbol": "ockBTC",
+		"oSymbol": "oBTC",
 		"address": "0x56bF74Ef5d4aD161D2D8D5d576E70108F152Cd35",
 		"decimals": 8,
 		"name": "Bitcoin",
-		"oName": "Bitfinity ckBTC"
+		"oName": "Bitfinity Bitcoin"
 	},
 	"OGY": {
 		"symbol": "OGY",
@@ -118,21 +118,21 @@
 	},
 	"ETH": {
 		"address": "0x06c279a962aBDEF62eF8cA51e58E58072E03c4Ab",
-		"symbol": "ckETH",
-		"id": "ckETH",
-		"oSymbol": "ockETH",
+		"symbol": "ETH",
+		"id": "ETH",
+		"oSymbol": "oETH",
 		"decimals": 8,
-		"name": "ckETH",
-		"oName": "Bitfinity ckETH"
+		"name": "ETH",
+		"oName": "Bitfinity ETH"
 	},
 	"USDT": {
 		"address": "0xe613EBD1eAe99D824Da8A6C33eC833A62bC04B5a",
-		"symbol": "ckUSDT",
-		"id": "ckUSDT",
-		"oSymbol": "ockUSDT",
+		"symbol": "USDT",
+		"id": "USDT",
+		"oSymbol": "oUSDT",
 		"decimals": 8,
-		"name": "ckUSDT",
-		"oName": "Bitfinity ckUSDT"
+		"name": "USDT",
+		"oName": "Bitfinity USDT"
 	},
 	"neuron ICP": {
 		"address": "0x2a78A5f819393105a54F21AdeB4a8b68C5030b02",
