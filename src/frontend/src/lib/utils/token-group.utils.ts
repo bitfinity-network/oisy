@@ -68,6 +68,22 @@ export const groupTokensByTwin = (tokens: TokenUi[]): TokenUiOrGroupUi[] => {
 			return token;
 		}
 
+		// Check if this is a Bitfinity token and its base token exists
+		if (token.symbol.startsWith('o') && isRequiredTokenWithLinkedData(token)) {
+			const baseToken = tokens.find(
+				(t) => t.symbol === token.twinTokenSymbol && t.decimals === token.decimals
+			);
+			if (baseToken && !groupedTokenTwins.has(baseToken.symbol)) {
+				groupedTokenTwins.add(token.symbol);
+				groupedTokenTwins.add(baseToken.symbol);
+				return createTokenGroup({
+					nativeToken: baseToken,
+					tokens: [{ ...token, enabled: true }]
+				});
+			}
+			return token;
+		}
+
 		const relatedTokens: TokenUi[] = [];
 
 		// Find ckToken twin
@@ -101,21 +117,6 @@ export const groupTokensByTwin = (tokens: TokenUi[]): TokenUiOrGroupUi[] => {
 				nativeToken: token,
 				tokens: relatedTokens
 			});
-		}
-
-		// Check if this is a Bitfinity token and its base token exists
-		if (token.symbol.startsWith('o') && isRequiredTokenWithLinkedData(token)) {
-			const baseToken = tokens.find(
-				(t) => t.symbol === token.twinTokenSymbol && t.decimals === token.decimals
-			);
-			if (baseToken && !groupedTokenTwins.has(baseToken.symbol)) {
-				groupedTokenTwins.add(token.symbol);
-				groupedTokenTwins.add(baseToken.symbol);
-				return createTokenGroup({
-					nativeToken: baseToken,
-					tokens: [{ ...token, enabled: true }]
-				});
-			}
 		}
 
 		return token;
