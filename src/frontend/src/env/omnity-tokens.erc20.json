@@ -121,16 +121,16 @@
 		"symbol": "ETH",
 		"id": "ETH",
 		"oSymbol": "oETH",
-		"decimals": 8,
-		"name": "ETH",
-		"oName": "Bitfinity ETH"
+		"decimals": 18,
+		"name": "Ethereum",
+		"oName": "Bitfinity Ethereum"
 	},
 	"USDT": {
 		"address": "0xe613EBD1eAe99D824Da8A6C33eC833A62bC04B5a",
 		"symbol": "USDT",
 		"id": "USDT",
 		"oSymbol": "oUSDT",
-		"decimals": 8,
+		"decimals": 18,
 		"name": "USDT",
 		"oName": "Bitfinity USDT"
 	},
