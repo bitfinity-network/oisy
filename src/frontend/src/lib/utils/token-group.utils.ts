@@ -57,24 +57,41 @@ const createTokenGroup = ({
  *          and tokens without twins remain in their original place.
  *          The group replaces the first token of the group in the list.
  */
+
 export const groupTokensByTwin = (tokens: TokenUi[]): TokenUiOrGroupUi[] => {
 	const groupedTokenTwins = new Set<string>();
 	const mappedTokensWithGroups: TokenUiOrGroupUi[] = tokens.map((token) => {
+		const relatedTokens: TokenUi[] = [];
+
 		if (!isRequiredTokenWithLinkedData(token)) {
 			return token;
 		}
 
 		// Check if this is a Bitfinity token and its base token exists
+		// TODO: This is too complex, we should refactor it.
 		if (token.symbol.startsWith('o') && isRequiredTokenWithLinkedData(token)) {
 			const baseToken = tokens.find((t) => t.symbol === token.twinTokenSymbol);
+
 			if (baseToken && !groupedTokenTwins.has(baseToken.symbol)) {
 				groupedTokenTwins.add(token.symbol);
 				groupedTokenTwins.add(baseToken.symbol);
+				relatedTokens.push({ ...token, enabled: true });
+				const ckTwinToken = tokens.find(
+					(t) =>
+						t.symbol === baseToken.twinTokenSymbol &&
+						isIcCkToken(t) &&
+						t.decimals === baseToken.decimals
+				) as IcCkToken | undefined;
+				if (ckTwinToken) {
+					relatedTokens.push({ ...ckTwinToken, enabled: true });
+				}
+
 				return createTokenGroup({
 					nativeToken: baseToken,
-					tokens: [{ ...token, enabled: true }]
+					tokens: relatedTokens
 				});
 			}
+
 			return token;
 		}
 
@@ -82,9 +99,6 @@ export const groupTokensByTwin = (tokens: TokenUi[]): TokenUiOrGroupUi[] => {
 			return token;
 		}
 
-		const relatedTokens: TokenUi[] = [];
-
-		// Find ckToken twin
 		const ckTwinToken = tokens.find(
 			(t) => t.symbol === token.twinTokenSymbol && isIcCkToken(t) && t.decimals === token.decimals
 		) as IcCkToken | undefined;
@@ -103,6 +117,10 @@ export const groupTokensByTwin = (tokens: TokenUi[]): TokenUiOrGroupUi[] => {
 					t.twinTokenSymbol === token.symbol &&
 					t.decimals === token.decimals)
 		);
+
+		/* if (token.symbol === 'USDT') {
+			console.log('bitfinityTwinToken 4th', bitfinityTwinToken, tokens);
+		} */
 
 		if (bitfinityTwinToken && !groupedTokenTwins.has(bitfinityTwinToken.symbol)) {
 			relatedTokens.push({ ...bitfinityTwinToken, enabled: true });
