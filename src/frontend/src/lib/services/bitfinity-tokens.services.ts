@@ -17,24 +17,8 @@ export interface SaveBitfinityTokensParams {
 	onError: () => void;
 }
 
-// Local storage key for persisting token states
-const STORAGE_KEY = 'bitfinity-token-states';
-
-// Load persisted states on initialization
-const loadPersistedStates = () => {
-	const savedStates = localStorage.getItem(STORAGE_KEY);
-	if (savedStates) {
-		const states = JSON.parse(savedStates);
-		const updatedTokens = BITFINITY_TOKENS.map((token) => ({
-			...token,
-			enabled: states[token.symbol] ?? false
-		}));
-		bitfinityTokensStore.set(updatedTokens);
-	}
-};
-
-// Initialize with persisted states
-loadPersistedStates();
+// Initialize store with default tokens
+bitfinityTokensStore.set(BITFINITY_TOKENS);
 
 export const saveBitfinityTokens = async ({
 	progress,
@@ -44,52 +28,30 @@ export const saveBitfinityTokens = async ({
 	onError
 }: SaveBitfinityTokensParams): Promise<void> => {
 	try {
-		progress(ProgressStepsAddToken.INITIALIZATION);
-		progress(ProgressStepsAddToken.SAVE);
+		await progress(ProgressStepsAddToken.INITIALIZATION);
+		await progress(ProgressStepsAddToken.SAVE);
 
-		// Get existing states
-		const savedStates = localStorage.getItem(STORAGE_KEY);
-		const existingStates = savedStates ? JSON.parse(savedStates) : {};
-
-		// Update only the modified tokens while preserving others
-		const newStates = {
-			...existingStates,
-			...updatedTokens.reduce(
-				(acc, token) => ({
-					...acc,
-					[token.symbol]: token.enabled
-				}),
-				{}
-			)
-		};
-
-		// Save updated states
-		localStorage.setItem(STORAGE_KEY, JSON.stringify(newStates));
-
-		// Update store with new states
+		// Get current tokens from store
 		const currentTokens = get(bitfinityTokensStore);
-		const updatedBitfinityTokens = currentTokens.map((token) => ({
-			...token,
-			enabled: newStates[token.symbol] ?? false
-		}));
-		bitfinityTokensStore.set(updatedBitfinityTokens);
 
-		await new Promise((resolve) => setTimeout(resolve, 500));
+		// Update tokens with new enabled states
+		const newTokens = currentTokens.map((token) => {
+			const updatedToken = updatedTokens.find((t) => t.symbol === token.symbol);
+			return updatedToken ? { ...token, enabled: updatedToken.enabled } : token;
+		});
 
-		progress(ProgressStepsAddToken.UPDATE_UI);
-
-		await new Promise((resolve) => setTimeout(resolve, 500));
+		// Update store
+		bitfinityTokensStore.set(newTokens);
 
 		progress(ProgressStepsAddToken.DONE);
 
-		modalNext();
 		onSuccess();
 	} catch (err: unknown) {
 		toastsError({
 			msg: { text: get(i18n).tokens.error.unexpected },
 			err
 		});
+
 		onError();
-		throw err;
 	}
 };

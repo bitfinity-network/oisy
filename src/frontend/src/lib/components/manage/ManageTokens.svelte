@@ -94,6 +94,9 @@
 	let manageEthereumTokens = false;
 	$: manageEthereumTokens = $pseudoNetworkChainFusion || $networkEthereum;
 
+	// Default enabled Bitfinity tokens
+	const DEFAULT_ENABLED_TOKENS = ['oICP', 'oBTC'];
+
 	let allTokens: (TokenToggleable<Token> | BitfinityToken)[] = [];
 	$: allTokens = filterTokensForSelectedNetwork([
 		[
@@ -103,14 +106,15 @@
 			},
 			...$enabledBitcoinTokens.map((token) => ({ ...token, enabled: true })),
 			...$enabledEthereumTokens.map((token) => ({ ...token, enabled: true })),
-			...BITFINITY_TOKENS.map((token) => ({
-				...token,
-				enabled: localStorage.getItem('bitfinity-token-states')
-					? (JSON.parse(localStorage.getItem('bitfinity-token-states') || '{}')[token.symbol] ??
-						false)
-					: false,
-				version: undefined
-			})),
+			...BITFINITY_TOKENS.map((token) => {
+				const savedStates = localStorage.getItem('bitfinity-token-states');
+				const states = savedStates ? JSON.parse(savedStates) : {};
+				return {
+					...token,
+					enabled: states[token.symbol] ?? DEFAULT_ENABLED_TOKENS.includes(token.symbol),
+					version: undefined
+				};
+			}),
 			...(manageEthereumTokens ? allErc20Tokens : []),
 			...(manageIcTokens ? allIcrcTokens : [])
 		],
@@ -142,7 +146,7 @@
 		(icTokenIcrcCustomToken(token) &&
 			(token.alternativeName ?? '').toLowerCase().includes(filterTokens.toLowerCase()));
 
-	let filteredTokens: Token[] = [];
+	let filteredTokens: (Token & { enabled?: boolean })[] = [];
 	$: filteredTokens = isNullishOrEmpty(filterTokens)
 		? allTokensSorted
 		: allTokensSorted.filter((token) => {
@@ -161,14 +165,12 @@
 				enabled: (modifiedToken as IcrcCustomToken)?.enabled ?? token.enabled
 			};
 		} else if (isBitfinityToken) {
-			const savedStates = localStorage.getItem('bitfinity-token-states');
-			const states = savedStates ? JSON.parse(savedStates) : {};
 			return {
 				...token,
 				enabled:
 					modifiedToken !== undefined
 						? (modifiedToken as SaveBitfinityToken).enabled
-						: (states[token.symbol] ?? false),
+						: token.enabled,
 				version: undefined,
 				standard: 'ethereum',
 				category: 'default'
