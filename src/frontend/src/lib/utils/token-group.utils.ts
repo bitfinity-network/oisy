@@ -80,10 +80,12 @@ export const groupTokensByTwin = (tokens: TokenUi[]): TokenUiOrGroupUi[] => {
 					(t) =>
 						t.symbol === baseToken.twinTokenSymbol &&
 						isIcCkToken(t) &&
-						t.decimals === baseToken.decimals
+						t.decimals === baseToken.decimals &&
+						!groupedTokenTwins.has(t.symbol)
 				) as IcCkToken | undefined;
 				if (ckTwinToken) {
 					relatedTokens.push({ ...ckTwinToken, enabled: true });
+					groupedTokenTwins.add(ckTwinToken.symbol);
 				}
 
 				return createTokenGroup({
@@ -100,10 +102,14 @@ export const groupTokensByTwin = (tokens: TokenUi[]): TokenUiOrGroupUi[] => {
 		}
 
 		const ckTwinToken = tokens.find(
-			(t) => t.symbol === token.twinTokenSymbol && isIcCkToken(t) && t.decimals === token.decimals
+			(t) =>
+				t.symbol === token.twinTokenSymbol &&
+				isIcCkToken(t) &&
+				t.decimals === token.decimals &&
+				!groupedTokenTwins.has(t.symbol)
 		) as IcCkToken | undefined;
 
-		if (ckTwinToken && !groupedTokenTwins.has(ckTwinToken.symbol)) {
+		if (ckTwinToken) {
 			relatedTokens.push({ ...ckTwinToken, enabled: true });
 			groupedTokenTwins.add(ckTwinToken.symbol);
 		}
@@ -111,18 +117,15 @@ export const groupTokensByTwin = (tokens: TokenUi[]): TokenUiOrGroupUi[] => {
 		// Find Bitfinity token twin (starts with 'o')
 		const bitfinityTwinToken = tokens.find(
 			(t) =>
-				(t.symbol === `o${token.symbol}` && t.decimals === token.decimals) ||
-				(t.symbol.startsWith('o') &&
-					isRequiredTokenWithLinkedData(t) &&
-					t.twinTokenSymbol === token.symbol &&
-					t.decimals === token.decimals)
+				((t.symbol === `o${token.symbol}` && t.decimals === token.decimals) ||
+					(t.symbol.startsWith('o') &&
+						isRequiredTokenWithLinkedData(t) &&
+						t.twinTokenSymbol === token.symbol &&
+						t.decimals === token.decimals)) &&
+				!groupedTokenTwins.has(t.symbol)
 		);
 
-		/* if (token.symbol === 'USDT') {
-			console.log('bitfinityTwinToken 4th', bitfinityTwinToken, tokens);
-		} */
-
-		if (bitfinityTwinToken && !groupedTokenTwins.has(bitfinityTwinToken.symbol)) {
+		if (bitfinityTwinToken) {
 			relatedTokens.push({ ...bitfinityTwinToken, enabled: true });
 			groupedTokenTwins.add(bitfinityTwinToken.symbol);
 		}
