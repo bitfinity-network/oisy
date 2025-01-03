@@ -130,7 +130,7 @@
 		"symbol": "USDT",
 		"id": "USDT",
 		"oSymbol": "oUSDT",
-		"decimals": 18,
+		"decimals": 6,
 		"name": "USDT",
 		"oName": "Bitfinity USDT"
 	},

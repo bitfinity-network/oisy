@@ -60,6 +60,7 @@ const createTokenGroup = ({
 
 export const groupTokensByTwin = (tokens: TokenUi[]): TokenUiOrGroupUi[] => {
 	const groupedTokenTwins = new Set<string>();
+
 	const mappedTokensWithGroups: TokenUiOrGroupUi[] = tokens.map((token) => {
 		const relatedTokens: TokenUi[] = [];
 
@@ -70,7 +71,9 @@ export const groupTokensByTwin = (tokens: TokenUi[]): TokenUiOrGroupUi[] => {
 		// Check if this is a Bitfinity token and its base token exists
 		// TODO: This is too complex, we should refactor it.
 		if (token.symbol.startsWith('o') && isRequiredTokenWithLinkedData(token)) {
-			const baseToken = tokens.find((t) => t.symbol === token.twinTokenSymbol);
+			const baseToken = tokens.find(
+				(t) => t.symbol === token.twinTokenSymbol && t.decimals === token.decimals
+			);
 
 			if (baseToken && !groupedTokenTwins.has(baseToken.symbol)) {
 				groupedTokenTwins.add(token.symbol);
@@ -138,6 +141,7 @@ export const groupTokensByTwin = (tokens: TokenUi[]): TokenUiOrGroupUi[] => {
 		return token;
 	});
 
+	console.log('mappedTokensWithGroups', mappedTokensWithGroups);
 	return mappedTokensWithGroups
 		.filter((t) => isTokenUiGroup(t) || !groupedTokenTwins.has(t.symbol))
 		.sort(
