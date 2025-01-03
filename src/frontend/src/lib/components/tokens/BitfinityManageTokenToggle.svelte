@@ -1,14 +1,18 @@
 <script lang="ts">
 	import { Toggle } from '@dfinity/gix-components';
-	import { createEventDispatcher } from 'svelte';
+	import { createEventDispatcher, onMount } from 'svelte';
 	import type { RequiredTokenWithLinkedData } from '$lib/types/token';
 	import type { TokenToggleable } from '$lib/types/token-toggleable';
 	import { i18n } from '$lib/stores/i18n.store';
 
 	export let token: TokenToggleable<RequiredTokenWithLinkedData>;
-	export let checked = false;
+	export let checked = token?.enabled ?? false;
 
 	const dispatch = createEventDispatcher();
+
+	onMount(() => {
+		checked = token?.enabled ?? false;
+	});
 
 	const toggle = () => {
 		checked = !checked;
