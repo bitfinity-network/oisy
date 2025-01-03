@@ -82,9 +82,12 @@ export const ERC20_CONTRACTS_SEPOLIA: Erc20Contract[] = [
 	}
 ];
 
-export const ERC20_CONTRACTS_BITFINITY: Erc20Contract[] = [
-	...bitfinityTokens.map(({ address, exchange }) => ({ address, exchange: exchange as Exchange }))
-];
+export const ERC20_CONTRACTS_BITFINITY: Erc20Contract[] = bitfinityTokens.map(
+	({ address, exchange }) => ({
+		address,
+		exchange: exchange as Exchange
+	})
+);
 
 export const ERC20_CONTRACT_ICP_GOERLI: Erc20Contract = {
 	// ICP

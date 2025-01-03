@@ -40,10 +40,9 @@ const loadDefaultErc20Tokens = async (): Promise<ResultSuccess> => {
 
 		const loadKnownContracts = (): Promise<ContractData>[] =>
 			ERC20_CONTRACTS.map(async ({ network, ...contract }): Promise<ContractData> => {
-				const metadata =
-					network.id === BITFINITY_NETWORK_ID
-						? await jsonRpcErc20Providers(network.id).metadata(contract)
-						: await infuraErc20Providers(network.id).metadata(contract);
+				const metadata = await (network.id === BITFINITY_NETWORK_ID
+					? jsonRpcErc20Providers(network.id).metadata(contract)
+					: infuraErc20Providers(network.id).metadata(contract));
 				return {
 					...contract,
 					network,

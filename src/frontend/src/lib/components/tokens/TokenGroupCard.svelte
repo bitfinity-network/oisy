@@ -37,7 +37,7 @@
 
 	{#if isExpanded}
 		<div class="flex flex-col gap-3 rounded-b-xl bg-white/40 pt-2" transition:slide={SLIDE_PARAMS}>
-			{#each tokenGroup.tokens as token (token.id)}
+			{#each tokenGroup.tokens as token, index (`${token.network.id.description}-${token.id.description}-${token.symbol}-${index}`)}
 				<TokenCardWithUrl {token}>
 					<TokenCardContent logoSize="md" data={token} />
 				</TokenCardWithUrl>
