@@ -1,5 +1,4 @@
 import { enabledBitcoinTokens } from '$btc/derived/tokens.derived';
-import { BITFINITY_TOKENS } from '$env/omnity-tokens.erc20.env';
 import { BTC_MAINNET_TOKEN } from '$env/tokens/tokens.btc.env';
 import { ETHEREUM_TOKEN } from '$env/tokens/tokens.eth.env';
 import { ICP_TOKEN } from '$env/tokens/tokens.icp.env';
@@ -9,6 +8,7 @@ import type { Erc20Token } from '$eth/types/erc20';
 import { icrcChainFusionDefaultTokens, sortedIcrcTokens } from '$icp/derived/icrc.derived';
 import type { IcToken } from '$icp/types/ic-token';
 import { exchanges } from '$lib/derived/exchange.derived';
+import { bitfinityTokensStore as bitfinityStore } from '$lib/services/bitfinity-tokens.services';
 import { balancesStore } from '$lib/stores/balances.store';
 import type { Token, TokenToPin } from '$lib/types/token';
 import type { TokensTotalUsdBalancePerNetwork } from '$lib/types/token-balance';
@@ -16,19 +16,12 @@ import {
 	filterEnabledTokens,
 	sumMainnetTokensUsdBalancesPerNetwork
 } from '$lib/utils/tokens.utils';
-import { derived, writable, type Readable } from 'svelte/store';
+import { derived, type Readable } from 'svelte/store';
 
-// Create a writable store for Bitfinity tokens
-export const bitfinityTokensStore = writable(BITFINITY_TOKENS);
+export { bitfinityTokensStore } from '$lib/services/bitfinity-tokens.services';
 
 export const tokens: Readable<Token[]> = derived(
-	[
-		erc20Tokens,
-		sortedIcrcTokens,
-		enabledEthereumTokens,
-		enabledBitcoinTokens,
-		bitfinityTokensStore
-	],
+	[erc20Tokens, sortedIcrcTokens, enabledEthereumTokens, enabledBitcoinTokens, bitfinityStore],
 	([
 		$erc20Tokens,
 		$icrcTokens,
@@ -41,7 +34,7 @@ export const tokens: Readable<Token[]> = derived(
 		...$enabledEthereumTokens,
 		...$erc20Tokens,
 		...$icrcTokens,
-		...$bitfinityTokens
+		...($bitfinityTokens?.filter((token) => token.enabled) ?? [])
 	]
 );
 
