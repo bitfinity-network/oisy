@@ -22,27 +22,30 @@ const STORAGE_KEY = 'bitfinity-tokens';
 const loadFromStorage = () => {
 	try {
 		const stored = localStorage.getItem(STORAGE_KEY);
+		// Create a map of stored enabled states
+		const storedTokenMap = new Map<string, boolean>();
+		let hasStoredState = false;
+
 		if (stored) {
 			const storedTokens = JSON.parse(stored);
-			const storedTokenMap = new Map(
-				storedTokens.map((t: { symbol: string; enabled: boolean }) => [
-					t.symbol.toLowerCase(),
-					!!t.enabled
-				])
-			);
-
-			return BITFINITY_TOKENS.map((token) => {
-				const storedEnabled = storedTokenMap.get(token.symbol.toLowerCase());
-				return {
-					...token,
-					enabled: typeof storedEnabled === 'boolean' ? storedEnabled : false
-				};
+			storedTokens.forEach((t: { symbol: string; enabled: boolean }) => {
+				storedTokenMap.set(t.symbol.toLowerCase(), !!t.enabled);
+				hasStoredState = true;
 			});
 		}
+
+		// If we have stored state, use it. Otherwise, use the default enabled state from BITFINITY_TOKENS
+		return BITFINITY_TOKENS.map((token) => ({
+			...token,
+			enabled: hasStoredState
+				? (storedTokenMap.get(token.symbol.toLowerCase()) ?? false)
+				: (token.enabled ?? false)
+		}));
 	} catch (err) {
 		console.error('Error loading Bitfinity tokens from storage:', err);
+		// On error, use the default enabled state from BITFINITY_TOKENS
+		return BITFINITY_TOKENS.map((token) => ({ ...token, enabled: token.enabled ?? false }));
 	}
-	return BITFINITY_TOKENS.map((token) => ({ ...token, enabled: false }));
 };
 
 const saveToStorage = (tokens: typeof BITFINITY_TOKENS) => {
@@ -78,8 +81,16 @@ const createBitfinityStore = () => {
 
 export const bitfinityTokensStore = createBitfinityStore();
 
-// Initialize store with default tokens
-bitfinityTokensStore.set(BITFINITY_TOKENS);
+// Initialize store with default tokens while preserving any existing enabled states
+const currentTokens = get(bitfinityTokensStore);
+const initialTokens = BITFINITY_TOKENS.map((token) => {
+	const existingToken = currentTokens.find((t) => t.symbol === token.symbol);
+	return {
+		...token,
+		enabled: existingToken?.enabled ?? false
+	};
+});
+bitfinityTokensStore.set(initialTokens);
 
 export const saveBitfinityTokens = async ({
 	progress,
