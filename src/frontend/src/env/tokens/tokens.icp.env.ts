@@ -32,5 +32,6 @@ export const ICP_TOKEN: RequiredToken<IcToken & TokenWithLinkedData> = {
 	twinTokenSymbol: 'oICP',
 	buy: {
 		onramperId: 'icp_icp'
-	}
+	},
+	enabled: true
 };

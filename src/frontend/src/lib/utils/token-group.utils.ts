@@ -45,20 +45,64 @@ const createTokenGroup = ({
 	)
 });
 
-/**
- * Function to create a list of TokenUiOrGroupUi by grouping tokens with matching twinTokenSymbol.
- * The group is placed in the position where the first token of the group was found.
- * Tokens with no twin remain as individual tokens in their original position.
- *
- * @param tokens - The list of TokenUi objects to group. Each token may or may not have a twinTokenSymbol.
- *                 Tokens with a twinTokenSymbol are grouped together.
- *
- * @returns A new list where tokens with twinTokenSymbols are grouped into a TokenUiGroup,
- *          and tokens without twins remain in their original place.
- *          The group replaces the first token of the group in the list.
- */
+interface FindTwinTokenParams {
+	baseToken: TokenUi;
+	tokens: TokenUi[];
+	predicate: (t: TokenUi) => boolean;
+	groupedTokenTwins: Set<string>;
+}
+
+const findTwinToken = ({
+	baseToken,
+	tokens,
+	predicate,
+	groupedTokenTwins
+}: FindTwinTokenParams): TokenUi | undefined =>
+	tokens.find(
+		(t) => predicate(t) && t.decimals === baseToken.decimals && !groupedTokenTwins.has(t.symbol)
+	);
+
+interface FindSpecificTwinParams {
+	baseToken: TokenUi;
+	tokens: TokenUi[];
+	groupedTokenTwins: Set<string>;
+}
+
+const findCkTwinToken = ({
+	baseToken,
+	tokens,
+	groupedTokenTwins
+}: FindSpecificTwinParams): IcCkToken | undefined =>
+	findTwinToken({
+		baseToken,
+		tokens,
+		groupedTokenTwins,
+		predicate: (t) => t.symbol === baseToken.twinTokenSymbol && isIcCkToken(t)
+	}) as IcCkToken | undefined;
+
+const findBitfinityTwinToken = ({
+	baseToken,
+	tokens,
+	groupedTokenTwins
+}: FindSpecificTwinParams): TokenUi | undefined =>
+	findTwinToken({
+		baseToken,
+		tokens,
+		groupedTokenTwins,
+		predicate: (t) => {
+			const isBitfinityToken = t.symbol.startsWith('o');
+			const isDirectMatch = t.symbol === `o${baseToken.symbol}`;
+			const isLinkedMatch =
+				isBitfinityToken &&
+				isRequiredTokenWithLinkedData(t) &&
+				t.twinTokenSymbol === baseToken.symbol;
+			return isDirectMatch || isLinkedMatch;
+		}
+	});
+
 export const groupTokensByTwin = (tokens: TokenUi[]): TokenUiOrGroupUi[] => {
 	const groupedTokenTwins = new Set<string>();
+
 	const mappedTokensWithGroups: TokenUiOrGroupUi[] = tokens.map((token) => {
 		if (!isRequiredTokenWithLinkedData(token)) {
 			return token;
@@ -70,27 +114,48 @@ export const groupTokensByTwin = (tokens: TokenUi[]): TokenUiOrGroupUi[] => {
 
 		const relatedTokens: TokenUi[] = [];
 
-		// Find ckToken twin
-		const ckTwinToken = tokens.find(
-			(t) => t.symbol === token.twinTokenSymbol && isIcCkToken(t) && t.decimals === token.decimals
-		) as IcCkToken | undefined;
+		// Handle Bitfinity token case
+		if (token.symbol.startsWith('o')) {
+			const baseToken = findTwinToken({
+				baseToken: token,
+				tokens,
+				groupedTokenTwins,
+				predicate: (t) => t.symbol === token.twinTokenSymbol
+			});
 
-		if (ckTwinToken && !groupedTokenTwins.has(ckTwinToken.symbol)) {
+			if (baseToken && !groupedTokenTwins.has(baseToken.symbol)) {
+				groupedTokenTwins.add(token.symbol);
+				groupedTokenTwins.add(baseToken.symbol);
+				relatedTokens.push({ ...token, enabled: true });
+
+				const ckTwinToken = findCkTwinToken({ baseToken, tokens, groupedTokenTwins });
+				if (ckTwinToken) {
+					relatedTokens.push({ ...ckTwinToken, enabled: true });
+					groupedTokenTwins.add(ckTwinToken.symbol);
+				}
+
+				return createTokenGroup({
+					nativeToken: baseToken,
+					tokens: relatedTokens
+				});
+			}
+
+			return token;
+		}
+
+		// Handle regular token case
+		const ckTwinToken = findCkTwinToken({ baseToken: token, tokens, groupedTokenTwins });
+		if (ckTwinToken) {
 			relatedTokens.push({ ...ckTwinToken, enabled: true });
 			groupedTokenTwins.add(ckTwinToken.symbol);
 		}
 
-		// Find Bitfinity token twin (starts with 'o')
-		const bitfinityTwinToken = tokens.find(
-			(t) =>
-				(t.symbol === `o${token.symbol}` && t.decimals === token.decimals) ||
-				(t.symbol.startsWith('o') &&
-					isRequiredTokenWithLinkedData(t) &&
-					t.twinTokenSymbol === token.symbol &&
-					t.decimals === token.decimals)
-		);
-
-		if (bitfinityTwinToken && !groupedTokenTwins.has(bitfinityTwinToken.symbol)) {
+		const bitfinityTwinToken = findBitfinityTwinToken({
+			baseToken: token,
+			tokens,
+			groupedTokenTwins
+		});
+		if (bitfinityTwinToken) {
 			relatedTokens.push({ ...bitfinityTwinToken, enabled: true });
 			groupedTokenTwins.add(bitfinityTwinToken.symbol);
 		}
@@ -101,21 +166,6 @@ export const groupTokensByTwin = (tokens: TokenUi[]): TokenUiOrGroupUi[] => {
 				nativeToken: token,
 				tokens: relatedTokens
 			});
-		}
-
-		// Check if this is a Bitfinity token and its base token exists
-		if (token.symbol.startsWith('o') && isRequiredTokenWithLinkedData(token)) {
-			const baseToken = tokens.find(
-				(t) => t.symbol === token.twinTokenSymbol && t.decimals === token.decimals
-			);
-			if (baseToken && !groupedTokenTwins.has(baseToken.symbol)) {
-				groupedTokenTwins.add(token.symbol);
-				groupedTokenTwins.add(baseToken.symbol);
-				return createTokenGroup({
-					nativeToken: baseToken,
-					tokens: [{ ...token, enabled: true }]
-				});
-			}
 		}
 
 		return token;

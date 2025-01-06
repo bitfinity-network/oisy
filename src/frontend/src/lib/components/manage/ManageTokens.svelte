@@ -46,10 +46,11 @@
 
 	import { parseTokenId } from '$lib/validation/token.validation';
 	import BitfinityManageTokenToggle from '$lib/components/tokens/BitfinityManageTokenToggle.svelte';
-	import { BITFINITY_TOKENS } from '$env/tokens.bitfinity.env';
+	import { BITFINITY_TOKENS } from '$env/omnity-tokens.erc20.env';
 	import { isRequiredTokenWithLinkedData } from '$lib/utils/token.utils';
 	import type { SaveBitfinityToken } from '$lib/services/bitfinity-tokens.services';
-	import type { BitfinityToken } from '$env/tokens.bitfinity.env';
+	import type { BitfinityToken } from '$env/omnity-tokens.erc20.env';
+	import { bitfinityTokensStore } from '$lib/derived/tokens.derived';
 
 	const dispatch = createEventDispatcher();
 
@@ -103,13 +104,11 @@
 			},
 			...$enabledBitcoinTokens.map((token) => ({ ...token, enabled: true })),
 			...$enabledEthereumTokens.map((token) => ({ ...token, enabled: true })),
-			...BITFINITY_TOKENS.map((token) => ({
+			...($bitfinityTokensStore ?? []).map((token) => ({
 				...token,
-				enabled: localStorage.getItem('bitfinity-token-states')
-					? (JSON.parse(localStorage.getItem('bitfinity-token-states') || '{}')[token.symbol] ??
-						false)
-					: false,
-				version: undefined
+				version: undefined,
+				standard: 'ethereum' as const,
+				category: 'default' as const
 			})),
 			...(manageEthereumTokens ? allErc20Tokens : []),
 			...(manageIcTokens ? allIcrcTokens : [])
@@ -142,7 +141,7 @@
 		(icTokenIcrcCustomToken(token) &&
 			(token.alternativeName ?? '').toLowerCase().includes(filterTokens.toLowerCase()));
 
-	let filteredTokens: Token[] = [];
+	let filteredTokens: (Token & { enabled?: boolean })[] = [];
 	$: filteredTokens = isNullishOrEmpty(filterTokens)
 		? allTokensSorted
 		: allTokensSorted.filter((token) => {
@@ -161,17 +160,13 @@
 				enabled: (modifiedToken as IcrcCustomToken)?.enabled ?? token.enabled
 			};
 		} else if (isBitfinityToken) {
-			const savedStates = localStorage.getItem('bitfinity-token-states');
-			const states = savedStates ? JSON.parse(savedStates) : {};
+			const storedToken = ($bitfinityTokensStore ?? []).find((t) => t.symbol === token.symbol);
 			return {
 				...token,
-				enabled:
-					modifiedToken !== undefined
-						? (modifiedToken as SaveBitfinityToken).enabled
-						: (states[token.symbol] ?? false),
+				enabled: storedToken?.enabled ?? token.enabled ?? false,
 				version: undefined,
-				standard: 'ethereum',
-				category: 'default'
+				standard: 'ethereum' as const,
+				category: 'default' as const
 			};
 		}
 		return token;

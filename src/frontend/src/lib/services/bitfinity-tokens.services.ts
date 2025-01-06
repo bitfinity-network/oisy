@@ -1,11 +1,10 @@
-import { BITFINITY_TOKENS } from '$env/tokens.bitfinity.env';
-import { bitfinityTokensStore } from '$lib/derived/tokens.derived';
+import { BITFINITY_TOKENS, type BitfinityToken } from '$env/omnity-tokens.erc20.env';
 import { ProgressStepsAddToken } from '$lib/enums/progress-steps';
 import { i18n } from '$lib/stores/i18n.store';
 import { toastsError } from '$lib/stores/toasts.store';
 import type { RequiredTokenWithLinkedData } from '$lib/types/token';
 import type { TokenToggleable } from '$lib/types/token-toggleable';
-import { get } from 'svelte/store';
+import { get, writable } from 'svelte/store';
 
 export type SaveBitfinityToken = TokenToggleable<RequiredTokenWithLinkedData>;
 
@@ -17,24 +16,48 @@ export interface SaveBitfinityTokensParams {
 	onError: () => void;
 }
 
-// Local storage key for persisting token states
-const STORAGE_KEY = 'bitfinity-token-states';
+const STORAGE_KEY = 'bitfinity-tokens';
 
-// Load persisted states on initialization
-const loadPersistedStates = () => {
-	const savedStates = localStorage.getItem(STORAGE_KEY);
-	if (savedStates) {
-		const states = JSON.parse(savedStates);
-		const updatedTokens = BITFINITY_TOKENS.map((token) => ({
-			...token,
-			enabled: states[token.symbol] ?? false
-		}));
-		bitfinityTokensStore.set(updatedTokens);
+const initBitfinityTokensStore = () => {
+	const storedValue = localStorage.getItem(STORAGE_KEY);
+	const storedTokenMap = new Map<string, boolean>();
+
+	if (storedValue) {
+		try {
+			const storedTokens = JSON.parse(storedValue);
+			storedTokens.forEach((t: { symbol: string; enabled: boolean }) => {
+				storedTokenMap.set(t.symbol.toLowerCase(), !!t.enabled);
+			});
+		} catch (err) {
+			console.error('Error loading Bitfinity tokens from storage:', err);
+		}
 	}
+
+	const { subscribe, set, update } = writable(
+		BITFINITY_TOKENS.map((token) => ({
+			...token,
+			enabled: storedTokenMap.get(token.symbol.toLowerCase()) ?? token.enabled ?? false
+		}))
+	);
+
+	return {
+		subscribe,
+		set: (tokens: BitfinityToken[]) => {
+			set(tokens);
+			try {
+				localStorage.setItem(
+					STORAGE_KEY,
+					JSON.stringify(tokens.map(({ symbol, enabled }) => ({ symbol, enabled })))
+				);
+			} catch (err) {
+				console.error('Error saving Bitfinity tokens to storage:', err);
+			}
+		},
+		update
+	};
 };
 
-// Initialize with persisted states
-loadPersistedStates();
+export const bitfinityTokensStore = initBitfinityTokensStore();
 
 export const saveBitfinityTokens = async ({
 	progress,
@@ -44,45 +67,17 @@ export const saveBitfinityTokens = async ({
 	onError
 }: SaveBitfinityTokensParams): Promise<void> => {
 	try {
-		progress(ProgressStepsAddToken.INITIALIZATION);
-		progress(ProgressStepsAddToken.SAVE);
+		await progress(ProgressStepsAddToken.INITIALIZATION);
+		await progress(ProgressStepsAddToken.SAVE);
 
-		// Get existing states
-		const savedStates = localStorage.getItem(STORAGE_KEY);
-		const existingStates = savedStates ? JSON.parse(savedStates) : {};
-
-		// Update only the modified tokens while preserving others
-		const newStates = {
-			...existingStates,
-			...updatedTokens.reduce(
-				(acc, token) => ({
-					...acc,
-					[token.symbol]: token.enabled
-				}),
-				{}
-			)
-		};
-
-		// Save updated states
-		localStorage.setItem(STORAGE_KEY, JSON.stringify(newStates));
-
-		// Update store with new states
 		const currentTokens = get(bitfinityTokensStore);
-		const updatedBitfinityTokens = currentTokens.map((token) => ({
-			...token,
-			enabled: newStates[token.symbol] ?? false
-		}));
-		bitfinityTokensStore.set(updatedBitfinityTokens);
+		const newTokens = currentTokens.map((token) => {
+			const updatedToken = updatedTokens.find((t) => t.symbol === token.symbol);
+			return updatedToken ? { ...token, enabled: updatedToken.enabled } : token;
+		});
 
-		await new Promise((resolve) => setTimeout(resolve, 500));
-
-		progress(ProgressStepsAddToken.UPDATE_UI);
-
-		await new Promise((resolve) => setTimeout(resolve, 500));
-
+		bitfinityTokensStore.set(newTokens);
 		progress(ProgressStepsAddToken.DONE);
-
-		modalNext();
 		onSuccess();
 	} catch (err: unknown) {
 		toastsError({
@@ -90,6 +85,5 @@ export const saveBitfinityTokens = async ({
 			err
 		});
 		onError();
-		throw err;
 	}
 };

@@ -1,24 +1,15 @@
 <script lang="ts">
 	import { Toggle } from '@dfinity/gix-components';
-	import { createEventDispatcher, onMount } from 'svelte';
+	import { createEventDispatcher } from 'svelte';
 	import type { RequiredTokenWithLinkedData } from '$lib/types/token';
 	import type { TokenToggleable } from '$lib/types/token-toggleable';
 	import { i18n } from '$lib/stores/i18n.store';
 
-	export let token: RequiredTokenWithLinkedData;
-	export let checked = false;
+	export let token: TokenToggleable<RequiredTokenWithLinkedData>;
+	export let checked: boolean;
+	$: checked = token?.enabled ?? false;
 
 	const dispatch = createEventDispatcher();
-
-	onMount(() => {
-		const savedStates = localStorage.getItem('bitfinity-token-states');
-		if (savedStates) {
-			const states = JSON.parse(savedStates);
-			if (states[token.symbol] !== undefined) {
-				checked = states[token.symbol];
-			}
-		}
-	});
 
 	const toggle = () => {
 		checked = !checked;
