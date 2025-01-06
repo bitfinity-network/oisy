@@ -87,7 +87,7 @@ const initialTokens = BITFINITY_TOKENS.map((token) => {
 	const existingToken = currentTokens.find((t) => t.symbol === token.symbol);
 	return {
 		...token,
-		enabled: existingToken?.enabled ?? false
+		enabled: existingToken?.enabled ?? token.enabled ?? false
 	};
 });
 bitfinityTokensStore.set(initialTokens);

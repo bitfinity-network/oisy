@@ -163,7 +163,7 @@
 			const storedToken = ($bitfinityTokensStore ?? []).find((t) => t.symbol === token.symbol);
 			return {
 				...token,
-				enabled: storedToken?.enabled ?? false,
+				enabled: storedToken?.enabled ?? token.enabled ?? false,
 				version: undefined,
 				standard: 'ethereum' as const,
 				category: 'default' as const
