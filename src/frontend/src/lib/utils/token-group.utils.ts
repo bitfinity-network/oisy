@@ -144,7 +144,6 @@ export const groupTokensByTwin = (tokens: TokenUi[]): TokenUiOrGroupUi[] => {
 		return token;
 	});
 
-	console.log('mappedTokensWithGroups', mappedTokensWithGroups);
 	return mappedTokensWithGroups
 		.filter((t) => isTokenUiGroup(t) || !groupedTokenTwins.has(t.symbol))
 		.sort(
