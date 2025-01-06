@@ -53,6 +53,6 @@ export interface TokenFinancialData {
 	usdBalance?: number;
 }
 
-export type TokenUi = Token & TokenFinancialData & TokenToggleable<Token>;
+export type TokenUi = Token & TokenFinancialData & TokenToggleable<Token> & TokenLinkedData;
 
 export type OptionTokenUi = Option<TokenUi>;
