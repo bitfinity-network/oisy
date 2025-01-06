@@ -369,6 +369,7 @@
 			"convert_to_ckbtc": "Convert to ckBTC",
 			"convert_to_token": "Convert to $token",
 			"convert_to_cketh": "Convert to ckETH",
+			"convert_to_ocketh": "Convert to OCKETH",
 			"convert_to_ckerc20": "Convert to $ckErc20",
 			"convert_eth_to_cketh": "Convert $token to $ckToken",
 			"cketh_conversions_may_take": "ckETH conversions may take up to 20 minutes",

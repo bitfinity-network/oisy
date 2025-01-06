@@ -1,6 +1,7 @@
 import type { BitcoinNetwork as SignerBitcoinNetwork } from '$declarations/signer/signer.did';
 import {
 	BITCOIN_NETWORKS_IDS,
+	BITFINITY_NETWORK_ID,
 	BTC_MAINNET_NETWORK_ID,
 	BTC_REGTEST_NETWORK_ID,
 	BTC_TESTNET_NETWORK_ID,
@@ -18,6 +19,9 @@ export const isNetworkICP = (network: Network | undefined): boolean => isNetwork
 
 export const isNetworkIdICP = (id: NetworkId | undefined): id is typeof ICP_NETWORK_ID =>
 	nonNullish(id) && ICP_NETWORK_ID === id;
+
+export const isNetworkIdBTF = (id: NetworkId | undefined): id is typeof BITFINITY_NETWORK_ID =>
+	nonNullish(id) && BITFINITY_NETWORK_ID === id;
 
 export const isNetworkIdEthereum = (id: NetworkId | undefined): boolean =>
 	nonNullish(id) && SUPPORTED_ETHEREUM_NETWORKS_IDS.includes(id);
