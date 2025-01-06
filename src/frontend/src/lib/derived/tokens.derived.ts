@@ -8,6 +8,7 @@ import type { Erc20Token } from '$eth/types/erc20';
 import { icrcChainFusionDefaultTokens, sortedIcrcTokens } from '$icp/derived/icrc.derived';
 import type { IcToken } from '$icp/types/ic-token';
 import { exchanges } from '$lib/derived/exchange.derived';
+import { bitfinityTokensStore as bitfinityStore } from '$lib/services/bitfinity-tokens.services';
 import { balancesStore } from '$lib/stores/balances.store';
 import type { Token, TokenToPin } from '$lib/types/token';
 import type { TokensTotalUsdBalancePerNetwork } from '$lib/types/token-balance';
@@ -17,14 +18,23 @@ import {
 } from '$lib/utils/tokens.utils';
 import { derived, type Readable } from 'svelte/store';
 
+export { bitfinityTokensStore } from '$lib/services/bitfinity-tokens.services';
+
 export const tokens: Readable<Token[]> = derived(
-	[erc20Tokens, sortedIcrcTokens, enabledEthereumTokens, enabledBitcoinTokens],
-	([$erc20Tokens, $icrcTokens, $enabledEthereumTokens, $enabledBitcoinTokens]) => [
+	[erc20Tokens, sortedIcrcTokens, enabledEthereumTokens, enabledBitcoinTokens, bitfinityStore],
+	([
+		$erc20Tokens,
+		$icrcTokens,
+		$enabledEthereumTokens,
+		$enabledBitcoinTokens,
+		$bitfinityTokens
+	]) => [
 		ICP_TOKEN,
 		...$enabledBitcoinTokens,
 		...$enabledEthereumTokens,
 		...$erc20Tokens,
-		...$icrcTokens
+		...$icrcTokens,
+		...($bitfinityTokens?.filter((token) => token.enabled) ?? [])
 	]
 );
 

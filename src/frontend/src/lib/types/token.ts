@@ -9,6 +9,7 @@ import {
 	type TokenIdSchema
 } from '$lib/schema/token.schema';
 import type { OptionBalance } from '$lib/types/balance';
+import type { TokenToggleable } from '$lib/types/token-toggleable';
 import type { Option, RequiredExcept } from '$lib/types/utils';
 import { z } from 'zod';
 
@@ -30,6 +31,7 @@ export type TokenBuy = z.infer<typeof TokenBuySchema>;
 
 export interface TokenLinkedData {
 	twinTokenSymbol?: string;
+	enabled?: boolean;
 }
 
 export type TokenWithLinkedData = Token & TokenLinkedData;
@@ -51,6 +53,6 @@ export interface TokenFinancialData {
 	usdBalance?: number;
 }
 
-export type TokenUi = Token & TokenFinancialData;
+export type TokenUi = Token & TokenFinancialData & TokenToggleable<Token> & TokenLinkedData;
 
 export type OptionTokenUi = Option<TokenUi>;

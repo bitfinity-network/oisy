@@ -38,13 +38,19 @@
 	import { i18n } from '$lib/stores/i18n.store';
 	import type { ExchangesData } from '$lib/types/exchange';
 	import type { Token } from '$lib/types/token';
-	import type { TokenToggleable } from '$lib/types/token-toggleable';
+	import type { TokenToggleable, UserTokenState } from '$lib/types/token-toggleable';
 	import { replacePlaceholders } from '$lib/utils/i18n.utils';
 	import { isNullishOrEmpty } from '$lib/utils/input.utils';
 	import { filterTokensForSelectedNetwork } from '$lib/utils/network.utils';
 	import { pinEnabledTokensAtTop, sortTokens } from '$lib/utils/tokens.utils';
 
 	import { parseTokenId } from '$lib/validation/token.validation';
+	import BitfinityManageTokenToggle from '$lib/components/tokens/BitfinityManageTokenToggle.svelte';
+	import { BITFINITY_TOKENS } from '$env/omnity-tokens.erc20.env';
+	import { isRequiredTokenWithLinkedData } from '$lib/utils/token.utils';
+	import type { SaveBitfinityToken } from '$lib/services/bitfinity-tokens.services';
+	import type { BitfinityToken } from '$env/omnity-tokens.erc20.env';
+	import { bitfinityTokensStore } from '$lib/derived/tokens.derived';
 
 	const dispatch = createEventDispatcher();
 
@@ -89,7 +95,7 @@
 	let manageEthereumTokens = false;
 	$: manageEthereumTokens = $pseudoNetworkChainFusion || $networkEthereum;
 
-	let allTokens: TokenToggleable<Token>[] = [];
+	let allTokens: (TokenToggleable<Token> | BitfinityToken)[] = [];
 	$: allTokens = filterTokensForSelectedNetwork([
 		[
 			{
@@ -98,6 +104,12 @@
 			},
 			...$enabledBitcoinTokens.map((token) => ({ ...token, enabled: true })),
 			...$enabledEthereumTokens.map((token) => ({ ...token, enabled: true })),
+			...($bitfinityTokensStore ?? []).map((token) => ({
+				...token,
+				version: undefined,
+				standard: 'ethereum' as const,
+				category: 'default' as const
+			})),
 			...(manageEthereumTokens ? allErc20Tokens : []),
 			...(manageIcTokens ? allIcrcTokens : [])
 		],
@@ -129,7 +141,7 @@
 		(icTokenIcrcCustomToken(token) &&
 			(token.alternativeName ?? '').toLowerCase().includes(filterTokens.toLowerCase()));
 
-	let filteredTokens: Token[] = [];
+	let filteredTokens: (Token & { enabled?: boolean })[] = [];
 	$: filteredTokens = isNullishOrEmpty(filterTokens)
 		? allTokensSorted
 		: allTokensSorted.filter((token) => {
@@ -137,58 +149,75 @@
 				return matchingToken(token) || (nonNullish(twinToken) && matchingToken(twinToken));
 			});
 
-	let tokens: Token[] = [];
+	let tokens: (Token | BitfinityToken)[] = [];
 	$: tokens = filteredTokens.map((token) => {
 		const modifiedToken = modifiedTokens[`${token.network.id.description}-${token.id.description}`];
+		const isBitfinityToken = isRequiredTokenWithLinkedData(token) && token.symbol.startsWith('o');
 
-		return {
-			...token,
-			...(icTokenIcrcCustomToken(token)
-				? {
-						enabled: (modifiedToken as IcrcCustomToken)?.enabled ?? token.enabled
-					}
-				: {})
-		};
+		if (icTokenIcrcCustomToken(token)) {
+			return {
+				...token,
+				enabled: (modifiedToken as IcrcCustomToken)?.enabled ?? token.enabled
+			};
+		} else if (isBitfinityToken) {
+			const storedToken = ($bitfinityTokensStore ?? []).find((t) => t.symbol === token.symbol);
+			return {
+				...token,
+				enabled: storedToken?.enabled ?? token.enabled ?? false,
+				version: undefined,
+				standard: 'ethereum' as const,
+				category: 'default' as const
+			};
+		}
+		return token;
 	});
 
 	let noTokensMatch = false;
 	$: noTokensMatch = tokens.length === 0;
 
-	let modifiedTokens: Record<string, Token> = {};
-	const onToggle = ({ detail: { id, network, ...rest } }: CustomEvent<Token>) => {
+	let modifiedTokens: Record<string, TokenToggleable<Token> | SaveBitfinityToken> = {};
+	const onToggle = ({ detail }: CustomEvent<TokenToggleable<Token> & UserTokenState>) => {
+		const { id, network, ...rest } = detail;
 		const { id: networkId } = network;
-		const { [`${networkId.description}-${id.description}`]: current, ...tokens } = modifiedTokens;
-
-		if (nonNullish(current)) {
-			modifiedTokens = { ...tokens };
-			return;
-		}
+		const key = `${networkId.description}-${id.description}`;
 
 		modifiedTokens = {
-			[`${networkId.description}-${id.description}`]: { id, network, ...rest },
-			...tokens
+			...modifiedTokens,
+			[key]: { id, network, ...rest }
 		};
 	};
 
 	let saveDisabled = true;
 	$: saveDisabled = Object.keys(modifiedTokens).length === 0;
 
-	let groupModifiedTokens: { icrc: IcrcCustomToken[]; erc20: Erc20UserToken[] } = {
+	let groupModifiedTokens: {
+		icrc: IcrcCustomToken[];
+		erc20: Erc20UserToken[];
+		bitfinity: SaveBitfinityToken[];
+	} = {
 		icrc: [],
-		erc20: []
+		erc20: [],
+		bitfinity: []
 	};
 	$: groupModifiedTokens = Object.values(modifiedTokens).reduce<{
 		icrc: IcrcCustomToken[];
 		erc20: Erc20UserToken[];
+		bitfinity: SaveBitfinityToken[];
 	}>(
-		({ icrc, erc20 }, token) => ({
+		({ icrc, erc20, bitfinity }, token) => ({
 			icrc: [...icrc, ...(token.standard === 'icrc' ? [token as IcrcCustomToken] : [])],
 			erc20: [
 				...erc20,
 				...(token.standard === 'erc20' && icTokenErc20UserToken(token) ? [token] : [])
+			],
+			bitfinity: [
+				...bitfinity,
+				...(isRequiredTokenWithLinkedData(token) && token.symbol.startsWith('o')
+					? [token as SaveBitfinityToken]
+					: [])
 			]
 		}),
-		{ icrc: [], erc20: [] }
+		{ icrc: [], erc20: [], bitfinity: [] }
 	);
 
 	// TODO: Technically, there could be a race condition where modifiedTokens and the derived group are not updated with the last change when the user clicks "Save." For example, if the user clicks on a radio button and then a few milliseconds later on the save button.
@@ -249,7 +278,14 @@
 					</span>
 
 					<svelte:fragment slot="action">
-						{#if icTokenIcrcCustomToken(token)}
+						{#if isRequiredTokenWithLinkedData(token) && token.symbol.startsWith('o')}
+							<BitfinityManageTokenToggle
+								{token}
+								checked={modifiedTokens[`${token.network.id.description}-${token.id.description}`]
+									?.enabled ?? false}
+								on:icShowOrHideToken={onToggle}
+							/>
+						{:else if icTokenIcrcCustomToken(token)}
 							<IcManageTokenToggle {token} on:icToken={onToggle} />
 						{:else if icTokenEthereumUserToken(token)}
 							<ManageTokenToggle {token} on:icShowOrHideToken={onToggle} />
