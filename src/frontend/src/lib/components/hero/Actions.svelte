@@ -94,9 +94,9 @@
 				<ConvertToCkBTC />
 			{/if}
 
-			{#if $networkEthereum}
+			<!-- {#if $networkEthereum}
 				<ConvertToOcketh />
-			{/if}
+			{/if} -->
 		{/if}
 
 		<Buy />
