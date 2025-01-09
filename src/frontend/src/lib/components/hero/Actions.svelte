@@ -32,7 +32,9 @@
 	import ConvertETH from '$icp-eth/components/send/ConvertETH.svelte';
 	import IconCkConvert from '$lib/components/icons/IconCkConvert.svelte';
 	import { i18n } from '$lib/stores/i18n.store';
-	import ConvertToOcketh from '../../../btf/send/ConvertToOCKETH.svelte';
+	import ConvertToBitfinity from '$lib/components/convert/ConvertToBitfinity.svelte';
+	import { isRequiredTokenWithLinkedData } from '$lib/utils/token.utils';
+	import BridgeButton from '$lib/components/transactions/BridgeButton.svelte';
 
 	let convertEth = false;
 	$: convertEth = $ethToCkETHEnabled && $erc20UserTokensInitialized;
@@ -51,6 +53,13 @@
 
 	let sendAction = true;
 	$: sendAction = !$allBalancesZero || isTransactionsPage;
+
+	let showBitfinityBridge = false;
+	$: showBitfinityBridge =
+		isTransactionsPage &&
+		isRequiredTokenWithLinkedData($tokenWithFallback) &&
+		($tokenWithFallback.symbol.startsWith('o') || // For Bitfinity tokens to bridge back to native
+			($tokenWithFallback.twinTokenSymbol?.startsWith('o') ?? false)); // For native tokens to bridge to Bitfinity
 </script>
 
 <div role="toolbar" class="flex w-full justify-center pt-10">
@@ -94,9 +103,9 @@
 				<ConvertToCkBTC />
 			{/if}
 
-			<!-- {#if $networkEthereum}
-				<ConvertToOcketh />
-			{/if} -->
+			{#if showBitfinityBridge}
+				<ConvertToBitfinity />
+			{/if}
 		{/if}
 
 		<Buy />
