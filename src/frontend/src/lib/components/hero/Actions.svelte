@@ -34,6 +34,7 @@
 	import { i18n } from '$lib/stores/i18n.store';
 	import ConvertToBitfinity from '$lib/components/convert/ConvertToBitfinity.svelte';
 	import { isRequiredTokenWithLinkedData } from '$lib/utils/token.utils';
+	import { nonNullish } from '@dfinity/utils';
 
 	let convertEth = false;
 	$: convertEth = $ethToCkETHEnabled && $erc20UserTokensInitialized;
@@ -57,8 +58,7 @@
 	$: showBitfinityBridge =
 		isTransactionsPage &&
 		isRequiredTokenWithLinkedData($tokenWithFallback) &&
-		($tokenWithFallback.symbol.startsWith('o') || // For Bitfinity tokens to bridge back to native
-			($tokenWithFallback.twinTokenSymbol?.startsWith('o') ?? false)); // For native tokens to bridge to Bitfinity
+		nonNullish($tokenWithFallback.twinTokenSymbol); // Show for any token that has a twin token
 </script>
 
 <div role="toolbar" class="flex w-full justify-center pt-10">
