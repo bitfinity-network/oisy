@@ -58,7 +58,7 @@
 	$: showBitfinityBridge =
 		isTransactionsPage &&
 		isRequiredTokenWithLinkedData($tokenWithFallback) &&
-		nonNullish($tokenWithFallback.twinTokenSymbol); // Show for any token that has a twin token
+		nonNullish($tokenWithFallback.twinTokenSymbol);
 </script>
 
 <div role="toolbar" class="flex w-full justify-center pt-10">
