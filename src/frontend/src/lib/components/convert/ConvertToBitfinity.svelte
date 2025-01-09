@@ -8,6 +8,13 @@
 	import { i18n } from '$lib/stores/i18n.store';
 	import { isRequiredTokenWithLinkedData } from '$lib/utils/token.utils';
 	import type { RequiredTokenWithLinkedData } from '$lib/types/token';
+	import { modalConvertToTwinTokenOckEth } from '$lib/derived/modal.derived';
+	import { ICP_NETWORK } from '$env/networks.env';
+	import { ckEthHelperContractAddress } from '$icp-eth/derived/cketh.derived';
+	import BTFSendTokenModal from '../../../btf/send/BTFSendTokenModal.svelte';
+	import { ethAddressNotLoaded } from '$lib/derived/address.derived';
+	import { ckEthMinterInfoStore } from '$icp-eth/stores/cketh.store';
+	import { networkICP } from '$lib/derived/network.derived';
 
 	$: token = isRequiredTokenWithLinkedData($tokenWithFallback)
 		? ($tokenWithFallback as RequiredTokenWithLinkedData)
@@ -28,3 +35,7 @@
 	<IconCkConvert size="28" slot="icon" />
 	<span>{targetSymbol}</span>
 </ConvertBTF>
+
+{#if $modalConvertToTwinTokenOckEth}
+	<BTFSendTokenModal destination={$ckEthHelperContractAddress ?? ''} targetNetwork={ICP_NETWORK} />
+{/if}
