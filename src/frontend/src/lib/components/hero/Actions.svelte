@@ -34,7 +34,6 @@
 	import { i18n } from '$lib/stores/i18n.store';
 	import ConvertToBitfinity from '$lib/components/convert/ConvertToBitfinity.svelte';
 	import { isRequiredTokenWithLinkedData } from '$lib/utils/token.utils';
-	import BridgeButton from '$lib/components/transactions/BridgeButton.svelte';
 
 	let convertEth = false;
 	$: convertEth = $ethToCkETHEnabled && $erc20UserTokensInitialized;

@@ -1,16 +1,13 @@
 <script lang="ts">
 	import { nonNullish } from '@dfinity/utils';
-	import ButtonHero from '$lib/components/hero/ButtonHero.svelte';
-	import IconCkConvert from '$lib/components/icons/IconCkConvert.svelte';
+	import { selectedEthereumNetwork } from '$eth/derived/network.derived';
+	import { ethereumToken, ethereumTokenId } from '$eth/derived/token.derived';
+	import ConvertBTF from '../../../btf/send/ConvertBTF.svelte';
+	import IconCkConvert from '../icons/IconCkConvert.svelte';
 	import { tokenWithFallback } from '$lib/derived/token.derived';
 	import { i18n } from '$lib/stores/i18n.store';
-	import { modalStore } from '$lib/stores/modal.store';
 	import { isRequiredTokenWithLinkedData } from '$lib/utils/token.utils';
 	import type { RequiredTokenWithLinkedData } from '$lib/types/token';
-
-	const handleClick = () => {
-		modalStore.openConvertToTwinTokenOckEth();
-	};
 
 	$: token = isRequiredTokenWithLinkedData($tokenWithFallback)
 		? ($tokenWithFallback as RequiredTokenWithLinkedData)
@@ -23,10 +20,11 @@
 		: '';
 </script>
 
-<ButtonHero
-	on:click={handleClick}
+<ConvertBTF
+	nativeTokenId={$ethereumTokenId}
+	nativeNetworkId={$selectedEthereumNetwork.id}
 	ariaLabel={isBitfinityToken ? `Bridge to ${targetSymbol}` : `Bridge to ${targetSymbol}`}
 >
 	<IconCkConvert size="28" slot="icon" />
 	<span>{targetSymbol}</span>
-</ButtonHero>
+</ConvertBTF>

@@ -79,10 +79,7 @@
 </script>
 
 <CkEthLoader {nativeTokenId}>
-	<ButtonHero
-		on:click={async () => await openSend()}
-		disabled={false}
-	>
+	<ButtonHero on:click={async () => await openSend()} disabled={false}>
 		<slot name="icon" slot="icon" />
 		<slot />
 	</ButtonHero>
