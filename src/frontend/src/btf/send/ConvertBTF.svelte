@@ -1,8 +1,7 @@
 <script lang="ts">
-	import { isNullish } from '@dfinity/utils';
+	import { isNullish, nonNullish } from '@dfinity/utils';
 	import { getContext } from 'svelte';
 	import { erc20UserTokens } from '$eth/derived/erc20.derived';
-	import { isNotSupportedEthTokenId } from '$eth/utils/eth.utils';
 	import { icrcTokens } from '$icp/derived/icrc.derived';
 	import CkEthLoader from '$icp-eth/components/core/CkEthLoader.svelte';
 	import { autoLoadCustomToken } from '$icp-eth/services/custom-token.services';
@@ -15,30 +14,43 @@
 	import { isBusy } from '$lib/derived/busy.derived';
 	import { networkICP } from '$lib/derived/network.derived';
 	import { tokenWithFallback } from '$lib/derived/token.derived';
+	import { modalSend, modalConvertToTwinToken } from '$lib/derived/modal.derived';
 	import { waitWalletReady } from '$lib/services/actions.services';
 	import { HERO_CONTEXT_KEY, type HeroContext } from '$lib/stores/hero.store';
 	import { modalStore } from '$lib/stores/modal.store';
 	import type { NetworkId } from '$lib/types/network';
-	import type { TokenId } from '$lib/types/token';
+	import type { TokenId, TokenUi } from '$lib/types/token';
+	import { BigNumber } from '@ethersproject/bignumber';
+	import BTFSendTokenModal from './BTFSendTokenModal.svelte';
+	import { ICP_NETWORK } from '$env/networks.env';
 
 	export let nativeTokenId: TokenId;
 	export let ariaLabel: string;
-	// TODO: to be removed once minterInfo breaking changes have been executed on mainnet
 	export let nativeNetworkId: NetworkId;
 
 	const { outflowActionsDisabled } = getContext<HeroContext>(HERO_CONTEXT_KEY);
 
-	const isDisabled = (): boolean =>
-		$ethAddressNotLoaded ||
-		// We can convert to ETH - i.e. we can convert to Ethereum or Sepolia, not an ERC20 token
-		isNotSupportedEthTokenId(nativeTokenId) ||
-		isNullish(
-			toCkEthHelperContractAddress({
-				minterInfo: $ckEthMinterInfoStore?.[nativeTokenId],
-				networkId: nativeNetworkId
-			})
-		) ||
-		($networkICP && isNullish($ckEthMinterInfoStore?.[nativeTokenId]));
+	$: token = $tokenWithFallback as TokenUi;
+	$: isBitfinityToken = nonNullish(token) && token.twinTokenSymbol?.startsWith('o');
+
+	$: helperContractAddress = toCkEthHelperContractAddress({
+		minterInfo: $ckEthMinterInfoStore?.[nativeTokenId],
+		networkId: nativeNetworkId
+	});
+
+	const isDisabled = (): boolean => {
+		// For Bitfinity tokens, we check if the Ethereum address is loaded and if there's a balance
+		if (isBitfinityToken) {
+			return $ethAddressNotLoaded;
+		}
+
+		// For other tokens, we keep the original checks
+		return (
+			$ethAddressNotLoaded ||
+			isNullish(helperContractAddress) ||
+			($networkICP && isNullish($ckEthMinterInfoStore?.[nativeTokenId]))
+		);
+	};
 
 	const openSend = async () => {
 		if (isDisabled()) {
@@ -49,32 +61,7 @@
 			}
 		}
 
-		if ($networkICP) {
-			const { result: resultUserToken } = await autoLoadUserToken({
-				erc20UserTokens: $erc20UserTokens,
-				sendToken: $tokenWithFallback,
-				identity: $authIdentity
-			});
-
-			if (resultUserToken === 'error') {
-				return;
-			}
-
-			modalStore.openConvertToTwinTokenEth();
-			return;
-		}
-
-		const { result: resultCustomToken } = await autoLoadCustomToken({
-			icrcCustomTokens: $icrcTokens,
-			sendToken: $tokenWithFallback,
-			identity: $authIdentity
-		});
-
-		if (resultCustomToken === 'error') {
-			return;
-		}
-
-		modalStore.openConvertToTwinTokenOckEth();
+		modalStore.openConvertToTwinToken();
 	};
 </script>
 
@@ -88,3 +75,11 @@
 		<slot />
 	</ButtonHero>
 </CkEthLoader>
+
+{#if $modalSend}
+	<BTFSendTokenModal destination={helperContractAddress ?? ''} targetNetwork={token.network} />
+{/if}
+
+{#if $modalConvertToTwinToken}
+	<BTFSendTokenModal destination={helperContractAddress ?? ''} targetNetwork={token.network} />
+{/if}

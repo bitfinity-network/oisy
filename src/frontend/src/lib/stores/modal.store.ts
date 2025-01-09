@@ -14,8 +14,8 @@ export interface Modal<T> {
 		| 'buy'
 		| 'convert-ckbtc-btc'
 		| 'convert-btc-ckbtc'
+		| 'convert-to-twin-token'
 		| 'convert-to-twin-token-cketh'
-		| 'convert-to-twin-token-ocketh'
 		| 'convert-to-twin-token-eth'
 		| 'how-to-convert-to-twin-token-eth'
 		| 'wallet-connect-auth'
@@ -50,8 +50,8 @@ export interface ModalStore<T> extends Readable<ModalData<T>> {
 	openBuy: (id: symbol) => void;
 	openConvertCkBTCToBTC: () => void;
 	openConvertBTCToCkBTC: () => void;
+	openConvertToTwinToken: () => void;
 	openConvertToTwinTokenCkEth: () => void;
-	openConvertToTwinTokenOckEth: () => void;
 	openConvertToTwinTokenEth: () => void;
 	openHowToConvertToTwinTokenEth: () => void;
 	openWalletConnectAuth: () => void;
@@ -95,8 +95,8 @@ const initModalStore = <T>(): ModalStore<T> => {
 		openBuy: setTypeWithId('buy'),
 		openConvertCkBTCToBTC: setType('convert-ckbtc-btc'),
 		openConvertBTCToCkBTC: setType('convert-btc-ckbtc'),
+		openConvertToTwinToken: setType('convert-to-twin-token'),
 		openConvertToTwinTokenCkEth: setType('convert-to-twin-token-cketh'),
-		openConvertToTwinTokenOckEth: setType('convert-to-twin-token-ocketh'),
 		openConvertToTwinTokenEth: setType('convert-to-twin-token-eth'),
 		openHowToConvertToTwinTokenEth: setType('how-to-convert-to-twin-token-eth'),
 		openWalletConnectAuth: setType('wallet-connect-auth'),
