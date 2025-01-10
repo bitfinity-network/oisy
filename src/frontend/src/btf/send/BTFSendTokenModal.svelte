@@ -5,16 +5,19 @@
 	import { selectedEthereumNetwork } from '$eth/derived/network.derived';
 	import { ethereumToken } from '$eth/derived/token.derived';
 	import type { Erc20Token } from '$eth/types/erc20';
+	import type { EthereumNetwork } from '$eth/types/network';
 	import { sendWizardStepsWithQrCodeScan } from '$lib/config/send.config';
 	import { ProgressStepsSend } from '$lib/enums/progress-steps';
 	import { WizardStepsSend } from '$lib/enums/wizard-steps';
 	import { i18n } from '$lib/stores/i18n.store';
 	import { SEND_CONTEXT_KEY, type SendContext } from '$lib/stores/send.store';
 	import type { Network } from '$lib/types/network';
+	import type { Token } from '$lib/types/token';
 	import { replacePlaceholders } from '$lib/utils/i18n.utils';
 	import { closeModal } from '$lib/utils/modal.utils';
 	import { goToWizardSendStep } from '$lib/utils/wizard-modal.utils';
 	import BtfSendTokenWizard from './BTFSendTokenWizard.svelte';
+	import { BITFINITY_NETWORK } from '$env/networks.env';
 
 	/**
 	 * Props
@@ -22,6 +25,7 @@
 
 	export let destination = '';
 	export let targetNetwork: Network | undefined = undefined;
+	export let isBitfinityTwinToken = false;
 
 	let amount: number | undefined = undefined;
 	let sendProgressStep: string = ProgressStepsSend.INITIALIZATION;
@@ -33,6 +37,35 @@
 	const { sendPurpose, sendToken } = getContext<SendContext>(SEND_CONTEXT_KEY);
 
 	/**
+	 * Network
+	 */
+	let sourceNetwork: EthereumNetwork;
+	$: sourceNetwork = isBitfinityTwinToken
+		? BITFINITY_NETWORK
+		: ($sendToken.network as EthereumNetwork);
+
+	// Always set target network and destination to Bitfinity
+	$: {
+		targetNetwork = BITFINITY_NETWORK;
+		destination = BITFINITY_NETWORK.id.toString();
+	}
+
+	/**
+	 * Token
+	 */
+	let nativeEthereumToken: Token;
+	$: nativeEthereumToken = {
+		id: $sendToken.id,
+		network: isBitfinityTwinToken ? ($sendToken.network as EthereumNetwork) : BITFINITY_NETWORK,
+		standard: $sendToken.standard,
+		category: $sendToken.category,
+		name: $sendToken.name,
+		symbol: $sendToken.symbol,
+		decimals: $sendToken.decimals,
+		icon: $sendToken.icon
+	};
+
+	/**
 	 * Wizard modal
 	 */
 
@@ -40,8 +73,7 @@
 	let otherSteps: WizardStep[];
 	$: [firstStep, ...otherSteps] = sendWizardStepsWithQrCodeScan({
 		i18n: $i18n,
-		converting:
-			sendPurpose === 'convert-btf-to-ocketh'
+		converting: sendPurpose === 'convert-to-twin-token'
 	});
 
 	let steps: WizardSteps;
@@ -49,8 +81,10 @@
 		{
 			...firstStep,
 			title:
-				sendPurpose === 'convert-btf-to-ocketh'
-					? $i18n.convert.text.convert_to_ocketh
+				sendPurpose === 'convert-to-twin-token'
+					? replacePlaceholders($i18n.convert.text.convert_to_token, {
+							$token: isBitfinityTwinToken ? $sendToken.symbol.slice(1) : `o${$sendToken.symbol}`
+						})
 					: sendPurpose === 'convert-erc20-to-ckerc20'
 						? replacePlaceholders($i18n.convert.text.convert_to_ckerc20, {
 								$ckErc20: ($sendToken as Erc20Token).twinTokenSymbol ?? 'ckETH'
@@ -90,8 +124,8 @@
 
 	<BtfSendTokenWizard
 		{currentStep}
-		sourceNetwork={$selectedEthereumNetwork}
-		nativeEthereumToken={$ethereumToken}
+		{sourceNetwork}
+		{nativeEthereumToken}
 		bind:destination
 		bind:targetNetwork
 		bind:amount
