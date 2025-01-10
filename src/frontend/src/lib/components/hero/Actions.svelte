@@ -35,7 +35,14 @@
 	import ConvertToBitfinity from '$lib/components/convert/ConvertToBitfinity.svelte';
 	import { isRequiredTokenWithLinkedData } from '$lib/utils/token.utils';
 	import { nonNullish } from '@dfinity/utils';
+	import { tokens } from '$lib/derived/tokens.derived';
 
+
+	function containsOToken(tokens, symbol) {
+		return tokens.filter((t) => t.symbol === `o${symbol}`);
+	}
+	let hasOToken = containsOToken($tokens, $tokenWithFallback.symbol);
+	console.log("containsOToken($tokens, $tokenWithFallback.symbol)", containsOToken($tokens, $tokenWithFallback.symbol));
 	let convertEth = false;
 	$: convertEth = $ethToCkETHEnabled && $erc20UserTokensInitialized;
 
@@ -55,10 +62,8 @@
 	$: sendAction = !$allBalancesZero || isTransactionsPage;
 
 	let showBitfinityBridge = false;
-	$: showBitfinityBridge =
-		isTransactionsPage &&
-		isRequiredTokenWithLinkedData($tokenWithFallback) &&
-		nonNullish($tokenWithFallback.twinTokenSymbol);
+	$: showBitfinityBridge = hasOToken && !$allBalancesZero 
+	
 </script>
 
 <div role="toolbar" class="flex w-full justify-center pt-10">
@@ -74,7 +79,7 @@
 		{/if}
 
 		{#if sendAction}
-			<Send {isTransactionsPage} />
+			<Send {isTransactionsPage} /> 
 		{/if}
 
 		{#if isTransactionsPage}
@@ -101,6 +106,7 @@
 			{#if convertBtc}
 				<ConvertToCkBTC />
 			{/if}
+			
 
 			{#if showBitfinityBridge}
 				<ConvertToBitfinity />
