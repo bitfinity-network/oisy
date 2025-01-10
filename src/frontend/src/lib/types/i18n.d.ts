@@ -336,7 +336,6 @@ interface I18nConvert {
 		converting: string;
 		convert_to_btc: string;
 		convert_to_ckbtc: string;
-		convert_to_ocketh: string;
 		convert_to_token: string;
 		convert_to_cketh: string;
 		convert_to_ckerc20: string;

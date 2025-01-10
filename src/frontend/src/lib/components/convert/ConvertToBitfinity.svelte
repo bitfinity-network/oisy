@@ -39,11 +39,7 @@
 	setContext(SEND_CONTEXT_KEY, context);
 </script>
 
-<ConvertBTF
-	nativeTokenId={$tokenWithFallback.id}
-	nativeNetworkId={$tokenWithFallback.network.id}
-	ariaLabel={`Bridge to ${targetSymbol}`}
->
+<ConvertBTF ariaLabel={`Bridge to ${targetSymbol}`}>
 	<IconCkConvert size="28" slot="icon" />
 	<span>{targetSymbol}</span>
 </ConvertBTF>
