@@ -28,14 +28,7 @@
 	import { isRouteTransactions } from '$lib/utils/nav.utils';
 	import { isNetworkIdBTCMainnet } from '$lib/utils/network.utils';
 	import ConvertToBitfinity from '$lib/components/convert/ConvertToBitfinity.svelte';
-	import {
-		hasTwinToken,
-		isBitfinityToken,
-		isRequiredTokenWithLinkedData
-	} from '$lib/utils/token.utils';
-	import { nonNullish } from '@dfinity/utils';
-	import { BITFINITY_TOKENS } from '$env/omnity-tokens.erc20.env';
-	import type { RequiredTokenWithLinkedData, Token } from '$lib/types/token';
+	import { hasTwinToken, isBitfinityToken } from '$lib/utils/token.utils';
 
 	let convertEth = false;
 	$: convertEth = $ethToCkETHEnabled && $erc20UserTokensInitialized;
