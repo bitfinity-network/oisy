@@ -27,14 +27,11 @@
 	import { tokenWithFallback } from '$lib/derived/token.derived';
 	import { isRouteTransactions } from '$lib/utils/nav.utils';
 	import { isNetworkIdBTCMainnet } from '$lib/utils/network.utils';
-	import { ethereumTokenId } from '$eth/derived/token.derived';
-	import { selectedEthereumNetwork } from '$eth/derived/network.derived';
-	import ConvertETH from '$icp-eth/components/send/ConvertETH.svelte';
-	import IconCkConvert from '$lib/components/icons/IconCkConvert.svelte';
-	import { i18n } from '$lib/stores/i18n.store';
 	import ConvertToBitfinity from '$lib/components/convert/ConvertToBitfinity.svelte';
 	import { isRequiredTokenWithLinkedData } from '$lib/utils/token.utils';
 	import { nonNullish } from '@dfinity/utils';
+	import { BITFINITY_TOKENS } from '$env/omnity-tokens.erc20.env';
+	import type { RequiredTokenWithLinkedData } from '$lib/types/token';
 
 	let convertEth = false;
 	$: convertEth = $ethToCkETHEnabled && $erc20UserTokensInitialized;
@@ -57,8 +54,10 @@
 	let showBitfinityBridge = false;
 	$: showBitfinityBridge =
 		isTransactionsPage &&
-		isRequiredTokenWithLinkedData($tokenWithFallback) &&
-		nonNullish($tokenWithFallback.twinTokenSymbol);
+		nonNullish($tokenWithFallback) &&
+		(BITFINITY_TOKENS.some((token) => token.twinTokenSymbol === $tokenWithFallback?.symbol) ||
+			(isRequiredTokenWithLinkedData($tokenWithFallback) &&
+				nonNullish(($tokenWithFallback as RequiredTokenWithLinkedData).twinTokenSymbol)));
 </script>
 
 <div role="toolbar" class="flex w-full justify-center pt-10">

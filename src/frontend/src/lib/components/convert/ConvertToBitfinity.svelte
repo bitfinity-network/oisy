@@ -14,8 +14,10 @@
 	$: token = isRequiredTokenWithLinkedData($tokenWithFallback)
 		? ($tokenWithFallback as RequiredTokenWithLinkedData)
 		: undefined;
+	$: isIcrcToken = token?.standard === 'icrc';
 	$: isBitfinityToken = nonNullish(token) && token.symbol.startsWith('o');
-	$: isTwinTokenBitfinity = nonNullish(token) && token.twinTokenSymbol?.startsWith('o');
+	$: shouldShowConvertButton =
+		nonNullish(token) && (isIcrcToken || nonNullish(token.twinTokenSymbol) || isBitfinityToken);
 	$: targetSymbol = nonNullish(token)
 		? isBitfinityToken
 			? token.symbol.slice(1)
@@ -32,10 +34,12 @@
 	setContext(SEND_CONTEXT_KEY, context);
 </script>
 
-<ConvertBTF ariaLabel={`Bridge to ${targetSymbol}`}>
-	<IconCkConvert size="28" slot="icon" />
-	<span>{targetSymbol}</span>
-</ConvertBTF>
+{#if shouldShowConvertButton}
+	<ConvertBTF ariaLabel={`Bridge to ${targetSymbol}`}>
+		<IconCkConvert size="28" slot="icon" />
+		<span>{targetSymbol}</span>
+	</ConvertBTF>
+{/if}
 
 {#if $modalConvertToTwinToken}
 	<BTFSendTokenModal
