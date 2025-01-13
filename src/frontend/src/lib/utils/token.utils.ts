@@ -253,3 +253,9 @@ export const findTwinToken = ({
 				(token) => token.symbol === tokenToPair.twinTokenSymbol && isIcCkToken(token)
 			) as IcCkToken | undefined)
 		: undefined;
+
+export const isBitfinityToken = (token: Token | null) =>
+	nonNullish(token) && BITFINITY_TOKENS.some((t) => t.twinTokenSymbol === token.symbol);
+
+export const hasTwinToken = (token: Token | null) =>
+	nonNullish(token) && isRequiredTokenWithLinkedData(token) && !!token.twinTokenSymbol;

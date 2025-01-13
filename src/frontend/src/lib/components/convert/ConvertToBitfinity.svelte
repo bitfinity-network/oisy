@@ -3,7 +3,7 @@
 	import ConvertBTF from '../../../btf/send/ConvertBTF.svelte';
 	import IconCkConvert from '../icons/IconCkConvert.svelte';
 	import { tokenWithFallback } from '$lib/derived/token.derived';
-	import { isRequiredTokenWithLinkedData } from '$lib/utils/token.utils';
+	import { hasTwinToken, isRequiredTokenWithLinkedData } from '$lib/utils/token.utils';
 	import type { RequiredTokenWithLinkedData } from '$lib/types/token';
 	import { modalConvertToTwinToken } from '$lib/derived/modal.derived';
 	import { ckEthHelperContractAddress } from '$icp-eth/derived/cketh.derived';
@@ -17,7 +17,7 @@
 	$: isIcrcToken = token?.standard === 'icrc';
 	$: isBitfinityToken = nonNullish(token) && token.symbol.startsWith('o');
 	$: shouldShowConvertButton =
-		nonNullish(token) && (isIcrcToken || nonNullish(token.twinTokenSymbol) || isBitfinityToken);
+		nonNullish(token) && (isIcrcToken || hasTwinToken(token) || isBitfinityToken);
 	$: targetSymbol = nonNullish(token)
 		? isBitfinityToken
 			? token.symbol.slice(1)

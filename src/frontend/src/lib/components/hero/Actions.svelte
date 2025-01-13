@@ -28,10 +28,14 @@
 	import { isRouteTransactions } from '$lib/utils/nav.utils';
 	import { isNetworkIdBTCMainnet } from '$lib/utils/network.utils';
 	import ConvertToBitfinity from '$lib/components/convert/ConvertToBitfinity.svelte';
-	import { isRequiredTokenWithLinkedData } from '$lib/utils/token.utils';
+	import {
+		hasTwinToken,
+		isBitfinityToken,
+		isRequiredTokenWithLinkedData
+	} from '$lib/utils/token.utils';
 	import { nonNullish } from '@dfinity/utils';
 	import { BITFINITY_TOKENS } from '$env/omnity-tokens.erc20.env';
-	import type { RequiredTokenWithLinkedData } from '$lib/types/token';
+	import type { RequiredTokenWithLinkedData, Token } from '$lib/types/token';
 
 	let convertEth = false;
 	$: convertEth = $ethToCkETHEnabled && $erc20UserTokensInitialized;
@@ -54,10 +58,8 @@
 	let showBitfinityBridge = false;
 	$: showBitfinityBridge =
 		isTransactionsPage &&
-		nonNullish($tokenWithFallback) &&
-		(BITFINITY_TOKENS.some((token) => token.twinTokenSymbol === $tokenWithFallback?.symbol) ||
-			(isRequiredTokenWithLinkedData($tokenWithFallback) &&
-				nonNullish(($tokenWithFallback as RequiredTokenWithLinkedData).twinTokenSymbol)));
+		$tokenWithFallback &&
+		(isBitfinityToken($tokenWithFallback) || hasTwinToken($tokenWithFallback));
 </script>
 
 <div role="toolbar" class="flex w-full justify-center pt-10">
