@@ -1,5 +1,5 @@
 export interface BitfinityChain {
-	chainId: number;
+	chainId: string;
 	canisterId: string;
 	portContractAddress: string;
 	evmChain: {
@@ -10,6 +10,12 @@ export interface BitfinityChain {
 			name: string;
 			symbol: string;
 			decimals: number;
+		};
+		rpcUrls: {
+			default: {
+				http: string[];
+				webSocket?: string[];
+			};
 		};
 	};
 }
