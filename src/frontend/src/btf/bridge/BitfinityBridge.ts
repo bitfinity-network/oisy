@@ -1,14 +1,5 @@
 import type { ActorSubclass } from '@dfinity/agent';
-import {
-	createPublicClient,
-	createWalletClient,
-	custom,
-	getContract,
-	http,
-	isAddress,
-	type PublicClient,
-	type WalletClient
-} from 'viem';
+import { ethers } from 'ethers';
 import { idlFactory, type TokenResp, type _SERVICE } from './candids/Omnity.did';
 import { OMNITY_PORT_ABI } from './constants';
 import type {
@@ -22,55 +13,48 @@ import type {
 } from './types';
 import { createActor } from './utils';
 
-type EvmAddress = `0x${string}`;
+// type EvmAddress = `0x${string}`;
 
 export class IcBitfinityBridge {
 	private actor: ActorSubclass<_SERVICE>;
 	private chain: BitfinityChain;
-	private publicClient: PublicClient;
-	private walletClient: WalletClient;
+	private provider: ethers.providers.Web3Provider;
+	private signer: ethers.Signer;
 
 	constructor(chain: BitfinityChain) {
 		this.chain = chain;
-
 		this.actor = createActor<_SERVICE>(chain.canisterId, idlFactory);
 
-		this.publicClient = createPublicClient({
-			chain: chain.evmChain,
-			transport: http()
-		});
-
-		this.walletClient = createWalletClient({
-			chain: chain.evmChain,
-			transport: custom((window as any).ethereum)
-		});
+		// Initialize ethers provider and signer
+		this.provider = new ethers.providers.Web3Provider((window as any).ethereum);
+		this.signer = this.provider.getSigner();
 	}
 
 	async bridgeToEvm(params: BridgeToEvmParams): Promise<string> {
 		try {
 			const { token, sourceIcAddress, targetEvmAddress, amount } = params;
 
-			const portContract = getContract({
-				address: this.chain.portContractAddress as EvmAddress,
-				abi: OMNITY_PORT_ABI,
-				client: {
-					public: this.publicClient,
-					wallet: this.walletClient
-				}
-			});
+			const portContract = new ethers.Contract(
+				this.chain.portContractAddress,
+				OMNITY_PORT_ABI,
+				this.signer
+			);
 
 			const { fee } = await this.getBridgeFee();
 
-			const txHash = await portContract.write.transportToken(
-				[this.chain.chainId, token.tokenId, targetEvmAddress, amount, ''],
+			const tx = await portContract.transportToken(
+				this.chain.chainId.toString(),
+				token.tokenId,
+				targetEvmAddress,
+				amount,
+				'',
 				{
-					account: sourceIcAddress as EvmAddress,
-					chain: this.chain.evmChain,
 					value: fee
 				}
 			);
 
-			return txHash;
+			const receipt = await tx.wait();
+			return receipt.transactionHash;
 		} catch (error) {
 			if (error instanceof Error) {
 				if (error.message.includes('User rejected the request')) {
@@ -82,7 +66,7 @@ export class IcBitfinityBridge {
 	}
 
 	async getBridgeFee(): Promise<BridgeFee> {
-		const [fee] = await this.actor.get_fee(this.chain.chainId);
+		const [fee] = await this.actor.get_fee(this.chain.chainId.toString());
 		if (fee === undefined) {
 			throw new Error('Failed to get bridge fee');
 		}
@@ -141,6 +125,6 @@ export class IcBitfinityBridge {
 	}
 
 	static validateEvmAddress(addr: string): boolean {
-		return isAddress(addr);
+		return ethers.utils.isAddress(addr);
 	}
 }
