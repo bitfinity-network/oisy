@@ -35,7 +35,7 @@ export class IcBitfinityBridge {
 
 	async bridgeToEvm(params: BridgeToEvmParams): Promise<string> {
 		try {
-			const { token, sourceIcAddress, targetEvmAddress, amount } = params;
+			const { tokenId, targetEvmAddress, amount } = params;
 
 			const portContract = new ethers.Contract(
 				this.chain.contractAddress!,
@@ -47,7 +47,7 @@ export class IcBitfinityBridge {
 
 			const tx = await portContract.transportToken(
 				this.chain.chainId.toString(),
-				token.tokenId,
+				tokenId,
 				targetEvmAddress,
 				amount,
 				'',
@@ -69,7 +69,10 @@ export class IcBitfinityBridge {
 	}
 
 	async getBridgeFee(): Promise<BridgeFee> {
+		console.log('actor for fee', this.actor);
+		console.log('chain for fee', this.chain);
 		const [fee] = await this.actor.get_fee(this.chain.chainId.toString());
+
 		if (fee === undefined) {
 			throw new Error('Failed to get bridge fee');
 		}

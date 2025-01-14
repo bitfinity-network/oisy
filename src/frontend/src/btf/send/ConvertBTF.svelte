@@ -12,8 +12,14 @@
 	import type { NetworkId } from '$lib/types/network';
 	import type { TokenId, TokenUi } from '$lib/types/token';
 	import BTFSendTokenModal from './BTFSendTokenModal.svelte';
-	import { BITFINITY_NETWORK } from '$env/networks.env';
+	import { BITFINITY_NETWORK, BITFINITY_NETWORK_ID } from '$env/networks.env';
 	import { initSendContext, SEND_CONTEXT_KEY, type SendContext } from '$lib/stores/send.store';
+	import { getAgent } from '$lib/actors/agents.ic';
+	import { authIdentity } from '$lib/derived/auth.derived';
+	import { jsonRpcProviders } from '$eth/providers/jsonrpc.provider';
+	import { JsonRpcProvider } from '@ethersproject/providers';
+	import { ChainID, ChainName, ChainState, ChainType, IcBitfinityBridge, ServiceType } from '../bridge';
+
 
 	export let ariaLabel: string;
 
@@ -48,10 +54,43 @@
 
 		modalStore.openConvertToTwinToken();
 	};
+
+
+	const bridgeTest = async () => {
+	
+		if(!$authIdentity) return;
+		const agent = await getAgent({ identity: $authIdentity });
+		const provider =  jsonRpcProviders(BITFINITY_NETWORK_ID);
+		const chain = {
+			chainId: "355110",
+			chainName: ChainName.Bitfinity,
+			canisterId: "pw3ee-pyaaa-aaaar-qahva-cai", 
+			feeToken: [],
+			chainType: ChainType.ExecutionChain,
+			counterparties: [],
+			chainState: ChainState.Active,
+			serviceType: ServiceType.Route,
+			contractAddress: "0x1Ad8cec9E5a4A441FE407785E188AbDeb4371468" 
+		};
+		const bridge = new IcBitfinityBridge(chain, agent, provider);
+		console.log("bridge", bridge);
+		try {
+			const txHash = await bridge.bridgeToEvm({
+			tokenId: "2ouva-viaaa-aaaaq-aaamq-cai",
+			targetEvmAddress: "0xf975d746F36a1473A1055c262155F3c7f2bd9278",
+			amount: BigInt("10000000")
+			})
+		console.log("txHash", txHash);
+
+		} catch (error) {
+			console.error("error--", error);
+		}
+		
+	}
 </script>
 
 <ButtonHero
-	on:click={async () => await openSend()}
+	on:click={async () =>  bridgeTest()}
 	disabled={isDisabled() || $isBusy || $outflowActionsDisabled}
 	{ariaLabel}
 >

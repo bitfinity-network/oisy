@@ -89,8 +89,7 @@ export interface Token {
 }
 
 export interface BridgeToEvmParams {
-	token: Token;
-	sourceIcAddress: string;
+	tokenId: string;
 	targetEvmAddress: string;
 	amount: bigint;
 }

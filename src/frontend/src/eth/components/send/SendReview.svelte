@@ -32,9 +32,11 @@
 	let invalid = true;
 	$: invalid =
 		isNullishOrEmpty(destination) ||
-		!isEthAddress(destination) ||
-		invalidAmount(amount) ||
-		isNullish($storeFeeData);
+		!isEthAddress(destination) 
+		//invalidAmount(amount) ||
+		//isNullish($storeFeeData);
+
+	console.log('invalid', invalid);
 
 	const dispatch = createEventDispatcher();
 
