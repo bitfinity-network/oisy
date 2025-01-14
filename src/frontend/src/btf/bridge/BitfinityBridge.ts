@@ -1,8 +1,9 @@
+import type { EthSignTransactionRequest } from '$declarations/signer/signer.did';
 import type { JsonRpcProvider } from '$eth/providers/jsonrpc.provider';
-import type { ActorSubclass, Agent } from '@dfinity/agent';
+import { signTransaction } from '$lib/api/signer.api';
+import type { ActorSubclass, Agent, Identity } from '@dfinity/agent';
 import { ethers } from 'ethers';
 import { idlFactory, type TokenResp, type _SERVICE } from './candids/Omnity.did';
-import { OMNITY_PORT_ABI } from './constants';
 import type {
 	BridgeFee,
 	BridgeStatus,
@@ -33,31 +34,30 @@ export class IcBitfinityBridge {
 		});
 	}
 
-	async bridgeToEvm(params: BridgeToEvmParams): Promise<string> {
+	async bridgeToEvm(params: BridgeToEvmParams, identity: Identity): Promise<any> {
 		try {
+			//constract tx obj
 			const { tokenId, targetEvmAddress, amount } = params;
-
-			const portContract = new ethers.Contract(
-				this.chain.contractAddress!,
-				OMNITY_PORT_ABI,
-				this.signer
-			);
-
 			const { fee } = await this.getBridgeFee();
 
-			const tx = await portContract.transportToken(
-				this.chain.chainId.toString(),
-				tokenId,
-				targetEvmAddress,
-				amount,
-				'',
-				{
-					value: fee
-				}
-			);
+			const transaction: EthSignTransactionRequest = {
+				to: targetEvmAddress,
+				gas: 0n,
+				value: params.amount,
+				max_priority_fee_per_gas: 1000000000000000000n,
+				nonce: 0n,
+				max_fee_per_gas: 1000000000000000000n,
+				chain_id: 1n,
+				data: []
+			};
+			const signedTransaction = await signTransaction({
+				identity,
+				transaction
+			});
 
-			const receipt = await tx.wait();
-			return receipt.transactionHash;
+			const tx = await this.provider.sendTransaction(signedTransaction);
+			console.log('tx', tx);
+			return tx;
 		} catch (error) {
 			if (error instanceof Error) {
 				if (error.message.includes('User rejected the request')) {
@@ -71,11 +71,9 @@ export class IcBitfinityBridge {
 	async getBridgeFee(): Promise<BridgeFee> {
 		console.log('actor for fee', this.actor);
 		console.log('chain for fee', this.chain);
-		const [fee] = await this.actor.get_fee(this.chain.chainId.toString());
+		//const list = await this.actor.get_token_list
 
-		if (fee === undefined) {
-			throw new Error('Failed to get bridge fee');
-		}
+		const [fee = 0n] = await this.actor.get_fee(this.chain.chainId.toString());
 
 		const { symbol, decimals } = this.chain.evmChain!.nativeCurrency;
 		return {

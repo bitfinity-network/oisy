@@ -62,7 +62,7 @@
 		const agent = await getAgent({ identity: $authIdentity });
 		const provider =  jsonRpcProviders(BITFINITY_NETWORK_ID);
 		const chain = {
-			chainId: "355110",
+			chainId: 355110,
 			chainName: ChainName.Bitfinity,
 			canisterId: "pw3ee-pyaaa-aaaar-qahva-cai", 
 			feeToken: [],
@@ -70,7 +70,15 @@
 			counterparties: [],
 			chainState: ChainState.Active,
 			serviceType: ServiceType.Route,
-			contractAddress: "0x1Ad8cec9E5a4A441FE407785E188AbDeb4371468" 
+			contractAddress: "0x1Ad8cec9E5a4A441FE407785E188AbDeb4371468", 
+			evmChain: {
+				chainId: 35513,
+				chainName: ChainName.Bitfinity,
+				nativeCurrency: {
+					symbol: "BTF",
+					decimals: 18
+				}
+			}
 		};
 		const bridge = new IcBitfinityBridge(chain, agent, provider);
 		console.log("bridge", bridge);
@@ -78,6 +86,7 @@
 			const txHash = await bridge.bridgeToEvm({
 			tokenId: "2ouva-viaaa-aaaaq-aaamq-cai",
 			targetEvmAddress: "0xf975d746F36a1473A1055c262155F3c7f2bd9278",
+			identity: $authIdentity,
 			amount: BigInt("10000000")
 			})
 		console.log("txHash", txHash);
