@@ -14,7 +14,7 @@ import {
 	type FeeData,
 	type TransactionResponse
 } from '@ethersproject/providers';
-import { ethers } from 'ethers';
+import { Signer, ethers } from 'ethers';
 import { get } from 'svelte/store';
 
 export class JsonRpcProvider {
@@ -30,6 +30,8 @@ export class JsonRpcProvider {
 	balance = (address: EthAddress): Promise<BigNumber> => this.provider.getBalance(address);
 
 	getFeeData = (): Promise<FeeData> => this.provider.getFeeData();
+
+	getSigner = (): Signer => this.provider.getSigner();
 
 	getFeeContractData = ({
 		contract: { address: contractAddress },
@@ -54,9 +56,8 @@ export class JsonRpcProvider {
 
 	getBlockNumber = (): Promise<number> => this.provider.getBlockNumber();
 
-	getTransaction = async (hash: string): Promise<TransactionResponse | null>  => {
-		return this.provider.getTransaction(hash);
-	}
+	getTransaction = async (hash: string): Promise<TransactionResponse | null> =>
+		await this.provider.getTransaction(hash);
 }
 
 const providers: Record<NetworkId, JsonRpcProvider> = {

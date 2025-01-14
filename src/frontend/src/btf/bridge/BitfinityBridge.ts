@@ -1,14 +1,15 @@
-import type { ActorSubclass } from '@dfinity/agent';
+import type { JsonRpcProvider } from '$eth/providers/jsonrpc.provider';
+import type { ActorSubclass, Agent } from '@dfinity/agent';
 import { ethers } from 'ethers';
 import { idlFactory, type TokenResp, type _SERVICE } from './candids/Omnity.did';
 import { OMNITY_PORT_ABI } from './constants';
 import type {
-	BitfinityChain,
 	BridgeFee,
 	BridgeStatus,
 	BridgeStatusResult,
 	BridgeTicket,
 	BridgeToEvmParams,
+	Chain,
 	Token
 } from './types';
 import { createActor } from './utils';
@@ -17,17 +18,19 @@ import { createActor } from './utils';
 
 export class IcBitfinityBridge {
 	private actor: ActorSubclass<_SERVICE>;
-	private chain: BitfinityChain;
-	private provider: ethers.providers.Web3Provider;
+	private chain: Chain;
+	private provider: JsonRpcProvider;
 	private signer: ethers.Signer;
 
-	constructor(chain: BitfinityChain) {
+	constructor(chain: Chain, agent: Agent, provider: JsonRpcProvider) {
 		this.chain = chain;
-		this.actor = createActor<_SERVICE>(chain.canisterId, idlFactory);
-
-		// Initialize ethers provider and signer
-		this.provider = new ethers.providers.Web3Provider((window as any).ethereum);
+		this.provider = provider;
 		this.signer = this.provider.getSigner();
+		this.actor = createActor<_SERVICE>({
+			canisterId: chain.canisterId,
+			interfaceFactory: idlFactory,
+			agent
+		});
 	}
 
 	async bridgeToEvm(params: BridgeToEvmParams): Promise<string> {
@@ -35,7 +38,7 @@ export class IcBitfinityBridge {
 			const { token, sourceIcAddress, targetEvmAddress, amount } = params;
 
 			const portContract = new ethers.Contract(
-				this.chain.portContractAddress,
+				this.chain.contractAddress!,
 				OMNITY_PORT_ABI,
 				this.signer
 			);
@@ -71,7 +74,7 @@ export class IcBitfinityBridge {
 			throw new Error('Failed to get bridge fee');
 		}
 
-		const { symbol, decimals } = this.chain.evmChain.nativeCurrency;
+		const { symbol, decimals } = this.chain.evmChain!.nativeCurrency;
 		return {
 			fee,
 			symbol,
