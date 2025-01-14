@@ -1,3 +1,4 @@
+import { Chain as EvmChain } from 'viem';
 export interface BitfinityChain {
 	chainId: string;
 	canisterId: string;
@@ -18,6 +19,63 @@ export interface BitfinityChain {
 			};
 		};
 	};
+}
+export enum ChainName {
+	ICP = 'ICP',
+	Bitcoin = 'Bitcoin',
+	BEVM = 'BEVM',
+	BitLayer = 'Bitlayer',
+	BSquared = 'B² Network',
+	XLayer = 'X Layer',
+	Merlin = 'Merlin',
+	Bob = 'Bob',
+	Rootstock = 'Rootstock',
+	Bitfinity = 'Bitfinity',
+	AILayer = 'AILayer',
+	Solana = 'Solana',
+	Ethereum = 'Ethereum'
+}
+export enum ChainID {
+	eICP = 'eICP',
+	Bitcoin = 'Bitcoin',
+	BEVM = 'bevm',
+	BitLayer = 'Bitlayer',
+	BSquared = 'B² Network',
+	XLayer = 'X Layer',
+	Merlin = 'Merlin',
+	Bob = 'Bob',
+	RootStock = 'RootStock',
+	Bitfinity = 'Bitfinity',
+	AILayer = 'AILayer',
+	sICP = 'sICP',
+	Solana = 'eSolana',
+	Ethereum = 'Ethereum'
+}
+export enum ChainType {
+	Settlement = 'SettlementChain',
+	ExecutionChain = 'ExecutionChain'
+}
+
+export enum ChainState {
+	Active = 'Active',
+	Deactive = 'Deactive'
+}
+export enum ServiceType {
+	Route = 'Route',
+	Customs = 'Customs'
+}
+export interface Chain {
+	chainId: ChainID;
+	chainName: ChainName;
+	canisterId: string;
+	feeToken: string[];
+	chainType: ChainType;
+	counterparties: ChainID[];
+	chainState: ChainState;
+	contractAddress?: string;
+	evmChain?: EvmChain;
+	serviceType: ServiceType;
+	tokenList?: Token[];
 }
 
 export interface Token {

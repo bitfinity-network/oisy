@@ -12,12 +12,12 @@ import {
 import { idlFactory, type TokenResp, type _SERVICE } from './candids/Omnity.did';
 import { OMNITY_PORT_ABI } from './constants';
 import type {
-	BitfinityChain,
 	BridgeFee,
 	BridgeStatus,
 	BridgeStatusResult,
 	BridgeTicket,
 	BridgeToEvmParams,
+	Chain,
 	Token
 } from './types';
 import { createActor } from './utils';
@@ -26,11 +26,11 @@ type EvmAddress = `0x${string}`;
 
 export class IcBitfinityBridge {
 	private actor: ActorSubclass<_SERVICE>;
-	private chain: BitfinityChain;
+	private chain: Chain;
 	private publicClient: PublicClient;
 	private walletClient: WalletClient;
 
-	constructor(chain: BitfinityChain) {
+	constructor(chain: Chain) {
 		this.chain = chain;
 
 		this.actor = createActor<_SERVICE>(chain.canisterId, idlFactory);
@@ -51,7 +51,7 @@ export class IcBitfinityBridge {
 			const { token, sourceIcAddress, targetEvmAddress, amount } = params;
 
 			const portContract = getContract({
-				address: this.chain.portContractAddress as EvmAddress,
+				address: this.chain.contractAddress as EvmAddress,
 				abi: OMNITY_PORT_ABI,
 				client: {
 					public: this.publicClient,
@@ -87,7 +87,7 @@ export class IcBitfinityBridge {
 			throw new Error('Failed to get bridge fee');
 		}
 
-		const { symbol, decimals } = this.chain.evmChain.nativeCurrency;
+		const { symbol, decimals } = this.chain.evmChain!.nativeCurrency;
 		return {
 			fee,
 			symbol,
