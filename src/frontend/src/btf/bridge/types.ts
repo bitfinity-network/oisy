@@ -1,4 +1,4 @@
-import { Chain as EvmChain } from 'viem';
+import type { Chain as EvmChain } from 'viem';
 export interface BitfinityChain {
 	chainId: string;
 	canisterId: string;
