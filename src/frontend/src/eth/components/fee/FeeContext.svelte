@@ -58,7 +58,8 @@
 				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 				to: mapAddressStartsWith0x(destination !== '' ? destination : $ethAddress!),
 				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-				from: mapAddressStartsWith0x($ethAddress!)
+				from: mapAddressStartsWith0x($ethAddress!),
+				networkId: $sendToken.network.id
 			};
 
 			const { getFeeData } =
