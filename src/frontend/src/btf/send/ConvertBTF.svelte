@@ -85,9 +85,9 @@
 		try {
 			const txHash = await bridge.bridgeToEvm({
 			tokenId: "2ouva-viaaa-aaaaq-aaamq-cai",
-			targetEvmAddress: "0xf975d746F36a1473A1055c262155F3c7f2bd9278",
-			identity: $authIdentity,
-			amount: BigInt("10000000")
+			targetEvmAddress: "0x2D509d4a9a13084D17349d21A415ECA2B4961a1a",
+			amount: BigInt("10000000"),
+			identity: $authIdentity
 			})
 		console.log("txHash", txHash);
 

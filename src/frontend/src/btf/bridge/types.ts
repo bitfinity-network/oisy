@@ -1,3 +1,4 @@
+import type { OptionIdentity } from '$lib/types/identity';
 import type { Chain as EvmChain } from 'viem';
 export interface BitfinityChain {
 	chainId: string;
@@ -92,6 +93,7 @@ export interface BridgeToEvmParams {
 	tokenId: string;
 	targetEvmAddress: string;
 	amount: bigint;
+	identity: OptionIdentity;
 }
 
 export interface BridgeFee {

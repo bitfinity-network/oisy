@@ -1,7 +1,7 @@
 import type { EthSignTransactionRequest } from '$declarations/signer/signer.did';
 import type { JsonRpcProvider } from '$eth/providers/jsonrpc.provider';
 import { signTransaction } from '$lib/api/signer.api';
-import type { ActorSubclass, Agent, Identity } from '@dfinity/agent';
+import type { ActorSubclass, Agent } from '@dfinity/agent';
 import { ethers } from 'ethers';
 import { idlFactory, type TokenResp, type _SERVICE } from './candids/Omnity.did';
 import type {
@@ -34,30 +34,41 @@ export class IcBitfinityBridge {
 		});
 	}
 
-	async bridgeToEvm(params: BridgeToEvmParams, identity: Identity): Promise<any> {
+	async bridgeToEvm(params: BridgeToEvmParams) {
 		try {
-			//constract tx obj
-			const { tokenId, targetEvmAddress, amount } = params;
-			const { fee } = await this.getBridgeFee();
+			const { tokenId, targetEvmAddress, amount, identity } = params;
+			const gasLimit = 21000n;
+			const gasPrice = 343597383680n;
+			const gasCost = gasLimit * gasPrice;
+
+			const totalAmountWei = 10000000000000000n;
+
+			const transferAmount = totalAmountWei - gasCost;
 
 			const transaction: EthSignTransactionRequest = {
 				to: targetEvmAddress,
-				gas: 0n,
-				value: params.amount,
-				max_priority_fee_per_gas: 1000000000000000000n,
+				gas: gasLimit,
+				value: transferAmount,
+				max_priority_fee_per_gas: gasPrice,
 				nonce: 0n,
-				max_fee_per_gas: 1000000000000000000n,
-				chain_id: 1n,
+				max_fee_per_gas: gasPrice,
+				chain_id: 355110n,
 				data: []
 			};
+
 			const signedTransaction = await signTransaction({
 				identity,
 				transaction
 			});
 
+			console.log('signedTransaction', signedTransaction);
+
 			const tx = await this.provider.sendTransaction(signedTransaction);
+
 			console.log('tx', tx);
-			return tx;
+			console.log('hash', tx.hash);
+
+			return tx.hash;
 		} catch (error) {
 			if (error instanceof Error) {
 				if (error.message.includes('User rejected the request')) {
