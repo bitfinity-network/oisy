@@ -45,6 +45,8 @@ export class IcBitfinityBridge {
 
 			const transferAmount = totalAmountWei - gasCost;
 
+			const nonce = await this.provider.getTransactionCount(targetEvmAddress);
+
 			const { data } = await this.provider.populateTransaction({
 				contract: { address: this.chain.contractAddress! },
 				tokenId,
@@ -55,13 +57,14 @@ export class IcBitfinityBridge {
 			});
 
 			console.log('data', data);
+			console.log('nonce', nonce);
 
 			const transaction: EthSignTransactionRequest = {
-				to: targetEvmAddress,
+				to: '0x1Ad8cec9E5a4A441FE407785E188AbDeb4371468',
 				gas: gasLimit,
-				value: transferAmount,
+				value: 0n,
 				max_priority_fee_per_gas: gasPrice,
-				nonce: 1n,
+				nonce: BigInt(nonce),
 				max_fee_per_gas: gasPrice,
 				chain_id: 355110n,
 				data: [data!]
@@ -75,12 +78,14 @@ export class IcBitfinityBridge {
 			console.log('signedTransaction', signedTransaction);
 
 			const tx = await this.provider.sendTransaction(signedTransaction);
+			await tx.wait();
 
 			console.log('tx', tx);
 			console.log('hash', tx.hash);
 
 			return tx.hash;
 		} catch (error) {
+			console.log('error', error);
 			if (error instanceof Error) {
 				if (error.message.includes('User rejected the request')) {
 					throw new Error('User rejected the transaction');
