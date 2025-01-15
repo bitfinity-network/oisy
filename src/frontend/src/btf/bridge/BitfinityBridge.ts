@@ -45,15 +45,26 @@ export class IcBitfinityBridge {
 
 			const transferAmount = totalAmountWei - gasCost;
 
+			const { data } = await this.provider.populateTransaction({
+				contract: { address: this.chain.contractAddress! },
+				tokenId,
+				to: targetEvmAddress,
+				amount: ethers.BigNumber.from(transferAmount),
+				fee: ethers.BigNumber.from(gasCost),
+				chainId: Number(this.chain.chainId)
+			});
+
+			console.log('data', data);
+
 			const transaction: EthSignTransactionRequest = {
 				to: targetEvmAddress,
 				gas: gasLimit,
 				value: transferAmount,
 				max_priority_fee_per_gas: gasPrice,
-				nonce: 0n,
+				nonce: 1n,
 				max_fee_per_gas: gasPrice,
 				chain_id: 355110n,
-				data: []
+				data: [data!]
 			};
 
 			const signedTransaction = await signTransaction({
