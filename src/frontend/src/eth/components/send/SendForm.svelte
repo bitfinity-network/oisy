@@ -25,6 +25,7 @@
 	export let nativeEthereumToken: Token;
 	// TODO: to be removed once minterInfo breaking changes have been executed on mainnet
 	export let sourceNetwork: EthereumNetwork;
+	export let source: string;
 
 	let insufficientFunds: boolean;
 	let invalidDestination: boolean;
@@ -54,7 +55,7 @@
 
 		<SendAmount {nativeEthereumToken} bind:amount bind:insufficientFunds />
 
-		<SendSource token={$sendToken} balance={$sendBalance} source={$ethAddress ?? ''} />
+		<SendSource token={$sendToken} balance={$sendBalance} {source} />
 
 		<FeeDisplay />
 

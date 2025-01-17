@@ -19,22 +19,22 @@
 	import { isEthAddress } from '$lib/utils/account.utils';
 	import { invalidAmount, isNullishOrEmpty } from '$lib/utils/input.utils';
 	import { toastsShow, toastsError } from '$lib/stores/toasts.store';
-	import {  type BitfinityChain } from '../../../btf/bridge';
+	import { type BitfinityChain } from '../../../btf/bridge';
 
 	export let destination = '';
 	export let targetNetwork: Network | undefined = undefined;
 	export let sourceNetwork: EthereumNetwork | BitfinityChain;
 	export let destinationEditable = true;
 	export let amount: OptionAmount = undefined;
+	export let source: string;
 
 	const { feeStore: storeFeeData }: FeeContext = getContext<FeeContext>(FEE_CONTEXT_KEY);
 
 	let invalid = true;
 	$: invalid =
-		isNullishOrEmpty(destination) ||
-		!isEthAddress(destination) 
-		//invalidAmount(amount) ||
-		//isNullish($storeFeeData);
+		isNullishOrEmpty(destination) || ($sendToken.standard !== 'icrc' && !isEthAddress(destination));
+	//invalidAmount(amount) ||
+	//isNullish($storeFeeData);
 
 	console.log('invalid', invalid);
 
@@ -44,33 +44,11 @@
 
 	async function handleSend() {
 		try {
-			// if ('canisterId' in sourceNetwork) {
-			// 	const bridge = new IcBitfinityBridge(sourceNetwork);
-				
-			// 	if (!$sendToken || !('tokenId' in $sendToken)) {
-			// 		throw new Error('Invalid token configuration');
-			// 	}
-
-			// 	const txHash = await bridge.bridgeToEvm({
-			// 		token: $sendToken,
-			// 		sourceIcAddress: $ethAddress ?? '',
-			// 		targetEvmAddress: destination as `0x${string}`,
-			// 		amount: BigInt(amount?.valueOf() ?? '0')
-			// 	});
-
-			// 	toastsShow({
-			// 		text: 'Bridge transaction initiated',
-			// 		level: 'success'
-			// 	});
-
-			// 	dispatch('icSend', { txHash });
-			// } else {
-			// 	dispatch('icSend');
-			// }
+			dispatch('icSend');
 		} catch (error) {
 			toastsError({
 				msg: {
-					text: 'Failed to send tokens',
+					text: 'Failed to send tokens'
 				},
 				err: error
 			});
@@ -82,9 +60,9 @@
 	<SendData
 		{amount}
 		destination={destinationEditable ? destination : null}
-			token={$sendToken}
-			balance={$sendBalance}
-			source={$ethAddress ?? ''}
+		token={$sendToken}
+		balance={$sendBalance}
+		{source}
 	>
 		<FeeDisplay slot="fee" />
 
