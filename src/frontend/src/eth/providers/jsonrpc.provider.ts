@@ -14,9 +14,8 @@ import {
 	type FeeData,
 	type TransactionResponse
 } from '@ethersproject/providers';
-import { Signer, ethers, type PopulatedTransaction } from 'ethers';
+import { Signer, ethers } from 'ethers';
 import { get } from 'svelte/store';
-import { OMNITY_PORT_ABI } from '../../btf/bridge';
 
 export class JsonRpcProvider {
 	private readonly provider: JsonRpcProviderLib;
@@ -33,34 +32,6 @@ export class JsonRpcProvider {
 	getFeeData = (): Promise<FeeData> => this.provider.getFeeData();
 
 	getSigner = (): Signer => this.provider.getSigner();
-
-	populateTransaction = ({
-		contract: { address: contractAddress },
-		tokenId,
-		to,
-		amount,
-		fee,
-		chainId
-	}: {
-		contract: Erc20ContractAddress;
-		tokenId: string;
-		to: EthAddress;
-		amount: BigNumber;
-		fee: BigNumber;
-		chainId: number;
-	}): Promise<PopulatedTransaction> => {
-		const omnityPortContract = new ethers.Contract(contractAddress, OMNITY_PORT_ABI, this.provider);
-		return omnityPortContract.populateTransaction.transportToken(
-			chainId.toString(),
-			tokenId,
-			to,
-			amount,
-			'',
-			{
-				value: fee
-			}
-		);
-	};
 
 	getFeeContractData = ({
 		contract: { address: contractAddress },

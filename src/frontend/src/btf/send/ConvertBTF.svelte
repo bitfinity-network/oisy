@@ -16,10 +16,7 @@
 	import { initSendContext, SEND_CONTEXT_KEY, type SendContext } from '$lib/stores/send.store';
 	import { getAgent } from '$lib/actors/agents.ic';
 	import { authIdentity } from '$lib/derived/auth.derived';
-	import { jsonRpcProviders } from '$eth/providers/jsonrpc.provider';
-	import { JsonRpcProvider } from '@ethersproject/providers';
-	import { ChainID, ChainName, ChainState, ChainType, IcBitfinityBridge, ServiceType } from '../bridge';
-
+	import { ChainID, ChainName, ChainState, ChainType, ICBridge, ServiceType } from '../bridge';
 
 	export let ariaLabel: string;
 
@@ -55,51 +52,43 @@
 		modalStore.openConvertToTwinToken();
 	};
 
-
 	const bridgeTest = async () => {
-	
-		if(!$authIdentity) return;
-		const agent = await getAgent({ identity: $authIdentity });
-		const provider =  jsonRpcProviders(BITFINITY_NETWORK_ID);
-		const chain = {
-			chainId: 355110,
-			chainName: ChainName.Bitfinity,
-			canisterId: "pw3ee-pyaaa-aaaar-qahva-cai", 
-			feeToken: [],
-			chainType: ChainType.ExecutionChain,
-			counterparties: [],
-			chainState: ChainState.Active,
-			serviceType: ServiceType.Route,
-			contractAddress: "0x1Ad8cec9E5a4A441FE407785E188AbDeb4371468", 
-			evmChain: {
-				chainId: 35513,
-				chainName: ChainName.Bitfinity,
-				nativeCurrency: {
-					symbol: "BTF",
-					decimals: 18
-				}
-			}
-		};
-		const bridge = new IcBitfinityBridge(chain, agent, provider);
-		console.log("bridge", bridge);
-		try {
-			const txHash = await bridge.bridgeToEvm({
-			tokenId: "2ouva-viaaa-aaaaq-aaamq-cai",
-			targetEvmAddress: "0x2D509d4a9a13084D17349d21A415ECA2B4961a1a",
-			amount: BigInt("10000000"),
-			identity: $authIdentity
-			})
-		console.log("txHash", txHash);
+		if (!$authIdentity) return;
 
+		const testParams = {
+			sourceAddr:
+				//PRINCIPAL ADDRESS
+				'c2xmp-d3e26-5wdar-wztx4-m2znd-hvmqv-yaa3m-zpplu-4hueh-z2daw-uqe',
+			//EVM ADDRESS
+			targetAddr: '0xeE94DaC8671a74F8DC8D90AEA63F1D1fEDb8C3d3',
+			token: {
+				balance: BigInt(0),
+				chain_id: ChainID.sICP,
+				decimals: 8,
+				fee: BigInt(100000),
+				icon: 'https://raw.githubusercontent.com/octopus-network/omnity-interoperability/9061b7e2ea9e0717b47010279ff1ffd6f1f4c1fc/assets/token_logo/icp.svg',
+				id: 'zfcdd-tqaaa-aaaaq-aaaga-cai',
+				name: 'Dragginz',
+				symbol: 'DKP',
+				token_id: 'sICP-icrc-DKP'
+			},
+			amount: BigInt(100000000),
+			feeRate: 10000,
+			targetChainId: ChainID.Bitfinity
+		};
+		const agent = await getAgent({ identity: $authIdentity });
+		const icBridge = new ICBridge(agent);
+		try {
+			const res = await icBridge.onBridge(testParams);
+			console.log('Ticket ID:', res);
 		} catch (error) {
-			console.error("error--", error);
+			console.error('error', error);
 		}
-		
-	}
+	};
 </script>
 
 <ButtonHero
-	on:click={async () =>  bridgeTest()}
+	on:click={async () => bridgeTest()}
 	disabled={isDisabled() || $isBusy || $outflowActionsDisabled}
 	{ariaLabel}
 >

@@ -18,26 +18,27 @@ export class ICBridge {
 	// private chain: Chain;
 	// private provider: JsonRpcProvider;
 	// private signer: ethers.Signer;
+	agent: Agent;
 
-	constructor() {
+	constructor(agent: Agent) {
+		this.agent = agent;
 		// this.provider = provider;
 		// this.signer = this.provider.getSigner();
 	}
 
 	async onBridge(params: OnBridgeParams): Promise<string> {
-		const { token, sourceAddr, targetAddr, targetChainId, amount, createActor } = params;
+		const { token, sourceAddr, targetAddr, targetChainId, amount } = params;
 
-		if (!createActor) {
-			throw new Error('createActor is required');
-		}
-
-		const actor = await createActor<_SERVICE>(icpChainCanisterId, ICPCustomsInterfaceFactory);
+		const actor = await createActor<_SERVICE>({
+			canisterId: icpChainCanisterId,
+			interfaceFactory: ICPCustomsInterfaceFactory,
+			agent: this.agent
+		});
 
 		const result = await this.prepareForGenerateTicket({
 			token,
 			userAddr: sourceAddr,
-			amount,
-			createActor
+			amount
 		});
 
 		console.log('prepareForGenerateTicketResult', result);
@@ -63,13 +64,8 @@ export class ICBridge {
 	async onApprove({
 		token,
 		sourceAddr,
-		amount,
-		createActor
-	}: Pick<OnBridgeParams, 'token' | 'sourceAddr' | 'amount' | 'createActor'>): Promise<void> {
-		if (!createActor) {
-			throw new Error('createActor is required');
-		}
-
+		amount
+	}: Pick<OnBridgeParams, 'token' | 'sourceAddr' | 'amount'>): Promise<void> {
 		console.log('Amount to bridge:', Number(amount) / Math.pow(10, token.decimals), token.symbol);
 
 		const spender = Principal.fromText(icpChainCanisterId);
@@ -109,7 +105,11 @@ export class ICBridge {
 		if (allowanceAmount < approvingAmount) {
 			console.log('Current allowance insufficient. Initiating approval...');
 
-			const icrcLedger = await createActor<IcrcLedgerService>(token.id, IcrcLedgerInterfaceFactory);
+			const icrcLedger = await createActor<IcrcLedgerService>({
+				canisterId: token.id,
+				interfaceFactory: IcrcLedgerInterfaceFactory,
+				agent: this.agent
+			});
 
 			try {
 				await icrcLedger.icrc2_approve({
@@ -154,8 +154,7 @@ export class ICBridge {
 		await this.onApprove({
 			token,
 			sourceAddr: userAddr,
-			amount,
-			createActor
+			amount
 		});
 	}
 

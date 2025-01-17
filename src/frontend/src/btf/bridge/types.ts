@@ -1,6 +1,4 @@
 import type { OptionIdentity } from '$lib/types/identity';
-import type { ActorSubclass } from '@dfinity/agent';
-import type { IDL } from '@dfinity/candid';
 import type { Chain as EvmChain } from 'viem';
 export interface BitfinityChain {
 	chainId: string;
@@ -129,8 +127,4 @@ export interface OnBridgeParams {
 	targetChainId: ChainID;
 	setStep?: (step: number) => void;
 	feeRate?: number;
-	createActor?: <T>(
-		canisterId: string,
-		interfaceFactory: IDL.InterfaceFactory
-	) => Promise<ActorSubclass<T>>;
 }
