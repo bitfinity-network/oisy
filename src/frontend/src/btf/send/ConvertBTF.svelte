@@ -17,6 +17,7 @@
 	import { getAgent } from '$lib/actors/agents.ic';
 	import { authIdentity } from '$lib/derived/auth.derived';
 	import { ChainID, ChainName, ChainState, ChainType, ICBridge, ServiceType } from '../bridge';
+	import { ethAddress } from '$lib/derived/address.derived';
 
 	export let ariaLabel: string;
 
@@ -55,12 +56,13 @@
 	const bridgeTest = async () => {
 		if (!$authIdentity) return;
 
+		const principal = $authIdentity.getPrincipal();
+		const targetAddr = $ethAddress;
+		if (isNullish(targetAddr)) return;
+
 		const testParams = {
-			sourceAddr:
-				//PRINCIPAL ADDRESS
-				'c2xmp-d3e26-5wdar-wztx4-m2znd-hvmqv-yaa3m-zpplu-4hueh-z2daw-uqe',
-			//EVM ADDRESS
-			targetAddr: '0xeE94DaC8671a74F8DC8D90AEA63F1D1fEDb8C3d3',
+			sourceAddr: principal.toText(),
+			targetAddr,
 			token: {
 				balance: BigInt(0),
 				chain_id: ChainID.sICP,
