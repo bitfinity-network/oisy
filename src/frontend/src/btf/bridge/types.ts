@@ -1,4 +1,6 @@
 import type { OptionIdentity } from '$lib/types/identity';
+import type { ActorSubclass } from '@dfinity/agent';
+import type { IDL } from '@dfinity/candid';
 import type { Chain as EvmChain } from 'viem';
 export interface BitfinityChain {
 	chainId: string;
@@ -80,13 +82,18 @@ export interface Chain {
 }
 
 export interface Token {
-	decimals: number;
-	symbol: string;
+	id: string; // ICP: canisterId, BTC: rune_id, EVM: contract address
 	name: string;
-	tokenId: string;
-	contractAddress: string;
+	symbol: string;
+	decimals: number;
+	icon?: string;
 	balance: bigint;
-	icon: string;
+	token_id: string;
+	fee: bigint;
+	chain_id: ChainID;
+	composed_balance?: {
+		available: bigint;
+	};
 }
 
 export interface BridgeToEvmParams {
@@ -112,4 +119,18 @@ export type BridgeStatus = 'Pending' | 'Processing' | 'Finalized' | 'Failed';
 export interface BridgeStatusResult {
 	status: BridgeStatus;
 	evmTxHash?: string;
+}
+
+export interface OnBridgeParams {
+	token: Token;
+	amount: bigint;
+	sourceAddr: string;
+	targetAddr: string;
+	targetChainId: ChainID;
+	setStep?: (step: number) => void;
+	feeRate?: number;
+	createActor?: <T>(
+		canisterId: string,
+		interfaceFactory: IDL.InterfaceFactory
+	) => Promise<ActorSubclass<T>>;
 }
