@@ -152,4 +152,14 @@ export class ICPCustomBridge {
 		const tokens = await actor.get_token_list();
 		return tokens;
 	}
+
+	async getMaxFee(tokenId: string): Promise<bigint> {
+		const ledger = IcrcLedgerCanister.create({
+			canisterId: Principal.fromText(tokenId)
+		});
+
+		const txFee = await ledger.transactionFee({ certified: false });
+
+		return txFee;
+	}
 }

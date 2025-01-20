@@ -32,6 +32,11 @@
 	import { parseToken } from '$lib/utils/parse.utils';
 	import { jsonRpcProviders } from '$eth/providers/jsonrpc.provider';
 	import { BITFINITY_NETWORK_ID } from '$env/networks.env';
+	import { getAgent } from '$lib/actors/agents.ic';
+	import { authIdentity } from '$lib/derived/auth.derived';
+	import { BigNumber } from '@ethersproject/bignumber';
+	import { ICPCustomBridge } from '../../../btf/bridge';
+	import type { IcToken } from '$icp/types/ic-token';
 
 	export let observe: boolean;
 	export let destination = '';
@@ -54,6 +59,27 @@
 
 	const updateFeeData = async () => {
 		try {
+			if ($sendToken.standard === 'icrc') {
+				if (!$authIdentity) {
+					throw new Error('No identity available for ICRC fee calculation');
+				}
+
+				const icToken = $sendToken as IcToken;
+				const agent = await getAgent({ identity: $authIdentity });
+				const icBridge = new ICPCustomBridge(agent);
+
+				const fee = await icBridge.getMaxFee(icToken.ledgerCanisterId);
+
+				const feeData = {
+					gas: BigNumber.from(fee.toString()),
+					maxFeePerGas: BigNumber.from(0),
+					maxPriorityFeePerGas: BigNumber.from(0)
+				};
+
+				feeStore.setFee(feeData);
+				return;
+			}
+
 			const params: GetFeeData = {
 				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 				to: mapAddressStartsWith0x(destination !== '' ? destination : $ethAddress!),

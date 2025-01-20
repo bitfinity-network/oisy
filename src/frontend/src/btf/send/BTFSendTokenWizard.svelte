@@ -128,43 +128,6 @@
 
 	const dispatch = createEventDispatcher();
 
-	const bridgeTest = async () => {
-		if (!$authIdentity) return;
-
-		const principal = $authIdentity.getPrincipal();
-		const targetAddr = $ethAddress;
-		if (isNullish(targetAddr)) return;
-
-		const testParams = {
-			sourceAddr: principal.toText(),
-			targetAddr,
-			token: {
-				balance: BigInt(0),
-				chain_id: ChainID.sICP,
-				decimals: 8,
-				fee: BigInt(100000),
-				icon: 'https://raw.githubusercontent.com/octopus-network/omnity-interoperability/9061b7e2ea9e0717b47010279ff1ffd6f1f4c1fc/assets/token_logo/icp.svg',
-				id: 'zfcdd-tqaaa-aaaaq-aaaga-cai',
-				name: 'Dragginz',
-				symbol: 'DKP',
-				token_id: 'sICP-icrc-DKP'
-			},
-			amount: BigInt(100000000),
-			feeRate: 10000,
-			targetChainId: ChainID.Bitfinity
-		};
-		const agent = await getAgent({ identity: $authIdentity });
-		const icBridge = new ICPCustomBridge(agent);
-		try {
-			const res = await icBridge.onBridge(testParams);
-		} catch (error) {
-			toastsError({
-				msg: { text: $i18n.send.error.unexpected },
-				err: error
-			});
-		}
-	};
-
 	const send = async () => {
 		if (isNullishOrEmpty(destination)) {
 			toastsError({
