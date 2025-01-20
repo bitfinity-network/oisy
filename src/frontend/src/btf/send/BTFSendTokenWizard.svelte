@@ -44,8 +44,12 @@
 	import type { QrResponse, QrStatus } from '$lib/types/qr-code';
 	import type { OptionAmount } from '$lib/types/send';
 	import type { OptionToken, Token, TokenId } from '$lib/types/token';
+	import type { IcToken } from '$icp/types/ic-token';
 	import { invalidAmount, isNullishOrEmpty } from '$lib/utils/input.utils';
 	import { parseToken } from '$lib/utils/parse.utils';
+	import { getAgent } from '$lib/actors/agents.ic';
+	import { ChainID, ICBridge } from '../bridge';
+	import type { OnBridgeParams } from '../bridge/types';
 
 	export let currentStep: WizardStep | undefined;
 	export let formCancelAction: 'back' | 'close' = 'close';
@@ -72,6 +76,13 @@
 
 	let destinationEditable = true;
 	$: destinationEditable = sendPurpose === 'send';
+
+	// Set destination to eth address for bridging
+	$: if (sendPurpose === 'convert-to-twin-token' && $ethAddress) {
+		destination = $ethAddress;
+	}
+
+	$: console.log('destination', destination);
 
 	let sendWithApproval: boolean;
 	$: sendWithApproval = shouldSendWithApproval({
@@ -117,6 +128,41 @@
 
 	const dispatch = createEventDispatcher();
 
+	const bridgeTest = async () => {
+		if (!$authIdentity) return;
+
+		const principal = $authIdentity.getPrincipal();
+		const targetAddr = $ethAddress;
+		if (isNullish(targetAddr)) return;
+
+		const testParams = {
+			sourceAddr: principal.toText(),
+			targetAddr,
+			token: {
+				balance: BigInt(0),
+				chain_id: ChainID.sICP,
+				decimals: 8,
+				fee: BigInt(100000),
+				icon: 'https://raw.githubusercontent.com/octopus-network/omnity-interoperability/9061b7e2ea9e0717b47010279ff1ffd6f1f4c1fc/assets/token_logo/icp.svg',
+				id: 'zfcdd-tqaaa-aaaaq-aaaga-cai',
+				name: 'Dragginz',
+				symbol: 'DKP',
+				token_id: 'sICP-icrc-DKP'
+			},
+			amount: BigInt(100000000),
+			feeRate: 10000,
+			targetChainId: ChainID.Bitfinity
+		};
+		const agent = await getAgent({ identity: $authIdentity });
+		const icBridge = new ICBridge(agent);
+		try {
+			const res = await icBridge.onBridge(testParams);
+			console.log('Ticket ID:', res);
+		} catch (error) {
+			console.error('error', error);
+		}
+	};
+
 	const send = async () => {
 		if (isNullishOrEmpty(destination)) {
 			toastsError({
@@ -132,7 +178,7 @@
 			return;
 		}
 
-		if (isNullish($feeStore)) {
+		if ($sendToken.standard !== 'icrc' && isNullish($feeStore)) {
 			toastsError({
 				msg: { text: $i18n.send.assertion.gas_fees_not_defined }
 			});
@@ -144,21 +190,23 @@
 			network: targetNetwork
 		});
 
+		console.log('valid', valid);
+
 		if (!valid) {
 			return;
 		}
 
 		// https://github.com/ethers-io/ethers.js/discussions/2439#discussioncomment-1857403
-		const { maxFeePerGas, maxPriorityFeePerGas, gas } = $feeStore;
+		// const { maxFeePerGas, maxPriorityFeePerGas, gas } = $feeStore;
 
 		// https://docs.ethers.org/v5/api/providers/provider/#Provider-getFeeData
 		// exceeds block gas limit
-		if (isNullish(maxFeePerGas) || isNullish(maxPriorityFeePerGas)) {
-			toastsError({
-				msg: { text: $i18n.send.assertion.max_gas_fee_per_gas_undefined }
-			});
-			return;
-		}
+		// if (isNullish(maxFeePerGas) || isNullish(maxPriorityFeePerGas)) {
+		// 	toastsError({
+		// 		msg: { text: $i18n.send.assertion.max_gas_fee_per_gas_undefined }
+		// 	});
+		// 	return;
+		// }
 
 		// Unexpected errors
 		if (isNullish($ethAddress)) {
@@ -171,23 +219,66 @@
 		dispatch('icNext');
 
 		try {
-			await executeSend({
-				from: $ethAddress,
-				to: isErc20Icp($sendToken) ? destination : mapAddressStartsWith0x(destination),
-				progress: (step: ProgressStepsSend) => (sendProgressStep = step),
-				token: $sendToken,
-				amount: parseToken({
+			console.log('sendPurpose', sendPurpose);
+			console.log('sendToken', $sendToken);
+			if (sendPurpose === 'convert-to-twin-token' && $sendToken.standard === 'icrc') {
+				if (isNullish($authIdentity)) {
+					throw new Error('No identity available for bridge');
+				}
+
+				const principal = $authIdentity.getPrincipal();
+				if (isNullish(principal)) {
+					throw new Error('Missing principal for bridge');
+				}
+
+				const parsedAmount = parseToken({
 					value: `${amount}`,
 					unitName: $sendTokenDecimals
-				}),
-				maxFeePerGas,
-				maxPriorityFeePerGas,
-				gas,
-				sourceNetwork,
-				targetNetwork,
-				identity: $authIdentity,
-				minterInfo: $ckEthMinterInfoStore?.[nativeEthereumToken.id]
-			});
+				});
+
+				const agent = await getAgent({ identity: $authIdentity });
+				const icBridge = new ICBridge(agent);
+
+				const bridgeParams: OnBridgeParams = {
+					token: {
+						id: ($sendToken as IcToken).ledgerCanisterId,
+						name: $sendToken.name,
+						symbol: $sendToken.symbol,
+						decimals: $sendToken.decimals,
+						balance: BigInt(0),
+						token_id: `sICP-icrc-${$sendToken.symbol}`,
+						fee: BigInt(100000),
+						chain_id: ChainID.sICP
+					},
+					sourceAddr: principal.toText(),
+					targetAddr: $ethAddress,
+					amount: BigInt(parsedAmount.toString()),
+					targetChainId: ChainID.Bitfinity
+				};
+
+				const ticketId = await icBridge.onBridge(bridgeParams);
+
+				// Continue monitoring the bridge status
+				const status = await icBridge.checkMintStatus({ ticketId, agent });
+			}
+
+			// await executeSend({
+			// 	from: $ethAddress,
+			// 	to: isErc20Icp($sendToken) ? destination : mapAddressStartsWith0x(destination),
+			// 	progress: (step: ProgressStepsSend) => (sendProgressStep = step),
+			// 	token: $sendToken,
+			// 	amount: parseToken({
+			// 		value: `${amount}`,
+			// 		unitName: $sendTokenDecimals
+			// 	}),
+			// 	maxFeePerGas,
+			// 	maxPriorityFeePerGas,
+			// 	gas,
+			// 	sourceNetwork,
+			// 	targetNetwork,
+			// 	identity: $authIdentity,
+			// 	minterInfo: $ckEthMinterInfoStore?.[nativeEthereumToken.id]
+			// });
 
 			await trackEvent({
 				name: TRACK_COUNT_ETH_SEND_SUCCESS,
@@ -233,6 +324,12 @@
 			ethereumTokens: $enabledEthereumTokens,
 			erc20Tokens: $enabledErc20Tokens
 		});
+
+	let sourceAddress: string;
+	$: sourceAddress =
+		$sendToken.standard === 'icrc' && $authIdentity
+			? $authIdentity.getPrincipal().toText()
+			: ($ethAddress ?? '');
 </script>
 
 <FeeContext
@@ -253,6 +350,7 @@
 			{sourceNetwork}
 			{targetNetwork}
 			{destinationEditable}
+			source={sourceAddress}
 		/>
 	{:else if currentStep?.name === WizardStepsSend.SENDING}
 		<InProgressWizard
@@ -270,6 +368,9 @@
 			{nativeEthereumToken}
 			{destinationEditable}
 			{sourceNetwork}
+			source={$sendToken.standard === 'icrc' && $authIdentity
+				? $authIdentity.getPrincipal().toText()
+				: ($ethAddress ?? '')}
 		>
 			<svelte:fragment slot="cancel">
 				{#if formCancelAction === 'back'}
