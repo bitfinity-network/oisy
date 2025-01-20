@@ -11,7 +11,7 @@ import type { OnBridgeParams, Token } from './types';
 import { createActor } from './utils';
 
 const icpChainCanisterId = 'nlgkm-4qaaa-aaaar-qah2q-cai';
-export class ICBridge {
+export class ICPCustomBridge {
 	agent: Agent;
 
 	constructor(agent: Agent) {

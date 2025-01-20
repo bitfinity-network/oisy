@@ -1,2 +1,2 @@
-export { ICBridge } from './ICBridge';
+export { ICPCustomBridge } from './ICPCustomBridge';
 export * from './types';

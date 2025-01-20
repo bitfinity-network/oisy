@@ -48,7 +48,7 @@
 	import { invalidAmount, isNullishOrEmpty } from '$lib/utils/input.utils';
 	import { parseToken } from '$lib/utils/parse.utils';
 	import { getAgent } from '$lib/actors/agents.ic';
-	import { ChainID, ICBridge } from '../bridge';
+	import { ChainID, ICPCustomBridge } from '../bridge';
 	import type { OnBridgeParams } from '../bridge/types';
 
 	export let currentStep: WizardStep | undefined;
@@ -154,12 +154,14 @@
 			targetChainId: ChainID.Bitfinity
 		};
 		const agent = await getAgent({ identity: $authIdentity });
-		const icBridge = new ICBridge(agent);
+		const icBridge = new ICPCustomBridge(agent);
 		try {
 			const res = await icBridge.onBridge(testParams);
-			console.log('Ticket ID:', res);
 		} catch (error) {
-			console.error('error', error);
+			toastsError({
+				msg: { text: $i18n.send.error.unexpected },
+				err: error
+			});
 		}
 	};
 
@@ -237,7 +239,7 @@
 				});
 
 				const agent = await getAgent({ identity: $authIdentity });
-				const icBridge = new ICBridge(agent);
+				const icBridge = new ICPCustomBridge(agent);
 
 				const bridgeParams: OnBridgeParams = {
 					token: {

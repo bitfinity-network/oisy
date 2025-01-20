@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { isNullish, nonNullish } from '@dfinity/utils';
+	import {  nonNullish } from '@dfinity/utils';
 	import { getContext, setContext } from 'svelte';
 	import ButtonHero from '$lib/components/hero/ButtonHero.svelte';
 	import { ethAddressNotLoaded } from '$lib/derived/address.derived';
@@ -9,15 +9,10 @@
 	import { waitWalletReady } from '$lib/services/actions.services';
 	import { HERO_CONTEXT_KEY, type HeroContext } from '$lib/stores/hero.store';
 	import { modalStore } from '$lib/stores/modal.store';
-	import type { NetworkId } from '$lib/types/network';
-	import type { TokenId, TokenUi } from '$lib/types/token';
+	import type { TokenUi } from '$lib/types/token';
 	import BTFSendTokenModal from './BTFSendTokenModal.svelte';
 	import { BITFINITY_NETWORK, BITFINITY_NETWORK_ID } from '$env/networks.env';
 	import { initSendContext, SEND_CONTEXT_KEY, type SendContext } from '$lib/stores/send.store';
-	import { getAgent } from '$lib/actors/agents.ic';
-	import { authIdentity } from '$lib/derived/auth.derived';
-	import { ChainID, ChainName, ChainState, ChainType, ICBridge, ServiceType } from '../bridge';
-	import { ethAddress } from '$lib/derived/address.derived';
 
 	export let ariaLabel: string;
 
