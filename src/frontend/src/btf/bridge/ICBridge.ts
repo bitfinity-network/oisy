@@ -1,8 +1,5 @@
-/* eslint-disable no-console */
-//For the time being ^
-import { type ActorSubclass, type Agent } from '@dfinity/agent';
+import { type Agent } from '@dfinity/agent';
 
-import type { IDL } from '@dfinity/candid';
 import { IcrcLedgerCanister } from '@dfinity/ledger-icrc';
 import { Principal } from '@dfinity/principal';
 import { idlFactory as ICPCustomsInterfaceFactory, type _SERVICE } from './candids/IcpCustoms.did';
@@ -15,15 +12,10 @@ import { createActor } from './utils';
 
 const icpChainCanisterId = 'nlgkm-4qaaa-aaaar-qah2q-cai';
 export class ICBridge {
-	// private chain: Chain;
-	// private provider: JsonRpcProvider;
-	// private signer: ethers.Signer;
 	agent: Agent;
 
 	constructor(agent: Agent) {
 		this.agent = agent;
-		// this.provider = provider;
-		// this.signer = this.provider.getSigner();
 	}
 
 	async onBridge(params: OnBridgeParams): Promise<string> {
@@ -35,13 +27,12 @@ export class ICBridge {
 			agent: this.agent
 		});
 
-		const result = await this.prepareForGenerateTicket({
+		await this.prepareForGenerateTicket({
 			token,
 			userAddr: sourceAddr,
 			amount
 		});
 
-		console.log('prepareForGenerateTicketResult', result);
 		const ticketResult = await actor.generate_ticket_v2({
 			token_id: token.token_id,
 			from_subaccount: [],
@@ -51,11 +42,9 @@ export class ICBridge {
 			memo: []
 		});
 
-		console.log('ticketResult', ticketResult);
-
 		if ('Err' in ticketResult) {
 			console.error(ticketResult.Err);
-			throw new Error('Failed to generate ticket');
+			throw new Error('Failed to generate ticket', { cause: ticketResult.Err });
 		}
 
 		return ticketResult.Ok.ticket_id;
@@ -66,8 +55,6 @@ export class ICBridge {
 		sourceAddr,
 		amount
 	}: Pick<OnBridgeParams, 'token' | 'sourceAddr' | 'amount'>): Promise<void> {
-		console.log('Amount to bridge:', Number(amount) / Math.pow(10, token.decimals), token.symbol);
-
 		const spender = Principal.fromText(icpChainCanisterId);
 		const account = Principal.fromText(sourceAddr);
 
@@ -76,14 +63,8 @@ export class ICBridge {
 		});
 
 		const txFee = await transactionFee({ certified: false });
-		console.log('Transaction Fee:', Number(txFee) / Math.pow(10, token.decimals), token.symbol);
 
 		const approvingAmount = amount + txFee;
-		console.log(
-			'Total amount to approve:',
-			Number(approvingAmount) / Math.pow(10, token.decimals),
-			token.symbol
-		);
 
 		const { allowance: allowanceAmount } = await allowance({
 			spender: {
@@ -96,15 +77,7 @@ export class ICBridge {
 			}
 		});
 
-		console.log(
-			'Current allowance:',
-			Number(allowanceAmount) / Math.pow(10, token.decimals),
-			token.symbol
-		);
-
 		if (allowanceAmount < approvingAmount) {
-			console.log('Current allowance insufficient. Initiating approval...');
-
 			const icrcLedger = await createActor<IcrcLedgerService>({
 				canisterId: token.id,
 				interfaceFactory: IcrcLedgerInterfaceFactory,
@@ -125,32 +98,22 @@ export class ICBridge {
 					expires_at: [],
 					expected_allowance: []
 				});
-				console.log('Approval successful!');
 			} catch (error) {
 				console.error('Approval failed:', error);
 				throw error;
 			}
-		} else {
-			console.log('Current allowance is sufficient, skipping approval');
 		}
 	}
 
 	async prepareForGenerateTicket({
 		token,
 		userAddr,
-		amount,
-		createActor
+		amount
 	}: {
 		token: Token;
 		userAddr: string;
 		amount: bigint;
-		createActor?: <T>(
-			canisterId: string,
-			interfaceFactory: IDL.InterfaceFactory
-		) => Promise<ActorSubclass<T>>;
 	}) {
-		console.log('starting prepareForGenerateTicket');
-
 		await this.onApprove({
 			token,
 			sourceAddr: userAddr,
@@ -173,10 +136,7 @@ export class ICBridge {
 
 		const status = await actor.mint_token_status(ticketId);
 
-		console.log('Ticket Status:', status);
-
 		if ('Finalized' in status) {
-			console.log('Transaction Hash:', status.Finalized.tx_hash);
 			return 'Finalized';
 		}
 		return 'Unknown';
@@ -190,7 +150,6 @@ export class ICBridge {
 		});
 
 		const tokens = await actor.get_token_list();
-		console.log('Available Tokens:', tokens);
 		return tokens;
 	}
 }
