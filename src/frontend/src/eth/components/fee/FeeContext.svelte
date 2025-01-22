@@ -70,14 +70,13 @@
 
 				const fee = await icBridge.getMaxFee(icToken.ledgerCanisterId);
 
-				console.log('fee', fee);
 				const feeData = {
 					gas: BigNumber.from(fee.toString()),
 					maxFeePerGas: BigNumber.from(fee.toString()),
-					maxPriorityFeePerGas: BigNumber.from(0)
+					maxPriorityFeePerGas: BigNumber.from(0),
+					standard: 'icrc'
 				};
 
-				console.log('feeData', feeData);
 				feeStore.setFee(feeData);
 				return;
 			}
@@ -153,7 +152,6 @@
 	};
 
 	const debounceUpdateFeeData = debounce(updateFeeData);
-
 
 	const obverseFeeData = async (watch: boolean) => {
 		await listener?.disconnect();

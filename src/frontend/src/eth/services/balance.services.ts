@@ -100,8 +100,6 @@ const loadErc20Balance = async ({
 		const data = await balance({ address, contract });
 		balancesStore.set({ tokenId: contract.id, data: { data, certified: false } });
 	} catch (err: unknown) {
-		balancesStore.reset(contract.id);
-
 		toastsError({
 			msg: {
 				text: replacePlaceholders(loading_balance_symbol, {

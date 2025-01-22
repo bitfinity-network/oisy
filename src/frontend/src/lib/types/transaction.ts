@@ -21,6 +21,7 @@ export type Transaction = Omit<EthTransaction, 'data'> &
 
 export type TransactionFeeData = Pick<FeeData, 'maxFeePerGas' | 'maxPriorityFeePerGas'> & {
 	gas: BigNumber;
+	standard?: string;
 };
 
 export type TransactionType = z.infer<typeof TransactionTypeSchema>;

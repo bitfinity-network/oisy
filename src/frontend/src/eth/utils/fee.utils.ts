@@ -5,9 +5,21 @@ import { BigNumber } from '@ethersproject/bignumber';
 
 export const maxGasFee = ({
 	maxFeePerGas,
-	gas: estimatedGasFee
-}: TransactionFeeData): BigNumber | undefined =>
-	isNullish(maxFeePerGas) ? undefined : maxFeePerGas.mul(estimatedGasFee);
+	gas: estimatedGasFee,
+	standard
+}: TransactionFeeData & { standard?: string }): BigNumber | undefined => {
+	if (isNullish(maxFeePerGas)) {
+		return undefined;
+	}
+	
+	// For ICRC tokens, use maxFeePerGas directly without multiplication
+	if (standard === 'icrc') {
+		return maxFeePerGas;
+	}
+	
+	// For other tokens, multiply maxFeePerGas by gas
+	return maxFeePerGas.mul(estimatedGasFee);
+};
 
 export const minGasFee = ({
 	maxPriorityFeePerGas,
