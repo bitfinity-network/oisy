@@ -1,5 +1,4 @@
 import type { OptionIdentity } from '$lib/types/identity';
-import type { Chain as EvmChain } from 'viem';
 export interface BitfinityChain {
 	chainId: string;
 	canisterId: string;
@@ -74,7 +73,22 @@ export interface Chain {
 	counterparties: ChainID[];
 	chainState: ChainState;
 	contractAddress?: string;
-	evmChain?: EvmChain;
+	evmChain?: {
+		id: number;
+		name: string;
+		network: string;
+		nativeCurrency: {
+			name: string;
+			symbol: string;
+			decimals: number;
+		};
+		rpcUrls: {
+			default: {
+				http: string[];
+				webSocket?: string[];
+			};
+		};
+	};
 	serviceType: ServiceType;
 	tokenList?: Token[];
 }
