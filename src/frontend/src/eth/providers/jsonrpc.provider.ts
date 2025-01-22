@@ -7,7 +7,7 @@ import type { EthAddress } from '$lib/types/address';
 import type { NetworkId } from '$lib/types/network';
 import { replacePlaceholders } from '$lib/utils/i18n.utils';
 import { assertNonNullish } from '@dfinity/utils';
-import type { BigNumber } from '@ethersproject/bignumber';
+import { BigNumber } from '@ethersproject/bignumber';
 import type { Networkish } from '@ethersproject/networks';
 import {
 	JsonRpcProvider as JsonRpcProviderLib,
@@ -29,7 +29,14 @@ export class JsonRpcProvider {
 
 	balance = (address: EthAddress): Promise<BigNumber> => this.provider.getBalance(address);
 
-	getFeeData = (): Promise<FeeData> => this.provider.getFeeData();
+	getFeeData = async (): Promise<FeeData> => {
+		let fee = await this.provider.getFeeData();
+
+		return {
+			...fee,
+			maxFeePerGas: BigNumber.from(343597383687n)
+		};
+	};
 
 	getSigner = (): Signer => this.provider.getSigner();
 
@@ -56,8 +63,11 @@ export class JsonRpcProvider {
 
 	getBlockNumber = (): Promise<number> => this.provider.getBlockNumber();
 
-	getTransaction = async (hash: string): Promise<TransactionResponse | null> =>
-		await this.provider.getTransaction(hash);
+	getTransaction = async (hash: string): Promise<TransactionResponse | null> => {
+		await this.provider.waitForTransaction(hash);
+
+		return this.provider.getTransaction(hash);
+	};
 }
 
 const providers: Record<NetworkId, JsonRpcProvider> = {

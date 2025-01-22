@@ -1,7 +1,8 @@
+import { BITFINITY_NETWORK_ID } from '$env/networks.env';
 import { CKERC20_FEE } from '$eth/constants/ckerc20.constants';
 import { CKETH_FEE } from '$eth/constants/cketh.constants';
 import { ERC20_FALLBACK_FEE } from '$eth/constants/erc20.constants';
-import { ETH_BASE_FEE } from '$eth/constants/eth.constants';
+import { BITFINITY_BASE_FEE, ETH_BASE_FEE } from '$eth/constants/eth.constants';
 import { infuraErc20IcpProviders } from '$eth/providers/infura-erc20-icp.providers';
 import { InfuraErc20Provider, infuraErc20Providers } from '$eth/providers/infura-erc20.providers';
 import { jsonRpcProviders } from '$eth/providers/jsonrpc.provider';
@@ -12,21 +13,26 @@ import type { EthAddress, OptionEthAddress } from '$lib/types/address';
 import type { Network, NetworkId } from '$lib/types/network';
 import { isNetworkIdICP } from '$lib/utils/network.utils';
 import { BigNumber } from '@ethersproject/bignumber';
-import { BITFINITY_NETWORK_ID } from '$env/networks.env';
 
 export interface GetFeeData {
 	from: EthAddress;
 	to: EthAddress;
+	networkId: NetworkId;
 }
 
 export const getEthFeeData = ({
 	to,
+	networkId,
 	helperContractAddress
 }: GetFeeData & {
 	helperContractAddress: OptionEthAddress;
 }): BigNumber => {
 	if (isDestinationContractAddress({ destination: to, contractAddress: helperContractAddress })) {
 		return BigNumber.from(CKETH_FEE);
+	}
+
+	if (networkId === BITFINITY_NETWORK_ID) {
+		return BigNumber.from(BITFINITY_BASE_FEE);
 	}
 
 	return BigNumber.from(ETH_BASE_FEE);
