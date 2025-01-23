@@ -122,7 +122,6 @@
 
 	const dispatch = createEventDispatcher();
 
-	// Improve error handling with custom error types
 	class SendValidationError extends Error {
 		constructor(message: string) {
 			super(message);
@@ -211,7 +210,6 @@
 		dispatch('icBack');
 	};
 
-	// Improve send function with better error handling
 	const send = async () => {
 		try {
 			validateSendTransaction();
