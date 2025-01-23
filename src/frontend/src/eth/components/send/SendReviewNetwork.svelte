@@ -5,6 +5,7 @@
 	import icpDark from '$eth/assets/icp_dark.svg';
 	import type { Erc20Token } from '$eth/types/erc20';
 	import type { EthereumNetwork } from '$eth/types/network';
+	import type { BitfinityChain } from '../../../btf/bridge';
 	import eth from '$icp-eth/assets/eth.svg';
 	import Logo from '$lib/components/ui/Logo.svelte';
 	import TextWithLogo from '$lib/components/ui/TextWithLogo.svelte';
@@ -15,7 +16,7 @@
 	import { replacePlaceholders } from '$lib/utils/i18n.utils';
 	import { isNetworkICP } from '$lib/utils/network.utils';
 
-	export let sourceNetwork: EthereumNetwork;
+	export let sourceNetwork: EthereumNetwork | BitfinityChain;
 	export let targetNetwork: Network | undefined = undefined;
 	export let token: Token;
 
@@ -32,7 +33,10 @@
 		>{#if nonNullish(targetNetwork)}{$i18n.send.text.source_network}{:else}{$i18n.send.text
 				.network}{/if}</svelte:fragment
 	>
-	<TextWithLogo name={sourceNetwork.name} icon={sourceNetwork.icon ?? eth} />
+	<TextWithLogo
+		name={'canisterId' in sourceNetwork ? 'Bitfinity' : sourceNetwork.name}
+		icon={'canisterId' in sourceNetwork ? eth : (sourceNetwork.icon ?? eth)}
+	/>
 </Value>
 
 {#if nonNullish(targetNetwork)}

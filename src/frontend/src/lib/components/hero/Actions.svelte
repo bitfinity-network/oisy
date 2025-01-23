@@ -27,6 +27,8 @@
 	import { tokenWithFallback } from '$lib/derived/token.derived';
 	import { isRouteTransactions } from '$lib/utils/nav.utils';
 	import { isNetworkIdBTCMainnet } from '$lib/utils/network.utils';
+	import ConvertToBitfinity from '$lib/components/convert/ConvertToBitfinity.svelte';
+	import { hasTwinToken, isBitfinityToken } from '$lib/utils/token.utils';
 
 	let convertEth = false;
 	$: convertEth = $ethToCkETHEnabled && $erc20UserTokensInitialized;
@@ -45,6 +47,12 @@
 
 	let sendAction = true;
 	$: sendAction = !$allBalancesZero || isTransactionsPage;
+
+	let showBitfinityBridge = false;
+	$: showBitfinityBridge =
+		isTransactionsPage &&
+		$tokenWithFallback &&
+		(isBitfinityToken($tokenWithFallback) || hasTwinToken($tokenWithFallback));
 </script>
 
 <div role="toolbar" class="flex w-full justify-center pt-10">
@@ -86,6 +94,10 @@
 
 			{#if convertBtc}
 				<ConvertToCkBTC />
+			{/if}
+
+			{#if showBitfinityBridge}
+				<ConvertToBitfinity />
 			{/if}
 		{/if}
 

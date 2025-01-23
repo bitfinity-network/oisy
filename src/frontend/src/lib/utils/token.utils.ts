@@ -2,6 +2,7 @@ import {
 	ICRC_CHAIN_FUSION_DEFAULT_LEDGER_CANISTER_IDS,
 	ICRC_CHAIN_FUSION_SUGGESTED_LEDGER_CANISTER_IDS
 } from '$env/networks.icrc.env';
+import { BITFINITY_TOKENS } from '$env/omnity-tokens.erc20.env';
 import { ERC20_SUGGESTED_TOKENS } from '$env/tokens.erc20.env';
 import type { ContractAddressText } from '$eth/types/address';
 import type { IcCkToken } from '$icp/types/ic-token';
@@ -213,11 +214,26 @@ export const sumUsdBalances = ([usdBalance1, usdBalance2]: [
  * Type guard to check if a token is of type RequiredTokenWithLinkedData.
  * This checks whether the token has a twinTokenSymbol field and ensures that it is a string.
  *
+ * Twin token relationships:
+ * - ERC20 tokens point to their IC 'ck' counterparts (e.g., USDT -> ckUSDT)
+ * - IC tokens are pointed to by their Bitfinity 'o' counterparts (e.g., CHAT is pointed to by oCHAT)
+ *
  * @param token - The token object to be checked.
  * @returns A boolean indicating whether the token is of type RequiredTokenWithLinkedData.
  */
-export const isRequiredTokenWithLinkedData = (token: Token): token is RequiredTokenWithLinkedData =>
-	'twinTokenSymbol' in token && typeof token.twinTokenSymbol === 'string';
+export const isRequiredTokenWithLinkedData = (
+	token: Token
+): token is RequiredTokenWithLinkedData => {
+	// For IC tokens, check if there exists a Bitfinity token that points to it
+	if (token.standard === 'icrc') {
+		return BITFINITY_TOKENS.some(
+			(bitfinityToken) => bitfinityToken.twinTokenSymbol === token.symbol
+		);
+	}
+
+	// For other tokens (e.g. ERC20), just check if twinTokenSymbol exists and is a string
+	return 'twinTokenSymbol' in token && typeof token.twinTokenSymbol === 'string';
+};
 
 /** Find in the provided tokens list a twin IC token by symbol.
  *
@@ -237,3 +253,9 @@ export const findTwinToken = ({
 				(token) => token.symbol === tokenToPair.twinTokenSymbol && isIcCkToken(token)
 			) as IcCkToken | undefined)
 		: undefined;
+
+export const isBitfinityToken = (token: Token | null) =>
+	nonNullish(token) && BITFINITY_TOKENS.some((t) => t.twinTokenSymbol === token.symbol);
+
+export const hasTwinToken = (token: Token | null) =>
+	nonNullish(token) && isRequiredTokenWithLinkedData(token) && !!token.twinTokenSymbol;

@@ -48,7 +48,11 @@ export const initSendContext = ({
 	};
 };
 
-export type SendContextPurpose = 'send' | 'convert-eth-to-cketh' | 'convert-erc20-to-ckerc20';
+export type SendContextPurpose =
+	| 'send'
+	| 'convert-eth-to-cketh'
+	| 'convert-erc20-to-ckerc20'
+	| 'convert-to-twin-token';
 
 export interface SendContext {
 	sendToken: SendStore;

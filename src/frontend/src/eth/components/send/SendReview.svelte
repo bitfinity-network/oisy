@@ -18,25 +18,42 @@
 	import type { OptionAmount } from '$lib/types/send';
 	import { isEthAddress } from '$lib/utils/account.utils';
 	import { invalidAmount, isNullishOrEmpty } from '$lib/utils/input.utils';
+	import { toastsShow, toastsError } from '$lib/stores/toasts.store';
+	import { type BitfinityChain } from '../../../btf/bridge';
 
 	export let destination = '';
 	export let targetNetwork: Network | undefined = undefined;
-	export let sourceNetwork: EthereumNetwork;
+	export let sourceNetwork: EthereumNetwork | BitfinityChain;
 	export let destinationEditable = true;
 	export let amount: OptionAmount = undefined;
+	export let source: string;
 
 	const { feeStore: storeFeeData }: FeeContext = getContext<FeeContext>(FEE_CONTEXT_KEY);
 
 	let invalid = true;
 	$: invalid =
-		isNullishOrEmpty(destination) ||
-		!isEthAddress(destination) ||
-		invalidAmount(amount) ||
-		isNullish($storeFeeData);
+		isNullishOrEmpty(destination) || ($sendToken.standard !== 'icrc' && !isEthAddress(destination));
+	//invalidAmount(amount) ||
+	//isNullish($storeFeeData);
+
+	console.log('invalid', invalid);
 
 	const dispatch = createEventDispatcher();
 
 	const { sendToken, sendBalance } = getContext<SendContext>(SEND_CONTEXT_KEY);
+
+	async function handleSend() {
+		try {
+			dispatch('icSend');
+		} catch (error) {
+			toastsError({
+				msg: {
+					text: 'Failed to send tokens'
+				},
+				err: error
+			});
+		}
+	}
 </script>
 
 <ContentWithToolbar>
@@ -45,7 +62,7 @@
 		destination={destinationEditable ? destination : null}
 		token={$sendToken}
 		balance={$sendBalance}
-		source={$ethAddress ?? ''}
+		{source}
 	>
 		<FeeDisplay slot="fee" />
 
@@ -56,7 +73,7 @@
 
 	<ButtonGroup slot="toolbar">
 		<ButtonBack on:click={() => dispatch('icBack')} />
-		<Button disabled={invalid} on:click={() => dispatch('icSend')}>
+		<Button disabled={invalid} on:click={handleSend}>
 			{$i18n.send.text.send}
 		</Button>
 	</ButtonGroup>

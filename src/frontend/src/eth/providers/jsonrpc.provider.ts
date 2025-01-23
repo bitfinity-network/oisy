@@ -14,7 +14,7 @@ import {
 	type FeeData,
 	type TransactionResponse
 } from '@ethersproject/providers';
-import { ethers } from 'ethers';
+import { Signer, ethers } from 'ethers';
 import { get } from 'svelte/store';
 
 export class JsonRpcProvider {
@@ -37,6 +37,8 @@ export class JsonRpcProvider {
 			maxFeePerGas: BigNumber.from(343597383687n)
 		};
 	};
+
+	getSigner = (): Signer => this.provider.getSigner();
 
 	getFeeContractData = ({
 		contract: { address: contractAddress },

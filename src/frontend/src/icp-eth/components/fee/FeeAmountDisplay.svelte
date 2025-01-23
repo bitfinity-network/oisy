@@ -31,7 +31,8 @@
 <div transition:fade>
 	{formatToken({
 		value: fee,
-		displayDecimals: EIGHT_DECIMALS
+		unitName: feeDecimals,
+		displayDecimals: feeDecimals
 	})}
 	{feeSymbol}
 </div>
