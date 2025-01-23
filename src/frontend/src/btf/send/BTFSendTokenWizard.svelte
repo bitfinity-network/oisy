@@ -9,7 +9,6 @@
 	import { sendSteps } from '$eth/constants/steps.constants';
 	import { enabledErc20Tokens } from '$eth/derived/erc20.derived';
 	import { enabledEthereumTokens } from '$eth/derived/tokens.derived';
-	import { send as executeSend } from '$eth/services/send.services';
 	import {
 		FEE_CONTEXT_KEY,
 		type FeeContext as FeeContextType,
@@ -19,11 +18,9 @@
 	import type { EthereumNetwork } from '$eth/types/network';
 	import { decodeQrCode } from '$eth/utils/qr-code.utils';
 	import { shouldSendWithApproval } from '$eth/utils/send.utils';
-	import { isErc20Icp } from '$eth/utils/token.utils';
 	import { assertCkEthMinterInfoLoaded } from '$icp-eth/services/cketh.services';
 	import { ckEthMinterInfoStore } from '$icp-eth/stores/cketh.store';
 	import { toCkErc20HelperContractAddress } from '$icp-eth/utils/cketh.utils';
-	import { mapAddressStartsWith0x } from '$icp-eth/utils/eth.utils';
 	import SendQRCodeScan from '$lib/components/send/SendQRCodeScan.svelte';
 	import ButtonBack from '$lib/components/ui/ButtonBack.svelte';
 	import ButtonCancel from '$lib/components/ui/ButtonCancel.svelte';
@@ -34,7 +31,6 @@
 	} from '$lib/constants/analytics.contants';
 	import { ethAddress } from '$lib/derived/address.derived';
 	import { authIdentity } from '$lib/derived/auth.derived';
-	import { ProgressStepsSend } from '$lib/enums/progress-steps';
 	import { WizardStepsSend } from '$lib/enums/wizard-steps';
 	import { trackEvent } from '$lib/services/analytics.services';
 	import { i18n } from '$lib/stores/i18n.store';
@@ -82,8 +78,6 @@
 		destination = $ethAddress;
 	}
 
-	$: console.log('destination', destination);
-
 	let sendWithApproval: boolean;
 	$: sendWithApproval = shouldSendWithApproval({
 		to: destination,
@@ -128,122 +122,121 @@
 
 	const dispatch = createEventDispatcher();
 
-	const send = async () => {
+	// Improve error handling with custom error types
+	class SendValidationError extends Error {
+		constructor(message: string) {
+			super(message);
+			this.name = 'SendValidationError';
+		}
+	}
+
+	const validateSendTransaction = () => {
 		if (isNullishOrEmpty(destination)) {
-			toastsError({
-				msg: { text: $i18n.send.assertion.destination_address_invalid }
-			});
-			return;
+			throw new SendValidationError($i18n.send.assertion.destination_address_invalid);
 		}
 
 		if (invalidAmount(amount) || isNullish(amount)) {
-			toastsError({
-				msg: { text: $i18n.send.assertion.amount_invalid }
-			});
-			return;
+			throw new SendValidationError($i18n.send.assertion.amount_invalid);
 		}
 
 		if ($sendToken.standard !== 'icrc' && isNullish($feeStore)) {
-			toastsError({
-				msg: { text: $i18n.send.assertion.gas_fees_not_defined }
-			});
-			return;
+			throw new SendValidationError($i18n.send.assertion.gas_fees_not_defined);
 		}
 
-		const { valid } = assertCkEthMinterInfoLoaded({
-			minterInfo: $ckEthMinterInfoStore?.[nativeEthereumToken.id],
-			network: targetNetwork
+		if (isNullish($ethAddress)) {
+			throw new SendValidationError($i18n.send.assertion.address_unknown);
+		}
+	};
+
+	const handleIcrcBridgeTransaction = async () => {
+		if (isNullish($authIdentity)) {
+			throw new SendValidationError('No identity available for bridge');
+		}
+
+		const principal = $authIdentity.getPrincipal();
+		if (isNullish(principal)) {
+			throw new SendValidationError('Missing principal for bridge');
+		}
+
+		const parsedAmount = parseToken({
+			value: `${amount}`,
+			unitName: $sendTokenDecimals
 		});
 
-		console.log('valid', valid);
+		const agent = await getAgent({ identity: $authIdentity });
+		const icBridge = new ICPCustomBridge(agent);
 
-		if (!valid) {
-			return;
-		}
+		const bridgeParams: OnBridgeParams = {
+			token: {
+				id: ($sendToken as IcToken).ledgerCanisterId,
+				name: $sendToken.name,
+				symbol: $sendToken.symbol,
+				decimals: $sendToken.decimals,
+				balance: BigInt(0),
+				token_id: `sICP-icrc-${$sendToken.symbol}`,
+				fee: BigInt(100000),
+				chain_id: ChainID.sICP
+			},
+			sourceAddr: principal.toText(),
+			targetAddr: $ethAddress ?? '',
+			amount: BigInt(parsedAmount.toString()),
+			targetChainId: ChainID.Bitfinity
+		};
 
-		// https://github.com/ethers-io/ethers.js/discussions/2439#discussioncomment-1857403
-		// const { maxFeePerGas, maxPriorityFeePerGas, gas } = $feeStore;
+		const ticketId = await icBridge.onBridge(bridgeParams);
+		const status = await icBridge.checkMintStatus({ ticketId, agent });
+		console.debug('Bridge status:', status);
+	};
 
-		// https://docs.ethers.org/v5/api/providers/provider/#Provider-getFeeData
-		// exceeds block gas limit
-		// if (isNullish(maxFeePerGas) || isNullish(maxPriorityFeePerGas)) {
-		// 	toastsError({
-		// 		msg: { text: $i18n.send.assertion.max_gas_fee_per_gas_undefined }
-		// 	});
-		// 	return;
-		// }
-
-		// Unexpected errors
-		if (isNullish($ethAddress)) {
+	const handleSendError = async (err: unknown) => {
+		if (err instanceof SendValidationError) {
 			toastsError({
-				msg: { text: $i18n.send.assertion.address_unknown }
+				msg: { text: err.message }
 			});
 			return;
 		}
 
-		dispatch('icNext');
+		await trackEvent({
+			name: TRACK_COUNT_ETH_SEND_ERROR,
+			metadata: {
+				token: $sendToken.symbol
+			}
+		});
 
+		toastsError({
+			msg: { text: $i18n.send.error.unexpected },
+			err
+		});
+
+		dispatch('icBack');
+	};
+
+	// Improve send function with better error handling
+	const send = async () => {
 		try {
-			console.log('sendPurpose', sendPurpose);
-			console.log('sendToken', $sendToken);
-			if (sendPurpose === 'convert-to-twin-token' && $sendToken.standard === 'icrc') {
-				if (isNullish($authIdentity)) {
-					throw new Error('No identity available for bridge');
-				}
+			validateSendTransaction();
 
-				const principal = $authIdentity.getPrincipal();
-				if (isNullish(principal)) {
-					throw new Error('Missing principal for bridge');
-				}
+			// Validate minter info
+			const { valid } = assertCkEthMinterInfoLoaded({
+				minterInfo: $ckEthMinterInfoStore?.[nativeEthereumToken.id],
+				network: targetNetwork
+			});
 
-				const parsedAmount = parseToken({
-					value: `${amount}`,
-					unitName: $sendTokenDecimals
-				});
-
-				const agent = await getAgent({ identity: $authIdentity });
-				const icBridge = new ICPCustomBridge(agent);
-
-				const bridgeParams: OnBridgeParams = {
-					token: {
-						id: ($sendToken as IcToken).ledgerCanisterId,
-						name: $sendToken.name,
-						symbol: $sendToken.symbol,
-						decimals: $sendToken.decimals,
-						balance: BigInt(0),
-						token_id: `sICP-icrc-${$sendToken.symbol}`,
-						fee: BigInt(100000),
-						chain_id: ChainID.sICP
-					},
-					sourceAddr: principal.toText(),
-					targetAddr: $ethAddress,
-					amount: BigInt(parsedAmount.toString()),
-					targetChainId: ChainID.Bitfinity
-				};
-
-				const ticketId = await icBridge.onBridge(bridgeParams);
-
-				// Continue monitoring the bridge status
-				const status = await icBridge.checkMintStatus({ ticketId, agent });
+			if (!valid) {
+				return;
 			}
 
-			// await executeSend({
-			// 	from: $ethAddress,
-			// 	to: isErc20Icp($sendToken) ? destination : mapAddressStartsWith0x(destination),
-			// 	progress: (step: ProgressStepsSend) => (sendProgressStep = step),
-			// 	token: $sendToken,
-			// 	amount: parseToken({
-			// 		value: `${amount}`,
-			// 		unitName: $sendTokenDecimals
-			// 	}),
-			// 	maxFeePerGas,
-			// 	maxPriorityFeePerGas,
-			// 	gas,
-			// 	sourceNetwork,
-			// 	targetNetwork,
-			// 	identity: $authIdentity,
-			// 	minterInfo: $ckEthMinterInfoStore?.[nativeEthereumToken.id]
-			// });
+			dispatch('icNext');
+
+			// Handle ICRC bridge transaction
+			if (sendPurpose === 'convert-to-twin-token' && $sendToken.standard === 'icrc') {
+				try {
+					await handleIcrcBridgeTransaction();
+				} catch (bridgeError) {
+					await handleSendError(bridgeError);
+					return;
+				}
+			}
 
 			await trackEvent({
 				name: TRACK_COUNT_ETH_SEND_SUCCESS,
@@ -254,19 +247,7 @@
 
 			setTimeout(() => close(), 750);
 		} catch (err: unknown) {
-			await trackEvent({
-				name: TRACK_COUNT_ETH_SEND_ERROR,
-				metadata: {
-					token: $sendToken.symbol
-				}
-			});
-
-			toastsError({
-				msg: { text: $i18n.send.error.unexpected },
-				err
-			});
-
-			dispatch('icBack');
+			await handleSendError(err);
 		}
 	};
 
