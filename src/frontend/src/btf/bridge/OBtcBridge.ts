@@ -43,7 +43,7 @@ export class OBtcBridge {
 		});
 	}
 
-	async convertckBTCtoOBtc() {
+	async convertckBTCtoOBtc(amount: bigint) {
 		const agent = await getAgent({ identity: this.identity });
 
 		const bridgeParams = {
@@ -59,24 +59,13 @@ export class OBtcBridge {
 			},
 			sourceAddr: this.identity.getPrincipal().toText(),
 			targetAddr: omnityTokens.BTC.address,
-			amount: BigInt(1),
+			amount,
 			targetChainId: ChainID.Bitfinity
 		};
 
 		const icBridge = new ICPCustomBridge(agent);
 		const ticketId = await icBridge.onBridge(bridgeParams);
 		const status = await icBridge.checkMintStatus({ ticketId, agent });
-		// get ckbtc address
-		// get ckbtc balance
-		// convert ckbtc to obtc
-		// update obtc balance
+		return status;
 	}
-
-	/* 
-        1. convert btc to ckbtc
-        2. convert ckbtc to obtc
-    
-
-        // show new address for obtc in btc modal ---
-    */
 }
