@@ -1,5 +1,6 @@
+import type { EthSignTransactionRequest } from '$declarations/signer/signer.did';
 import type { JsonRpcProvider } from '$eth/providers/jsonrpc.provider';
-import type { ActorSubclass, Agent } from '@dfinity/agent';
+import type { ActorSubclass, Agent, Identity } from '@dfinity/agent';
 import { ethers } from 'ethers';
 import { idlFactory, type _SERVICE } from './candids/Omnity.did';
 import { OMNITY_PORT_ABI } from './constants';
@@ -10,20 +11,20 @@ type EvmAddress = `0x${string}`;
 
 export class BitfinityBridge {
 	private actor: ActorSubclass<_SERVICE>;
-
 	private chain: Chain;
-	private signer: ethers.Signer;
+	private provider: JsonRpcProvider;
+	private identity: Identity;
 
-	constructor(chain: Chain, agent: Agent, provider: JsonRpcProvider) {
+	constructor(chain: Chain, agent: Agent, provider: JsonRpcProvider, identity: Identity) {
 		this.chain = chain;
+		this.provider = provider;
+		this.identity = identity;
 
 		this.actor = createActor<_SERVICE>({
 			canisterId: chain.canisterId,
 			interfaceFactory: idlFactory,
 			agent
 		});
-
-		this.signer = provider.getSigner();
 	}
 
 	async bridgeToICPCustom(params: {
@@ -40,37 +41,43 @@ export class BitfinityBridge {
 			throw new Error('Missing port contract address');
 		}
 
-		const portContract = new ethers.Contract(portContractAddr, OMNITY_PORT_ABI, this.signer);
-
-		const userAddr = await this.signer.getAddress();
-
-		console.log('userAddr', userAddr);
+		const portContract = new ethers.Contract(portContractAddr, OMNITY_PORT_ABI);
 
 		try {
 			const [fee] = await this.actor.get_fee(targetChainId);
-
 			console.log('fee', fee);
-			console.log('Bridge Transaction Details:', {
-				chain: this.chain.evmChain,
-				targetChainId,
-				sourceAddr,
+			if (!fee) {
+				throw new Error('Failed to get fee from actor');
+			}
+
+			const populatedTx = await portContract.populateTransaction.redeemToken(
 				tokenId,
 				targetAddr,
 				amount,
-				fee,
-				portContractAddr
-			});
+				{
+					value: fee
+				}
+			);
+			const nonce = await this.provider.getTransactionCount(sourceAddr);
+			const feeData = await this.provider.getFeeData();
 
-			const txHash = await portContract.redeemToken(tokenId, targetAddr, amount, {
-				account: sourceAddr as EvmAddress,
-				chain: this.chain.evmChain,
-				value: fee
-			});
+			const transaction: EthSignTransactionRequest = {
+				to: portContractAddr,
+				value: fee,
+				data: populatedTx.data ? [populatedTx.data] : [],
+				nonce: BigInt(nonce),
+				gas: 21000n,
+				max_priority_fee_per_gas: feeData.maxPriorityFeePerGas?.toBigInt() ?? BigInt(0),
+				max_fee_per_gas: feeData.maxFeePerGas?.toBigInt() ?? BigInt(0),
+				chain_id: BigInt(this.chain.evmChain!.id)
+			};
 
-			console.log('Bridge Transaction Hash:', txHash);
-			return txHash;
+			const signedTx = await this.provider.signTransaction(transaction, this.identity);
+			const txResponse = await this.provider.sendTransaction(signedTx);
+			console.log('txResponse', txResponse);
+
+			return txResponse.hash;
 		} catch (error) {
-			console.error('Bridge Transaction Failed:', error);
 			if (error instanceof Error) {
 				throw new Error(`Bridge transaction failed: ${error.message}`);
 			}
