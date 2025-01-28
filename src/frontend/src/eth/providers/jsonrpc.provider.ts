@@ -41,16 +41,18 @@ export class JsonRpcProvider {
 		};
 	};
 
-	signTransaction = async (
-		transaction: EthSignTransactionRequest,
-		identity: Identity
-	): Promise<string> => {
-		return signTransaction({
+	signTransaction = async ({
+		transaction,
+		identity
+	}: {
+		transaction: EthSignTransactionRequest;
+		identity: Identity;
+	}): Promise<string> =>
+		await signTransaction({
 			transaction,
 			identity,
 			nullishIdentityErrorMessage: get(i18n).auth.error.no_internet_identity
 		});
-	};
 
 	getFeeContractData = ({
 		contract: { address: contractAddress },

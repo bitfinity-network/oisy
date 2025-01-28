@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import type { EthSignTransactionRequest } from '$declarations/signer/signer.did';
 import type { JsonRpcProvider } from '$eth/providers/jsonrpc.provider';
 import type { ActorSubclass, Agent, Identity } from '@dfinity/agent';
@@ -58,6 +59,8 @@ export class BitfinityBridge {
 					value: fee
 				}
 			);
+
+			console.log('populatedTx', populatedTx);
 			const nonce = await this.provider.getTransactionCount(sourceAddr);
 			const feeData = await this.provider.getFeeData();
 
@@ -66,15 +69,21 @@ export class BitfinityBridge {
 				value: fee,
 				data: populatedTx.data ? [populatedTx.data] : [],
 				nonce: BigInt(nonce),
-				gas: 21000n,
-				max_priority_fee_per_gas: feeData.maxPriorityFeePerGas?.toBigInt() ?? BigInt(0),
-				max_fee_per_gas: feeData.maxFeePerGas?.toBigInt() ?? BigInt(0),
+				gas: 100_000n,
+				max_priority_fee_per_gas: 343597383687n,
+				max_fee_per_gas: 343597383687n,
 				chain_id: BigInt(this.chain.evmChain!.id)
 			};
 
-			const signedTx = await this.provider.signTransaction(transaction, this.identity);
+			const signedTx = await this.provider.signTransaction({
+				transaction,
+				identity: this.identity
+			});
+			console.log('signedTx', signedTx);
 			const txResponse = await this.provider.sendTransaction(signedTx);
 			console.log('txResponse', txResponse);
+			const txWait = await txResponse.wait();
+			console.log('txWait', txWait);
 
 			return txResponse.hash;
 		} catch (error) {

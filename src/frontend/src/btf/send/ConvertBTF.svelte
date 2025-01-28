@@ -80,7 +80,7 @@
 				tokenId: 'sICP-icrc-DKP',
 				sourceAddr: '0x2D509d4a9a13084D17349d21A415ECA2B4961a1a',
 				targetAddr: 'nizq7-3pdix-fdqim-arhfb-q2pvf-n4jpk-uukgm-enmpy-hebkc-dw3fc-3ae',
-				amount: 10000000n,
+				amount: 20000000n,
 				targetChainId: ChainID.sICP
 			});
 
