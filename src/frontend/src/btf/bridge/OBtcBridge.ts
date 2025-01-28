@@ -53,7 +53,7 @@ export class OBtcBridge {
 				symbol: omnityTokens.BTC.symbol,
 				decimals: omnityTokens.BTC.decimals,
 				balance: BigInt(0),
-				token_id: `sICP-icrc-${omnityTokens.BTC.symbol}`,
+				token_id: `sICP-icrc-ckBTC`,
 				fee: BigInt(100000),
 				chain_id: ChainID.sICP
 			},
