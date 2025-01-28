@@ -12,7 +12,6 @@ export class BitfinityBridge {
 	private actor: ActorSubclass<_SERVICE>;
 
 	private chain: Chain;
-	private provider: JsonRpcProvider;
 	private signer: ethers.Signer;
 
 	constructor(chain: Chain, agent: Agent, provider: JsonRpcProvider) {
@@ -24,8 +23,7 @@ export class BitfinityBridge {
 			agent
 		});
 
-		this.provider = provider;
-		this.signer = this.provider.getSigner();
+		this.signer = provider.getSigner();
 	}
 
 	async bridgeToICPCustom(params: {
@@ -44,10 +42,15 @@ export class BitfinityBridge {
 
 		const portContract = new ethers.Contract(portContractAddr, OMNITY_PORT_ABI, this.signer);
 
+		const userAddr = await this.signer.getAddress();
+
+		console.log('userAddr', userAddr);
+
 		try {
 			const [fee] = await this.actor.get_fee(targetChainId);
 
-			console.info('Bridge Transaction Details:', {
+			console.log('fee', fee);
+			console.log('Bridge Transaction Details:', {
 				chain: this.chain.evmChain,
 				targetChainId,
 				sourceAddr,
@@ -58,12 +61,13 @@ export class BitfinityBridge {
 				portContractAddr
 			});
 
-			const txHash = await portContract.write.redeemToken([tokenId, targetAddr, amount], {
+			const txHash = await portContract.redeemToken(tokenId, targetAddr, amount, {
 				account: sourceAddr as EvmAddress,
 				chain: this.chain.evmChain,
 				value: fee
 			});
 
+			console.log('Bridge Transaction Hash:', txHash);
 			return txHash;
 		} catch (error) {
 			console.error('Bridge Transaction Failed:', error);
