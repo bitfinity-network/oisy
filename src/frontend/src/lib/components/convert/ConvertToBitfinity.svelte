@@ -24,6 +24,10 @@
 			: `o${token.symbol}`
 		: '';
 
+	$: {
+		console.log('token', token, shouldShowConvertButton);
+	}
+
 	/**
 	 * Send modal context store
 	 */

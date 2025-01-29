@@ -1,5 +1,5 @@
 <script lang="ts">
-	import {  nonNullish } from '@dfinity/utils';
+	import { nonNullish } from '@dfinity/utils';
 	import { getContext, setContext } from 'svelte';
 	import ButtonHero from '$lib/components/hero/ButtonHero.svelte';
 	import { ethAddressNotLoaded } from '$lib/derived/address.derived';
