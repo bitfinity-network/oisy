@@ -10,7 +10,7 @@
 	import { HERO_CONTEXT_KEY, type HeroContext } from '$lib/stores/hero.store';
 	import { modalStore } from '$lib/stores/modal.store';
 	import { authIdentity } from '$lib/derived/auth.derived';
-	
+
 	import type { TokenUi } from '$lib/types/token';
 	import BTFSendTokenModal from './BTFSendTokenModal.svelte';
 	import { BITFINITY_NETWORK, BITFINITY_NETWORK_ID } from '$env/networks.env';
@@ -44,7 +44,6 @@
 	};
 
 	const openSend = async () => {
-
 		if (isDisabled()) {
 			const status = await waitWalletReady(isDisabled);
 
@@ -54,36 +53,12 @@
 		}
 
 		modalStore.openConvertToTwinToken();
-		// if (!$authIdentity) {
-		// 	return;
-		// }
-
-		// try {
-		// 	const agent = await getAgent({ identity: $authIdentity });
-		// 	const provider = jsonRpcProviders(BITFINITY_NETWORK_ID);
-		// 	const bitfinityBridge = new BitfinityBridge(BTF_CHAIN, agent, provider, $authIdentity);
-		// 	const res = await bitfinityBridge.bridgeToICPCustom({
-		// 		tokenId: 'sICP-icrc-DKP',
-		// 		sourceAddr: '0x2D509d4a9a13084D17349d21A415ECA2B4961a1a',
-		// 		targetAddr: 'nizq7-3pdix-fdqim-arhfb-q2pvf-n4jpk-uukgm-enmpy-hebkc-dw3fc-3ae',
-		// 		amount: 20000000n,
-		// 		targetChainId: ChainID.sICP
-		// 	});
-
-		// 	if (res) {
-		// 		console.log('Transaction successful:', res);
-		// 	}
-		// } catch (error) {
-		// 	console.error('Bridge transaction failed:', error);
-		// }
 	};
+
+	/* isDisabled() || $isBusy || $outflowActionsDisabled */
 </script>
 
-<ButtonHero
-	on:click={async () => openSend()}
-	disabled={isDisabled() || $isBusy || $outflowActionsDisabled}
-	{ariaLabel}
->
+<ButtonHero on:click={async () => openSend()} disabled={false} {ariaLabel}>
 	<slot name="icon" slot="icon" />
 	<slot />
 </ButtonHero>
