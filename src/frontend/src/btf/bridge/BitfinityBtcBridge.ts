@@ -112,9 +112,9 @@ export class BitfinityBtcBridge {
 		const status = await icBridge.checkMintStatus({ ticketId, agent });
 		return status;
 	}
-	async bridgeToOBtc({ amount, sourceBTCAddress }: { amount: number; sourceBTCAddress: string }) {
+	async bridgeFromBtcToOBtc({ amount, sourceAddress }: { amount: number; sourceAddress: string }) {
 		// send btc to ckBTC
-		await this.sendBTcTockBTC({ amount, source: sourceBTCAddress });
+		await this.sendBTcTockBTC({ amount, source: sourceAddress });
 
 		// update btc balance
 		await this.updateckBtcBalance();
@@ -122,5 +122,14 @@ export class BitfinityBtcBridge {
 		// convert ckBTC to oBTC
 		const result = await this.convertckBTCtoOBtc(amount);
 		return result;
+	}
+
+	// This implementation is just a test
+	async bridgeFromBitfinityToBtc({ amount, sourceAddress }: { amount: number; sourceAddress: string }) {
+		// send btc to ckBTC
+		await this.sendBTcTockBTC({ amount, source: sourceAddress });
+
+		// update btc balance
+		await this.updateckBtcBalance();
 	}
 }

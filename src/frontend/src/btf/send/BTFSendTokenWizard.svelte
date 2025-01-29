@@ -116,6 +116,8 @@
 		console.log('Eth Address', $ethAddress);
 	}
 
+	let sourceAddress: string;
+
 	setContext<FeeContextType>(
 		FEE_CONTEXT_KEY,
 		initFeeContext({
@@ -228,6 +230,48 @@
 		console.log('res', res);
 	};
 
+	const handleBtcBridgeTransaction = async () => {
+		if (isNullish($authIdentity)) {
+			throw new SendValidationError('No identity available for bridge');
+		}
+
+		const parsedAmount = parseToken({
+			value: `${amount}`,
+			unitName: $sendTokenDecimals
+		});
+
+		const btcBridge = new BitfinityBtcBridge($authIdentity);
+		const btcAddress = await btcBridge.getBtcAddress();
+		console.log('btc address', btcAddress);
+
+		const res = await btcBridge.bridgeFromBitfinityToBtc({
+			amount: parsedAmount.toNumber(),
+			sourceAddress: btcAddress
+		});
+		console.log('res', res);
+	};
+
+	const handleBtcReverseBridgeTransaction = async () => {
+		if (isNullish($authIdentity)) {
+			throw new SendValidationError('No identity available for bridge');
+		}
+
+		const parsedAmount = parseToken({
+			value: `${amount}`,
+			unitName: $sendTokenDecimals
+		});
+
+		const btcBridge = new BitfinityBtcBridge($authIdentity);
+		const btcAddress = await btcBridge.getBtcAddress();
+		console.log('btc address', btcAddress);
+
+		const res = await btcBridge.bridgeFromBitfinityToBtc({
+			amount: parsedAmount.toNumber(),
+			sourceAddress: btcAddress
+		});
+		console.log('res', res);
+	};
+
 	const handleSendError = async (err: unknown) => {
 		if (err instanceof SendValidationError) {
 			toastsError({
@@ -271,11 +315,13 @@
 				try {
 					if ($sendToken.standard === 'icrc') {
 						await handleIcrcBridgeTransaction();
+					} else if ($sendToken.standard === 'bitcoin') {
+						await handleBtcBridgeTransaction();
 					} else if ($sendToken.standard === 'erc20' && isOmnityBridgedBitfinityToken($sendToken)) {
 						const twinSymbol = ($sendToken as RequiredTokenWithLinkedData)?.twinTokenSymbol;
 						switch (twinSymbol) {
 							case 'BTC':
-								// BTC bridge logic will be implemented later
+								await handleBtcReverseBridgeTransaction();
 								break;
 							default:
 								if (isIcToken(twinSymbol)) {
@@ -343,8 +389,6 @@
 			ethereumTokens: $enabledEthereumTokens,
 			erc20Tokens: $enabledErc20Tokens
 		});
-
-	let sourceAddress: string;
 
 	const updateSourceAddress = async () => {
 		sourceAddress = await getSourceAddress();
