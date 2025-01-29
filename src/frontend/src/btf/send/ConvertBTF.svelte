@@ -13,6 +13,9 @@
 	import BTFSendTokenModal from './BTFSendTokenModal.svelte';
 	import { BITFINITY_NETWORK, BITFINITY_NETWORK_ID } from '$env/networks.env';
 	import { initSendContext, SEND_CONTEXT_KEY, type SendContext } from '$lib/stores/send.store';
+	import { OBtcBridge } from '../bridge/OBtcBridge';
+	import { authIdentity } from '$lib/derived/auth.derived';
+
 
 	export let ariaLabel: string;
 
@@ -47,11 +50,28 @@
 
 		modalStore.openConvertToTwinToken();
 	};
+	const principal = $authIdentity?.getPrincipal();
+
+
+	const testBridge = async () => {
+		console.log("principal", "pressed");
+		const bridge = new OBtcBridge($authIdentity);
+		console.log("btcAddress", await bridge.getBtcAddress());
+		const status = await bridge.convertckBTCtoOBtc(BigInt(1));
+		console.log(status);
+	};
 </script>
 
+<!-- <ButtonHero
+	on:click={async () => testBridge()}
+	 disabled={isDisabled() || $isBusy || $outflowActionsDisabled}
+	{ariaLabel}
+>
+	<slot name="icon" slot="icon" />
+	<slot />
+</ButtonHero> -->
 <ButtonHero
 	on:click={async () => openSend()}
-	disabled={isDisabled() || $isBusy || $outflowActionsDisabled}
 	{ariaLabel}
 >
 	<slot name="icon" slot="icon" />
