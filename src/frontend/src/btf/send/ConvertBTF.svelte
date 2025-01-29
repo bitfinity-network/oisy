@@ -43,6 +43,16 @@
 	};
 
 	const openSend = async () => {
+
+		// if (isDisabled()) {
+		// 	const status = await waitWalletReady(isDisabled);
+
+		// 	if (status === 'timeout') {
+		// 		return;
+		// 	}
+		// }
+
+		// modalStore.openConvertToTwinToken();
 		if (!$authIdentity) {
 			return;
 		}
