@@ -50,6 +50,10 @@
 	import { getAgent } from '$lib/actors/agents.ic';
 	import { ChainID, ICPCustomBridge } from '../bridge';
 	import type { OnBridgeParams } from '../bridge/types';
+	import { jsonRpcProviders } from '$eth/providers/jsonrpc.provider';
+	import { BITFINITY_NETWORK_ID } from '$env/networks.env';
+	import { BTF_CHAIN } from '../constants';
+	import { BitfinityBridge } from '../bridge/BitfinityBridge';
 
 	export let currentStep: WizardStep | undefined;
 	export let formCancelAction: 'back' | 'close' = 'close';
@@ -186,64 +190,58 @@
 		try {
 			console.log('sendPurpose', sendPurpose);
 			console.log('sendToken', $sendToken);
-			if (sendPurpose === 'convert-to-twin-token' && $sendToken.standard === 'icrc') {
+			if (sendPurpose === 'convert-to-twin-token') {
 				if (isNullish($authIdentity)) {
 					throw new Error('No identity available for bridge');
 				}
-
 				const principal = $authIdentity.getPrincipal();
+
 				if (isNullish(principal)) {
 					throw new Error('Missing principal for bridge');
 				}
+				if ($sendToken.standard === 'icrc') {
+					const parsedAmount = parseToken({
+						value: `${amount}`,
+						unitName: $sendTokenDecimals
+					});
 
-				const parsedAmount = parseToken({
-					value: `${amount}`,
-					unitName: $sendTokenDecimals
-				});
+					const agent = await getAgent({ identity: $authIdentity });
+					const icBridge = new ICPCustomBridge(agent);
 
-				const agent = await getAgent({ identity: $authIdentity });
-				const icBridge = new ICPCustomBridge(agent);
+					const bridgeParams: OnBridgeParams = {
+						token: {
+							id: ($sendToken as IcToken).ledgerCanisterId,
+							name: $sendToken.name,
+							symbol: $sendToken.symbol,
+							decimals: $sendToken.decimals,
+							balance: BigInt(0),
+							token_id: `sICP-icrc-${$sendToken.symbol}`,
+							fee: BigInt(100000),
+							chain_id: ChainID.sICP
+						},
+						sourceAddr: principal.toText(),
+						targetAddr: $ethAddress,
+						amount: BigInt(parsedAmount.toString()),
+						targetChainId: ChainID.Bitfinity
+					};
 
-				const bridgeParams: OnBridgeParams = {
-					token: {
-						id: ($sendToken as IcToken).ledgerCanisterId,
-						name: $sendToken.name,
-						symbol: $sendToken.symbol,
-						decimals: $sendToken.decimals,
-						balance: BigInt(0),
-						token_id: `sICP-icrc-${$sendToken.symbol}`,
-						fee: BigInt(100000),
-						chain_id: ChainID.sICP
-					},
-					sourceAddr: principal.toText(),
-					targetAddr: $ethAddress,
-					amount: BigInt(parsedAmount.toString()),
-					targetChainId: ChainID.Bitfinity
-				};
+					await icBridge.onBridge(bridgeParams);
+				} else {
+					const agent = await getAgent({ identity: $authIdentity });
+					const provider = jsonRpcProviders(BITFINITY_NETWORK_ID);
+					const bitfinityBridge = new BitfinityBridge(BTF_CHAIN, agent, provider, $authIdentity);
 
-				const ticketId = await icBridge.onBridge(bridgeParams);
-
-				// Continue monitoring the bridge status
-				const status = await icBridge.checkMintStatus({ ticketId, agent });
+					console.log('bitfinityBridge', bitfinityBridge);
+					const res = await bitfinityBridge.bridgeToICPCustom({
+						tokenId: 'sICP-icrc-DKP',
+						sourceAddr: '0x2D509d4a9a13084D17349d21A415ECA2B4961a1a',
+						targetAddr: 'nizq7-3pdix-fdqim-arhfb-q2pvf-n4jpk-uukgm-enmpy-hebkc-dw3fc-3ae',
+						amount: 20000000n,
+						targetChainId: ChainID.sICP
+					});
+					console.log('res', res);
+				}
 			}
-
-			// await executeSend({
-			// 	from: $ethAddress,
-			// 	to: isErc20Icp($sendToken) ? destination : mapAddressStartsWith0x(destination),
-			// 	progress: (step: ProgressStepsSend) => (sendProgressStep = step),
-			// 	token: $sendToken,
-			// 	amount: parseToken({
-			// 		value: `${amount}`,
-			// 		unitName: $sendTokenDecimals
-			// 	}),
-			// 	maxFeePerGas,
-			// 	maxPriorityFeePerGas,
-			// 	gas,
-			// 	sourceNetwork,
-			// 	targetNetwork,
-			// 	identity: $authIdentity,
-			// 	minterInfo: $ckEthMinterInfoStore?.[nativeEthereumToken.id]
-			// });
 
 			await trackEvent({
 				name: TRACK_COUNT_ETH_SEND_SUCCESS,

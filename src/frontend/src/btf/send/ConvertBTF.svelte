@@ -19,6 +19,7 @@
 	import { BitfinityBridge } from '../bridge/BitfinityBridge';
 	import { getAgent } from '$lib/actors/agents.ic';
 	import { jsonRpcProviders } from '$eth/providers/jsonrpc.provider';
+	import { BTF_CHAIN } from '../constants';
 
 	export let ariaLabel: string;
 
@@ -44,62 +45,37 @@
 
 	const openSend = async () => {
 
-		// if (isDisabled()) {
-		// 	const status = await waitWalletReady(isDisabled);
+		if (isDisabled()) {
+			const status = await waitWalletReady(isDisabled);
 
-		// 	if (status === 'timeout') {
-		// 		return;
-		// 	}
+			if (status === 'timeout') {
+				return;
+			}
+		}
+
+		modalStore.openConvertToTwinToken();
+		// if (!$authIdentity) {
+		// 	return;
 		// }
 
-		// modalStore.openConvertToTwinToken();
-		if (!$authIdentity) {
-			return;
-		}
+		// try {
+		// 	const agent = await getAgent({ identity: $authIdentity });
+		// 	const provider = jsonRpcProviders(BITFINITY_NETWORK_ID);
+		// 	const bitfinityBridge = new BitfinityBridge(BTF_CHAIN, agent, provider, $authIdentity);
+		// 	const res = await bitfinityBridge.bridgeToICPCustom({
+		// 		tokenId: 'sICP-icrc-DKP',
+		// 		sourceAddr: '0x2D509d4a9a13084D17349d21A415ECA2B4961a1a',
+		// 		targetAddr: 'nizq7-3pdix-fdqim-arhfb-q2pvf-n4jpk-uukgm-enmpy-hebkc-dw3fc-3ae',
+		// 		amount: 20000000n,
+		// 		targetChainId: ChainID.sICP
+		// 	});
 
-		try {
-			const agent = await getAgent({ identity: $authIdentity });
-			const provider = jsonRpcProviders(BITFINITY_NETWORK_ID);
-			const chain: Chain = {
-				canisterId: 'pw3ee-pyaaa-aaaar-qahva-cai',
-				evmChain: {
-					id: 355110,
-					name: 'Bitfinity Mainnet',
-					nativeCurrency: {
-						name: 'BTF',
-						symbol: 'BTF',
-						decimals: 18
-					},
-					blockExplorers: {
-						default: {
-							name: 'Bitfinity Explorer',
-							url: 'https://explorer.mainnet.bitfinity.network'
-						}
-					},
-					rpcUrls: {
-						default: {
-							http: ['https://mainnet.bitfinity.network']
-						}
-					}
-				},
-				contractAddress: '0x1Ad8cec9E5a4A441FE407785E188AbDeb4371468'
-			};
-
-			const bitfinityBridge = new BitfinityBridge(chain, agent, provider, $authIdentity);
-			const res = await bitfinityBridge.bridgeToICPCustom({
-				tokenId: 'sICP-icrc-DKP',
-				sourceAddr: '0x2D509d4a9a13084D17349d21A415ECA2B4961a1a',
-				targetAddr: 'nizq7-3pdix-fdqim-arhfb-q2pvf-n4jpk-uukgm-enmpy-hebkc-dw3fc-3ae',
-				amount: 20000000n,
-				targetChainId: ChainID.sICP
-			});
-
-			if (res) {
-				console.log('Transaction successful:', res);
-			}
-		} catch (error) {
-			console.error('Bridge transaction failed:', error);
-		}
+		// 	if (res) {
+		// 		console.log('Transaction successful:', res);
+		// 	}
+		// } catch (error) {
+		// 	console.error('Bridge transaction failed:', error);
+		// }
 	};
 </script>
 
