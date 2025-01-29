@@ -47,9 +47,10 @@
 	import { ChainID, ICPCustomBridge } from '../bridge';
 	import type { OnBridgeParams } from '../bridge/types';
 	import { jsonRpcProviders } from '$eth/providers/jsonrpc.provider';
-	import { BITFINITY_NETWORK_ID } from '$env/networks.env';
+	import { BITFINITY_NETWORK_ID, ICP_NETWORK, BITFINITY_NETWORK } from '$env/networks.env';
 	import { BTF_CHAIN } from '../constants';
 	import { BitfinityBridge } from '../bridge/BitfinityBridge';
+	import { isOmnityBridgedBitfinityToken } from '$lib/utils/token.utils';
 
 	export let currentStep: WizardStep | undefined;
 	export let formCancelAction: 'back' | 'close' = 'close';
@@ -265,10 +266,14 @@
 
 			dispatch('icNext');
 
-			// Handle ICRC bridge transaction
-			if (sendPurpose === 'convert-to-twin-token' && $sendToken.standard === 'icrc') {
+			if (sendPurpose === 'convert-to-twin-token') {
 				try {
-					await handleIcrcBridgeTransaction();
+					if ($sendToken.standard === 'icrc') {
+						await handleIcrcBridgeTransaction();
+					} else if ($sendToken.standard === 'erc20' && isOmnityBridgedBitfinityToken($sendToken)) {
+						// Handle reverse bridge from Bitfinity to ICRC
+						await handleIcrcReverseBridgeTransaction();
+					}
 				} catch (bridgeError) {
 					await handleSendError(bridgeError);
 					return;
@@ -330,8 +335,8 @@
 			on:icSend={send}
 			{destination}
 			{amount}
-			{sourceNetwork}
-			{targetNetwork}
+			sourceNetwork={isOmnityBridgedBitfinityToken($sendToken) ? BITFINITY_NETWORK : sourceNetwork}
+			targetNetwork={isOmnityBridgedBitfinityToken($sendToken) ? ICP_NETWORK : targetNetwork}
 			{destinationEditable}
 			source={sourceAddress}
 		/>

@@ -257,5 +257,8 @@ export const findTwinToken = ({
 export const isBitfinityToken = (token: Token | null) =>
 	nonNullish(token) && BITFINITY_TOKENS.some((t) => t.twinTokenSymbol === token.symbol);
 
+export const isOmnityBridgedBitfinityToken = (token: Token | null) =>
+	nonNullish(token) && token.symbol.startsWith('o');
+
 export const hasTwinToken = (token: Token | null) =>
 	nonNullish(token) && isRequiredTokenWithLinkedData(token) && !!token.twinTokenSymbol;
