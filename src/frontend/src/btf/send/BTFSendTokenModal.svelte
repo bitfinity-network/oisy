@@ -1,9 +1,6 @@
 <script lang="ts">
 	import { WizardModal, type WizardStep, type WizardSteps } from '@dfinity/gix-components';
 	import { createEventDispatcher, getContext } from 'svelte';
-	import EthSendTokenWizard from '$eth/components/send/EthSendTokenWizard.svelte';
-	import { selectedEthereumNetwork } from '$eth/derived/network.derived';
-	import { ethereumToken } from '$eth/derived/token.derived';
 	import type { Erc20Token } from '$eth/types/erc20';
 	import type { EthereumNetwork } from '$eth/types/network';
 	import { sendWizardStepsWithQrCodeScan } from '$lib/config/send.config';
@@ -19,25 +16,39 @@
 	import BtfSendTokenWizard from './BTFSendTokenWizard.svelte';
 	import { BITFINITY_NETWORK } from '$env/networks.env';
 
+	interface SendModalState {
+		amount?: number;
+		sendProgressStep: string;
+		currentStep?: WizardStep;
+	}
+
 	/**
 	 * Props
 	 */
-
 	export let destination = '';
 	export let targetNetwork: Network | undefined = undefined;
 	export let isBitfinityTwinToken = false;
 
-	let amount: number | undefined = undefined;
-	let sendProgressStep: string = ProgressStepsSend.INITIALIZATION;
+	/**
+	 * State initialization
+	 */
+	const initialState: SendModalState = {
+		amount: undefined,
+		sendProgressStep: ProgressStepsSend.INITIALIZATION,
+		currentStep: undefined
+	};
+
+	let amount = initialState.amount;
+	let sendProgressStep = initialState.sendProgressStep;
+	let currentStep = initialState.currentStep;
 
 	/**
 	 * Send context store
 	 */
-
 	const { sendPurpose, sendToken } = getContext<SendContext>(SEND_CONTEXT_KEY);
 
 	/**
-	 * Network
+	 * Network configuration
 	 */
 	let sourceNetwork: EthereumNetwork;
 	$: sourceNetwork = isBitfinityTwinToken
@@ -51,7 +62,7 @@
 	}
 
 	/**
-	 * Token
+	 * Token configuration
 	 */
 	let nativeEthereumToken: Token;
 	$: nativeEthereumToken = {
@@ -66,9 +77,8 @@
 	};
 
 	/**
-	 * Wizard modal
+	 * Wizard modal configuration
 	 */
-
 	let firstStep: WizardStep;
 	let otherSteps: WizardStep[];
 	$: [firstStep, ...otherSteps] = sendWizardStepsWithQrCodeScan({
@@ -76,40 +86,61 @@
 		converting: sendPurpose === 'convert-to-twin-token'
 	});
 
+	const getModalTitle = (_step: WizardStep): string => {
+		if (sendPurpose === 'convert-to-twin-token') {
+			return replacePlaceholders($i18n.convert.text.convert_to_token, {
+				$token: isBitfinityTwinToken ? $sendToken.symbol.slice(1) : `o${$sendToken.symbol}`
+			});
+		}
+
+		if (sendPurpose === 'convert-erc20-to-ckerc20') {
+			return replacePlaceholders($i18n.convert.text.convert_to_ckerc20, {
+				$ckErc20: ($sendToken as Erc20Token).twinTokenSymbol ?? 'ckETH'
+			});
+		}
+
+		return $i18n.send.text.send;
+	};
+
 	let steps: WizardSteps;
 	$: steps = [
 		{
 			...firstStep,
-			title:
-				sendPurpose === 'convert-to-twin-token'
-					? replacePlaceholders($i18n.convert.text.convert_to_token, {
-							$token: isBitfinityTwinToken ? $sendToken.symbol.slice(1) : `o${$sendToken.symbol}`
-						})
-					: sendPurpose === 'convert-erc20-to-ckerc20'
-						? replacePlaceholders($i18n.convert.text.convert_to_ckerc20, {
-								$ckErc20: ($sendToken as Erc20Token).twinTokenSymbol ?? 'ckETH'
-							})
-						: $i18n.send.text.send
+			title: getModalTitle(firstStep)
 		},
 		...otherSteps
 	];
 
-	let currentStep: WizardStep | undefined;
 	let modal: WizardModal;
 
 	const dispatch = createEventDispatcher();
 
 	const close = () =>
 		closeModal(() => {
+			// Reset to initial state
+			amount = initialState.amount;
+			sendProgressStep = initialState.sendProgressStep;
+			currentStep = initialState.currentStep;
+
+			// Reset props
 			destination = '';
-			amount = undefined;
 			targetNetwork = undefined;
 
-			sendProgressStep = ProgressStepsSend.INITIALIZATION;
-
-			currentStep = undefined;
-
 			dispatch('nnsClose');
+		});
+
+	const handleQRCodeScan = () =>
+		goToWizardSendStep({
+			modal,
+			steps,
+			stepName: WizardStepsSend.QR_CODE_SCAN
+		});
+
+	const handleQRCodeBack = () =>
+		goToWizardSendStep({
+			modal,
+			steps,
+			stepName: WizardStepsSend.SEND
 		});
 </script>
 
@@ -133,17 +164,7 @@
 		on:icBack={modal.back}
 		on:icNext={modal.next}
 		on:icClose={close}
-		on:icQRCodeScan={() =>
-			goToWizardSendStep({
-				modal,
-				steps,
-				stepName: WizardStepsSend.QR_CODE_SCAN
-			})}
-		on:icQRCodeBack={() =>
-			goToWizardSendStep({
-				modal,
-				steps,
-				stepName: WizardStepsSend.SEND
-			})}
+		on:icQRCodeScan={handleQRCodeScan}
+		on:icQRCodeBack={handleQRCodeBack}
 	/>
 </WizardModal>
