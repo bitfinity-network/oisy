@@ -47,13 +47,10 @@
 
 		modalStore.openConvertToTwinToken();
 	};
+	/*isDisabled() || $isBusy || $outflowActionsDisabled*/
 </script>
 
-<ButtonHero
-	on:click={async () => openSend()}
-	disabled={isDisabled() || $isBusy || $outflowActionsDisabled}
-	{ariaLabel}
->
+<ButtonHero on:click={async () => openSend()} disabled={false} {ariaLabel}>
 	<slot name="icon" slot="icon" />
 	<slot />
 </ButtonHero>
