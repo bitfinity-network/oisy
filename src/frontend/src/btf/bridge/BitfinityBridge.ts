@@ -8,8 +8,6 @@ import { OMNITY_PORT_ABI } from './constants';
 import type { Chain } from './types';
 import { createActor } from './utils';
 
-type EvmAddress = `0x${string}`;
-
 export class BitfinityBridge {
 	private actor: ActorSubclass<_SERVICE>;
 	private chain: Chain;
@@ -26,6 +24,14 @@ export class BitfinityBridge {
 			interfaceFactory: idlFactory,
 			agent
 		});
+	}
+
+	async getBridgeFee(targetChainId: string): Promise<bigint> {
+		const [fee] = await this.actor.get_fee(targetChainId);
+		if (!fee) {
+			throw new Error('Failed to get fee from actor');
+		}
+		return fee;
 	}
 
 	async bridgeToICPCustom(params: {
@@ -45,11 +51,8 @@ export class BitfinityBridge {
 		const portContract = new ethers.Contract(portContractAddr, OMNITY_PORT_ABI);
 
 		try {
-			const [fee] = await this.actor.get_fee(targetChainId);
+			const fee = await this.getBridgeFee(targetChainId);
 			console.log('fee', fee);
-			if (!fee) {
-				throw new Error('Failed to get fee from actor');
-			}
 
 			const populatedTx = await portContract.populateTransaction.redeemToken(
 				tokenId,
@@ -62,7 +65,6 @@ export class BitfinityBridge {
 
 			console.log('populatedTx', populatedTx);
 			const nonce = await this.provider.getTransactionCount(sourceAddr);
-			const feeData = await this.provider.getFeeData();
 
 			const transaction: EthSignTransactionRequest = {
 				to: portContractAddr,
