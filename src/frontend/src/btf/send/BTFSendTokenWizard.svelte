@@ -216,15 +216,16 @@
 		const provider = jsonRpcProviders(BITFINITY_NETWORK_ID);
 		const bitfinityBridge = new BitfinityBridge(BTF_CHAIN, agent, provider, $authIdentity);
 
-		console.log('bitfinityBridge', bitfinityBridge);
+
 		const res = await bitfinityBridge.bridgeToICPCustom({
-			tokenId: `sICP-icrc-${$sendToken.symbol}`,
+			tokenId: `sICP-icrc-${$sendToken.twinTokenSymbol}`,
 			sourceAddr: $ethAddress ?? '',
 			targetAddr: principal.toText(),
 			amount: BigInt(parsedAmount.toString()),
 			targetChainId: ChainID.sICP
 		});
 		console.log('res', res);
+		return res;
 	};
 
 	const handleSendError = async (err: unknown) => {
