@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import type { EthSignTransactionRequest } from '$declarations/signer/signer.did';
 import type { JsonRpcProvider } from '$eth/providers/jsonrpc.provider';
 import type { ActorSubclass, Agent, Identity } from '@dfinity/agent';
@@ -42,32 +41,21 @@ export class BitfinityBridge {
 		targetChainId: string;
 	}) {
 		const { tokenId, sourceAddr, targetAddr, amount, targetChainId } = params;
-		console.log('Bridge params:', {
-			tokenId,
-			sourceAddr,
-			targetAddr,
-			amount: amount.toString(),
-			targetChainId
-		});
 
 		const portContractAddr = this.chain.contractAddress;
 		if (!portContractAddr) {
 			throw new Error('Missing port contract address');
 		}
-		console.log('Port contract address:', portContractAddr);
 
 		try {
 			// Get the bridge fee
 			const fee = await this.getBridgeFee(targetChainId);
-			console.log('Bridge fee:', fee.toString());
 
 			const gasPrice = BigInt('343597383687');
 			const gasLimit = 100_000n;
 			const totalCost = fee + gasPrice * gasLimit;
 
 			const balance = await this.provider.balance(sourceAddr);
-			console.log('User balance:', balance.toString());
-			console.log('Total required (fee + gas):', totalCost.toString());
 
 			if (balance.toBigInt() < totalCost) {
 				console.error('Insufficient balance:', {
@@ -91,10 +79,8 @@ export class BitfinityBridge {
 					value: fee
 				}
 			);
-			console.log('Populated transaction:', populatedTx);
 
 			const nonce = await this.provider.getTransactionCount(sourceAddr);
-			console.log('Transaction nonce:', nonce);
 
 			const transaction: EthSignTransactionRequest = {
 				to: portContractAddr,
@@ -106,29 +92,17 @@ export class BitfinityBridge {
 				max_fee_per_gas: 343597383687n,
 				chain_id: BigInt(this.chain.evmChain!.id)
 			};
-			console.log('Transaction request:', {
-				...transaction,
-				value: transaction.value.toString(),
-				nonce: transaction.nonce.toString(),
-				gas: transaction.gas.toString(),
-				max_priority_fee_per_gas: transaction.max_priority_fee_per_gas.toString(),
-				max_fee_per_gas: transaction.max_fee_per_gas.toString(),
-				chain_id: transaction.chain_id.toString()
-			});
 
 			const signedTx = await this.provider.signTransaction({
 				transaction,
 				identity: this.identity
 			});
-			console.log('Signed transaction:', signedTx);
 
 			const txResponse = await this.provider.sendTransaction(signedTx);
-			console.log('Transaction response:', txResponse);
 
 			const txWait = await txResponse.wait();
-			console.log('Transaction receipt:', txWait);
 
-			return txResponse.hash;
+			return txWait.transactionHash;
 		} catch (error) {
 			console.error('Bridge transaction failed:', error);
 			if (error instanceof Error) {
