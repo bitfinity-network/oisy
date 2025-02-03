@@ -1,13 +1,13 @@
-import type { Identity } from '@dfinity/agent';
-
 import { selectUtxosFee, sendBtc } from '$btc/services/btc-send.services';
 import { BTC_MAINNET_NETWORK_ID } from '$env/networks.env';
 import { IC_CKBTC_LEDGER_CANISTER_ID, IC_CKBTC_MINTER_CANISTER_ID } from '$env/networks.icrc.env';
 import omnityTokens from '$env/omnity-tokens.erc20.json';
 import { minterCanister } from '$icp/api/ckbtc-minter.api';
+import { balance } from '$icp/api/icrc-ledger.api';
 import { getAgent } from '$lib/actors/agents.ic';
-import { mapNetworkIdToBitcoinNetwork } from '$lib/utils/network.utils';
-import { parseToken } from '$lib/utils/parse.utils';
+import { getPendingBtcTransactions } from '$lib/api/backend.api';
+import { mapNetworkIdToBitcoinNetwork, mapToSignerBitcoinNetwork } from '$lib/utils/network.utils';
+import type { Identity } from '@dfinity/agent';
 import type { UpdateBalanceOk } from '@dfinity/ckbtc';
 import { ICPCustomBridge } from './ICPCustomBridge';
 import { ChainID } from './types';
@@ -36,6 +36,9 @@ export class BitfinityBtcBridge {
 			owner: this.identity.getPrincipal(),
 			subaccount: this.getSubAccount()
 		});
+		// bc1qzszg046j3pqhs0d5gr2ruy8pttmluqcc8qjhfk
+		console.log('getBtcAddress', this.btcAddress);
+
 		return this.btcAddress;
 	}
 
@@ -44,10 +47,16 @@ export class BitfinityBtcBridge {
 			identity: this.identity,
 			minterCanisterId: IC_CKBTC_MINTER_CANISTER_ID
 		});
-		return await updateBalance({
-			owner: this.identity.getPrincipal(),
-			subaccount: this.getSubAccount()
-		});
+		console.log('updateBalance'), updateBalance;
+		try {
+			const result = await updateBalance({
+				owner: this.identity.getPrincipal(),
+				subaccount: this.getSubAccount()
+			});
+			return result;
+		} catch (error) {
+			throw error;
+		}
 	}
 
 	async getBtcBalance() {
@@ -60,36 +69,55 @@ export class BitfinityBtcBridge {
 
 	async sendBTcTockBTC({ amount, source }: { amount: number; source: string }) {
 		// send btc to ckBTC
-		const network = mapNetworkIdToBitcoinNetwork(BTC_MAINNET_NETWORK_ID);
-		if (!network) {
-			throw new Error('Invalid network');
+		try {
+			const network = mapNetworkIdToBitcoinNetwork(BTC_MAINNET_NETWORK_ID);
+			if (!network) {
+				throw new Error('Invalid network');
+			}
+
+			const pendingTransactions = await getPendingBtcTransactions({
+				identity: this.identity,
+				address: source,
+				network: mapToSignerBitcoinNetwork({ network })
+			});
+			const utxosFee = await selectUtxosFee({
+				amount,
+				network,
+				identity: this.identity
+			});
+
+			console.log('utxosFee', utxosFee);
+
+			const btcSendParams = {
+				destination: this.btcAddress || (await this.getBtcAddress()),
+				amount,
+				utxosFee: utxosFee,
+				network,
+				source,
+				identity: this.identity
+			};
+			console.log('btcSendParams', btcSendParams);
+			const result = await sendBtc(btcSendParams);
+			console.log('result', result);
+			return result;
+		} catch (error) {
+			console.error('Error sending BTC', error);
+			throw error;
 		}
-
-		const utxosFee = await selectUtxosFee({
-			amount,
-			network,
-			identity: this.identity
-		});
-
-		await sendBtc({
-			destination: this.btcAddress || (await this.getBtcAddress()),
-			amount,
-			utxosFee,
-			network,
-			source,
-			identity: this.identity
-		});
 	}
 
-	async convertckBTCtoOBtc(amount: number) {
+	async convertckBTCtoOBtc({ amount, targetAddress }: { amount: bigint; targetAddress: string }) {
 		// check if ckBTC balance is enough before converting
-
+		const amountToSend = amount
+			? amount
+			: await balance({
+					owner: this.identity.getPrincipal(),
+					subaccount: this.getSubAccount(),
+					identity: this.identity,
+					ledgerCanisterId: IC_CKBTC_LEDGER_CANISTER_ID
+				});
 		const agent = await getAgent({ identity: this.identity });
 
-		const parsedAmount = parseToken({
-			value: `${amount}`,
-			unitName: omnityTokens.BTC.decimals
-		});
 		const bridgeParams = {
 			token: {
 				id: IC_CKBTC_LEDGER_CANISTER_ID,
@@ -102,9 +130,10 @@ export class BitfinityBtcBridge {
 				chain_id: ChainID.sICP
 			},
 			sourceAddr: this.identity.getPrincipal().toText(),
-			targetAddr: omnityTokens.BTC.address,
-			amount: BigInt(parsedAmount.toString()),
-			targetChainId: ChainID.Bitfinity
+			targetAddr: targetAddress,
+			amount: amountToSend,
+			targetChainId: ChainID.Bitfinity,
+			subAccount: this.getSubAccount()
 		};
 
 		const icBridge = new ICPCustomBridge(agent);
@@ -112,24 +141,12 @@ export class BitfinityBtcBridge {
 		const status = await icBridge.checkMintStatus({ ticketId, agent });
 		return status;
 	}
-	async bridgeFromBtcToOBtc({ amount, sourceAddress }: { amount: number; sourceAddress: string }) {
-		// send btc to ckBTC
-		await this.sendBTcTockBTC({ amount, source: sourceAddress });
-
+	async bridgeToOBtc({ amount = 0n, targetAddress }: { amount?: bigint; targetAddress: string }) {
 		// update btc balance
 		await this.updateckBtcBalance();
 
 		// convert ckBTC to oBTC
-		const result = await this.convertckBTCtoOBtc(amount);
+		const result = await this.convertckBTCtoOBtc({ amount, targetAddress });
 		return result;
-	}
-
-	// This implementation is just a test
-	async bridgeFromBitfinityToBtc({ amount, sourceAddress }: { amount: number; sourceAddress: string }) {
-		// send btc to ckBTC
-		await this.sendBTcTockBTC({ amount, source: sourceAddress });
-
-		// update btc balance
-		await this.updateckBtcBalance();
 	}
 }
