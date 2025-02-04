@@ -55,10 +55,8 @@ export class BitfinityBtcBridge {
 			});
 			return result;
 		} catch (error) {
-			return null
+			return null;
 		}
-
-		return null
 	}
 
 	async getBtcBalance() {
@@ -143,11 +141,17 @@ export class BitfinityBtcBridge {
 		const status = await icBridge.checkMintStatus({ ticketId, agent });
 		return status;
 	}
-	async bridgeToOBtc({ amount = 0n, targetAddress }: { amount?: bigint; targetAddress: string }): Promise<string | null> {
+	async bridgeToOBtc({
+		amount = 0n,
+		targetAddress
+	}: {
+		amount?: bigint;
+		targetAddress: string;
+	}): Promise<string | null> {
 		// update btc balance
 		const balance = await this.updateckBtcBalance();
 		if (!balance) {
-			return null
+			return null;
 		}
 
 		// convert ckBTC to oBTC
