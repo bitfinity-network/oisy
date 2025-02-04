@@ -56,11 +56,12 @@
 	 */
 
 	let listener: WebSocketListener | undefined = undefined;
+	let bitfinityBridgeInstance: BitfinityBridge | undefined = undefined;
+	let icBridgeInstance: ICPCustomBridge | undefined = undefined;
 
 	const errorMsgs: symbol[] = [];
 
 	const updateFeeData = async () => {
-		console.log('Send token:', $sendToken);
 		
 		try {
 			if ($sendToken.standard === 'icrc') {
@@ -68,11 +69,13 @@
 					throw new Error('No identity available for ICRC fee calculation');
 				}
 
-				const icToken = $sendToken as IcToken;
-				const agent = await getAgent({ identity: $authIdentity });
-				const icBridge = new ICPCustomBridge(agent);
+				if (!icBridgeInstance) {
+					const agent = await getAgent({ identity: $authIdentity });
+					icBridgeInstance = new ICPCustomBridge(agent);
+				} 
 
-				const fee = await icBridge.getMaxFee(icToken.ledgerCanisterId);
+				const icToken = $sendToken as IcToken;
+				const fee = await icBridgeInstance.getMaxFee(icToken.ledgerCanisterId);
 
 				const feeData = {
 					gas: BigNumber.from(fee.toString()),
@@ -86,24 +89,23 @@
 			}
 
 			if ($sendToken.standard === 'erc20' && $sendToken.symbol.toLowerCase().includes('o')) {
-				
-				
 				if (!$authIdentity) {
 					throw new Error('No identity available for Bitfinity fee calculation');
 				}
 
-				const agent = await getAgent({ identity: $authIdentity });
-				const provider = jsonRpcProviders(BITFINITY_NETWORK_ID);
-				const bitfinityBridge = new BitfinityBridge(
-					BTF_CHAIN,
-					agent,
-					provider,
-					$authIdentity
-				);
+				if (!bitfinityBridgeInstance) {
+					const agent = await getAgent({ identity: $authIdentity });
+					const provider = jsonRpcProviders(BITFINITY_NETWORK_ID);
+					bitfinityBridgeInstance = new BitfinityBridge(
+						BTF_CHAIN,
+						agent,
+						provider,
+						$authIdentity
+					);
+				}
 
-				const fee = await bitfinityBridge.getBridgeFee(ChainID.sICP);
-
-				console.log("fee", fee);
+				const fee = await bitfinityBridgeInstance.getBridgeFee(ChainID.sICP);
+				
 				
 				const adjustedFee = BigNumber.from(fee.toString()).div(BigNumber.from(10).pow(10));
 				
