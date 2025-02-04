@@ -52,6 +52,10 @@
 	import { BitfinityBridge } from '../bridge/BitfinityBridge';
 	import { isIcToken, isOmnityBridgedBitfinityToken } from '$lib/utils/token.utils';
 	import { BitfinityBtcBridge } from '../bridge/BitfinityBtcBridge';
+	import ReceiveAddress from '$lib/components/receive/ReceiveAddress.svelte';
+	import { BTC_MAINNET_NETWORK } from '$env/networks.env';
+	import { btcAddressMainnet } from '$lib/derived/address.derived';
+	import BTFSendBitcoinAddress from './BTFSendBitcoinAddress.svelte';
 
 	export let currentStep: WizardStep | undefined;
 	export let formCancelAction: 'back' | 'close' = 'close';
@@ -244,9 +248,9 @@
 		const btcAddress = await btcBridge.getBtcAddress();
 		console.log('btc address', btcAddress);
 
-		const res = await btcBridge.bridgeFromBitfinityToBtc({
+		const res = await btcBridge.sendBTcTockBTC({
 			amount: parsedAmount.toNumber(),
-			sourceAddress: btcAddress
+			source: btcAddress
 		});
 		console.log('res', res);
 	};
@@ -265,9 +269,9 @@
 		const btcAddress = await btcBridge.getBtcAddress();
 		console.log('btc address', btcAddress);
 
-		const res = await btcBridge.bridgeFromBitfinityToBtc({
+		const res = await btcBridge.sendBTcTockBTC({
 			amount: parsedAmount.toNumber(),
-			sourceAddress: btcAddress
+			source: btcAddress
 		});
 		console.log('res', res);
 	};
@@ -421,6 +425,19 @@
 		<InProgressWizard
 			progressStep={sendProgressStep}
 			steps={sendSteps({ i18n: $i18n, sendWithApproval })}
+		/>
+	{:else if currentStep?.name === WizardStepsSend.SEND && $sendToken.standard === 'bitcoin' && sendPurpose === 'convert-to-twin-token'}
+		<BTFSendBitcoinAddress on:icClose={close} />
+	{:else if currentStep?.name === WizardStepsSend.REVIEW}
+		<SendReview
+			on:icBack
+			on:icSend={send}
+			{destination}
+			{amount}
+			sourceNetwork={isOmnityBridgedBitfinityToken($sendToken) ? BITFINITY_NETWORK : sourceNetwork}
+			targetNetwork={isOmnityBridgedBitfinityToken($sendToken) ? ICP_NETWORK : targetNetwork}
+			{destinationEditable}
+			source={sourceAddress}
 		/>
 	{:else if currentStep?.name === WizardStepsSend.SEND}
 		<SendForm

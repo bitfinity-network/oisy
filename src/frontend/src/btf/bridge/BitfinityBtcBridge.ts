@@ -42,7 +42,7 @@ export class BitfinityBtcBridge {
 		return this.btcAddress;
 	}
 
-	async updateckBtcBalance(): Promise<UpdateBalanceOk> {
+	async updateckBtcBalance(): Promise<UpdateBalanceOk | null> {
 		const { updateBalance } = await minterCanister({
 			identity: this.identity,
 			minterCanisterId: IC_CKBTC_MINTER_CANISTER_ID
@@ -55,8 +55,10 @@ export class BitfinityBtcBridge {
 			});
 			return result;
 		} catch (error) {
-			throw error;
+			return null
 		}
+
+		return null
 	}
 
 	async getBtcBalance() {
@@ -141,9 +143,12 @@ export class BitfinityBtcBridge {
 		const status = await icBridge.checkMintStatus({ ticketId, agent });
 		return status;
 	}
-	async bridgeToOBtc({ amount = 0n, targetAddress }: { amount?: bigint; targetAddress: string }) {
+	async bridgeToOBtc({ amount = 0n, targetAddress }: { amount?: bigint; targetAddress: string }): Promise<string | null> {
 		// update btc balance
-		await this.updateckBtcBalance();
+		const balance = await this.updateckBtcBalance();
+		if (!balance) {
+			return null
+		}
 
 		// convert ckBTC to oBTC
 		const result = await this.convertckBTCtoOBtc({ amount, targetAddress });
