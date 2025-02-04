@@ -1,5 +1,5 @@
 <script lang="ts">
-	import {  nonNullish } from '@dfinity/utils';
+	import { nonNullish } from '@dfinity/utils';
 	import { getContext, setContext } from 'svelte';
 	import ButtonHero from '$lib/components/hero/ButtonHero.svelte';
 	import { ethAddressNotLoaded } from '$lib/derived/address.derived';
@@ -9,10 +9,17 @@
 	import { waitWalletReady } from '$lib/services/actions.services';
 	import { HERO_CONTEXT_KEY, type HeroContext } from '$lib/stores/hero.store';
 	import { modalStore } from '$lib/stores/modal.store';
+	import { authIdentity } from '$lib/derived/auth.derived';
+	
 	import type { TokenUi } from '$lib/types/token';
 	import BTFSendTokenModal from './BTFSendTokenModal.svelte';
 	import { BITFINITY_NETWORK, BITFINITY_NETWORK_ID } from '$env/networks.env';
 	import { initSendContext, SEND_CONTEXT_KEY, type SendContext } from '$lib/stores/send.store';
+	import { ChainID, type Chain } from '../bridge';
+	import { BitfinityBridge } from '../bridge/BitfinityBridge';
+	import { getAgent } from '$lib/actors/agents.ic';
+	import { jsonRpcProviders } from '$eth/providers/jsonrpc.provider';
+	import { BTF_CHAIN } from '../constants';
 
 	export let ariaLabel: string;
 
@@ -37,6 +44,7 @@
 	};
 
 	const openSend = async () => {
+
 		if (isDisabled()) {
 			const status = await waitWalletReady(isDisabled);
 
@@ -46,6 +54,28 @@
 		}
 
 		modalStore.openConvertToTwinToken();
+		// if (!$authIdentity) {
+		// 	return;
+		// }
+
+		// try {
+		// 	const agent = await getAgent({ identity: $authIdentity });
+		// 	const provider = jsonRpcProviders(BITFINITY_NETWORK_ID);
+		// 	const bitfinityBridge = new BitfinityBridge(BTF_CHAIN, agent, provider, $authIdentity);
+		// 	const res = await bitfinityBridge.bridgeToICPCustom({
+		// 		tokenId: 'sICP-icrc-DKP',
+		// 		sourceAddr: '0x2D509d4a9a13084D17349d21A415ECA2B4961a1a',
+		// 		targetAddr: 'nizq7-3pdix-fdqim-arhfb-q2pvf-n4jpk-uukgm-enmpy-hebkc-dw3fc-3ae',
+		// 		amount: 20000000n,
+		// 		targetChainId: ChainID.sICP
+		// 	});
+
+		// 	if (res) {
+		// 		console.log('Transaction successful:', res);
+		// 	}
+		// } catch (error) {
+		// 	console.error('Bridge transaction failed:', error);
+		// }
 	};
 </script>
 

@@ -46,6 +46,11 @@
 	import { getAgent } from '$lib/actors/agents.ic';
 	import { ChainID, ICPCustomBridge } from '../bridge';
 	import type { OnBridgeParams } from '../bridge/types';
+	import { jsonRpcProviders } from '$eth/providers/jsonrpc.provider';
+	import { BITFINITY_NETWORK_ID, ICP_NETWORK, BITFINITY_NETWORK } from '$env/networks.env';
+	import { BTF_CHAIN } from '../constants';
+	import { BitfinityBridge } from '../bridge/BitfinityBridge';
+	import { isOmnityBridgedBitfinityToken } from '$lib/utils/token.utils';
 
 	export let currentStep: WizardStep | undefined;
 	export let formCancelAction: 'back' | 'close' = 'close';
@@ -104,6 +109,11 @@
 
 	let feeContext: FeeContext | undefined;
 	const evaluateFee = () => feeContext?.triggerUpdateFee();
+
+	$: {
+		console.log('Principal', $authIdentity?.getPrincipal().toText());
+		console.log('Eth Address', $ethAddress);
+	}
 
 	setContext<FeeContextType>(
 		FEE_CONTEXT_KEY,
@@ -187,6 +197,37 @@
 		console.debug('Bridge status:', status);
 	};
 
+	const handleIcrcReverseBridgeTransaction = async () => {
+		if (isNullish($authIdentity)) {
+			throw new SendValidationError('No identity available for bridge');
+		}
+
+		const principal = $authIdentity.getPrincipal();
+		if (isNullish(principal)) {
+			throw new SendValidationError('Missing principal for bridge');
+		}
+
+		const parsedAmount = parseToken({
+			value: `${amount}`,
+			unitName: $sendTokenDecimals
+		});
+
+		const agent = await getAgent({ identity: $authIdentity });
+		const provider = jsonRpcProviders(BITFINITY_NETWORK_ID);
+		const bitfinityBridge = new BitfinityBridge(BTF_CHAIN, agent, provider, $authIdentity);
+
+
+		const res = await bitfinityBridge.bridgeToICPCustom({
+			tokenId: `sICP-icrc-${$sendToken.twinTokenSymbol}`,
+			sourceAddr: $ethAddress ?? '',
+			targetAddr: principal.toText(),
+			amount: BigInt(parsedAmount.toString()),
+			targetChainId: ChainID.sICP
+		});
+		console.log('res', res);
+		return res;
+	};
+
 	const handleSendError = async (err: unknown) => {
 		if (err instanceof SendValidationError) {
 			toastsError({
@@ -226,10 +267,14 @@
 
 			dispatch('icNext');
 
-			// Handle ICRC bridge transaction
-			if (sendPurpose === 'convert-to-twin-token' && $sendToken.standard === 'icrc') {
+			if (sendPurpose === 'convert-to-twin-token') {
 				try {
-					await handleIcrcBridgeTransaction();
+					if ($sendToken.standard === 'icrc') {
+						await handleIcrcBridgeTransaction();
+					} else if ($sendToken.standard === 'erc20' && isOmnityBridgedBitfinityToken($sendToken)) {
+						// Handle reverse bridge from Bitfinity to ICRC
+						await handleIcrcReverseBridgeTransaction();
+					}
 				} catch (bridgeError) {
 					await handleSendError(bridgeError);
 					return;
@@ -291,8 +336,8 @@
 			on:icSend={send}
 			{destination}
 			{amount}
-			{sourceNetwork}
-			{targetNetwork}
+			sourceNetwork={isOmnityBridgedBitfinityToken($sendToken) ? BITFINITY_NETWORK : sourceNetwork}
+			targetNetwork={isOmnityBridgedBitfinityToken($sendToken) ? ICP_NETWORK : targetNetwork}
 			{destinationEditable}
 			source={sourceAddress}
 		/>

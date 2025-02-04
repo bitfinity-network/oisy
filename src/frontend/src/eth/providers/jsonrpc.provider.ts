@@ -1,11 +1,14 @@
+import type { EthSignTransactionRequest } from '$declarations/signer/signer.did';
 import { BITFINITY_NETWORK_ID } from '$env/networks.env';
 import { BITFINITY_JSON_RPC_URL_MAINNET } from '$env/networks.eth.env';
 import { ERC20_ABI } from '$eth/constants/erc20.constants';
 import type { Erc20ContractAddress } from '$eth/types/erc20';
+import { signTransaction } from '$lib/api/signer.api';
 import { i18n } from '$lib/stores/i18n.store';
 import type { EthAddress } from '$lib/types/address';
 import type { NetworkId } from '$lib/types/network';
 import { replacePlaceholders } from '$lib/utils/i18n.utils';
+import type { Identity } from '@dfinity/agent';
 import { assertNonNullish } from '@dfinity/utils';
 import { BigNumber } from '@ethersproject/bignumber';
 import type { Networkish } from '@ethersproject/networks';
@@ -14,7 +17,7 @@ import {
 	type FeeData,
 	type TransactionResponse
 } from '@ethersproject/providers';
-import { Signer, ethers } from 'ethers';
+import { ethers } from 'ethers';
 import { get } from 'svelte/store';
 
 export class JsonRpcProvider {
@@ -38,7 +41,18 @@ export class JsonRpcProvider {
 		};
 	};
 
-	getSigner = (): Signer => this.provider.getSigner();
+	signTransaction = async ({
+		transaction,
+		identity
+	}: {
+		transaction: EthSignTransactionRequest;
+		identity: Identity;
+	}): Promise<string> =>
+		await signTransaction({
+			transaction,
+			identity,
+			nullishIdentityErrorMessage: get(i18n).auth.error.no_internet_identity
+		});
 
 	getFeeContractData = ({
 		contract: { address: contractAddress },

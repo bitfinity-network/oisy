@@ -35,8 +35,10 @@
 	import { getAgent } from '$lib/actors/agents.ic';
 	import { authIdentity } from '$lib/derived/auth.derived';
 	import { BigNumber } from '@ethersproject/bignumber';
-	import { ICPCustomBridge } from '../../../btf/bridge';
+	import { ChainID, ICPCustomBridge } from '../../../btf/bridge';
 	import type { IcToken } from '$icp/types/ic-token';
+	import { BitfinityBridge } from '../../../btf/bridge/BitfinityBridge';
+	import { BTF_CHAIN } from '../../../btf/constants';
 
 	export let observe: boolean;
 	export let destination = '';
@@ -58,6 +60,8 @@
 	const errorMsgs: symbol[] = [];
 
 	const updateFeeData = async () => {
+		console.log('Send token:', $sendToken);
+		
 		try {
 			if ($sendToken.standard === 'icrc') {
 				if (!$authIdentity) {
@@ -78,6 +82,37 @@
 				};
 
 				feeStore.setFee(feeData);
+				return;
+			}
+
+			if ($sendToken.standard === 'erc20' && $sendToken.symbol.toLowerCase().includes('o')) {
+				
+				
+				if (!$authIdentity) {
+					throw new Error('No identity available for Bitfinity fee calculation');
+				}
+
+				const agent = await getAgent({ identity: $authIdentity });
+				const provider = jsonRpcProviders(BITFINITY_NETWORK_ID);
+				const bitfinityBridge = new BitfinityBridge(
+					BTF_CHAIN,
+					agent,
+					provider,
+					$authIdentity
+				);
+
+				const fee = await bitfinityBridge.getBridgeFee(ChainID.sICP);
+
+				console.log("fee", fee);
+				
+				const adjustedFee = BigNumber.from(fee.toString()).div(BigNumber.from(10).pow(10));
+				
+				feeStore.setFee({
+					gas: BigNumber.from(100000), 
+					maxFeePerGas: adjustedFee,
+					maxPriorityFeePerGas: adjustedFee,
+					standard: 'erc20'
+				});
 				return;
 			}
 

@@ -65,18 +65,23 @@ export enum ServiceType {
 	Customs = 'Customs'
 }
 export interface Chain {
-	chainId: ChainID;
-	chainName: ChainName;
+	chainId?: ChainID;
+	chainName?: ChainName;
 	canisterId: string;
-	feeToken: string[];
-	chainType: ChainType;
-	counterparties: ChainID[];
-	chainState: ChainState;
+	feeToken?: string[];
+	chainType?: ChainType;
+	counterparties?: ChainID[];
+	chainState?: ChainState;
 	contractAddress?: string;
 	evmChain?: {
 		id: number;
 		name: string;
-		network: string;
+		blockExplorers?: {
+			default: {
+				name: string;
+				url: string;
+			};
+		};
 		nativeCurrency: {
 			name: string;
 			symbol: string;
@@ -89,7 +94,7 @@ export interface Chain {
 			};
 		};
 	};
-	serviceType: ServiceType;
+	serviceType?: ServiceType;
 	tokenList?: Token[];
 }
 
