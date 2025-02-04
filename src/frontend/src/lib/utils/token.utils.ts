@@ -258,7 +258,15 @@ export const isBitfinityToken = (token: Token | null) =>
 	nonNullish(token) && BITFINITY_TOKENS.some((t) => t.twinTokenSymbol === token.symbol);
 
 export const isOmnityBridgedBitfinityToken = (token: Token | null) =>
-	nonNullish(token) && token.symbol.startsWith('o');
+	nonNullish(token) && token.symbol.toLowerCase().startsWith('o');
 
 export const hasTwinToken = (token: Token | null) =>
 	nonNullish(token) && isRequiredTokenWithLinkedData(token) && !!token.twinTokenSymbol;
+
+export function isIcToken(symbol: string): boolean {
+	// Check if the token is in the ICRC_CHAIN_FUSION_DEFAULT_LEDGER_CANISTER_IDS
+	// or ICRC_CHAIN_FUSION_SUGGESTED_LEDGER_CANISTER_IDS lists
+	return symbol === 'ICP' || 
+		   ICRC_CHAIN_FUSION_DEFAULT_LEDGER_CANISTER_IDS.some(id => id.includes(symbol)) ||
+		   ICRC_CHAIN_FUSION_SUGGESTED_LEDGER_CANISTER_IDS.some(id => id.includes(symbol));
+}

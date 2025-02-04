@@ -57,16 +57,21 @@ export const balance = async ({
 	certified = true,
 	owner,
 	identity,
+	subaccount,
 	...rest
 }: {
 	owner: Principal;
 	identity: OptionIdentity;
 	ledgerCanisterId: CanisterIdText;
+	subaccount?: IcrcSubaccount;
 } & QueryParams): Promise<IcrcTokens> => {
 	assertNonNullish(identity);
 
 	const { balance } = await ledgerCanister({ identity, ...rest });
 
+	if (subaccount) {
+		return balance({ certified, ...getIcrcAccount(owner), subaccount });
+	}
 	return balance({ certified, ...getIcrcAccount(owner) });
 };
 
