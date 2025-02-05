@@ -42,7 +42,7 @@ export class BitfinityBtcBridge {
 		return this.btcAddress;
 	}
 
-	async updateckBtcBalance(): Promise<UpdateBalanceOk | null> {
+	async updateckBtcBalance(): Promise<UpdateBalanceOk | bigint | null> {
 		const { updateBalance } = await minterCanister({
 			identity: this.identity,
 			minterCanisterId: IC_CKBTC_MINTER_CANISTER_ID
@@ -55,6 +55,18 @@ export class BitfinityBtcBridge {
 			});
 			return result;
 		} catch (error) {
+			// if there is error check
+			const ckbtcBalance = await balance({
+				owner: this.identity.getPrincipal(),
+				subaccount: this.getSubAccount(),
+				identity: this.identity,
+				ledgerCanisterId: IC_CKBTC_LEDGER_CANISTER_ID
+			});
+			console.log('ckbtcBalance', ckbtcBalance);
+			if (ckbtcBalance > 0n) {
+				return ckbtcBalance;
+			}
+			console.error('Error updating ckBTC balance', error);
 			return null;
 		}
 	}
