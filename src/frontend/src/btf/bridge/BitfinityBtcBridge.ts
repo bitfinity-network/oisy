@@ -32,6 +32,9 @@ export class BitfinityBtcBridge {
 	 * @returns {String} BTC address
 	 */
 	async getBtcAddress(): Promise<string> {
+		if (this.btcAddress) {
+			return this.btcAddress;
+		}
 		const { getBtcAddress } = await minterCanister({
 			identity: this.identity,
 			minterCanisterId: IC_CKBTC_MINTER_CANISTER_ID
@@ -100,7 +103,7 @@ export class BitfinityBtcBridge {
 			});
 
 			const btcSendParams = {
-				destination: this.btcAddress || (await this.getBtcAddress()),
+				destination: await this.getBtcAddress(),
 				amount,
 				utxosFee: utxosFee,
 				network,
