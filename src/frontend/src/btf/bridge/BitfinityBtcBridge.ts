@@ -27,6 +27,10 @@ export class BitfinityBtcBridge {
 		return subAccount;
 	}
 
+	/**
+	 * Get the BTC address for the user to bridge to ckBTC
+	 * @returns {String} BTC address
+	 */
 	async getBtcAddress(): Promise<string> {
 		const { getBtcAddress } = await minterCanister({
 			identity: this.identity,
@@ -36,18 +40,18 @@ export class BitfinityBtcBridge {
 			owner: this.identity.getPrincipal(),
 			subaccount: this.getSubAccount()
 		});
-		// bc1qzszg046j3pqhs0d5gr2ruy8pttmluqcc8qjhfk
-		console.log('getBtcAddress', this.btcAddress);
-
 		return this.btcAddress;
 	}
 
+	/**
+	 * Update the ckBTC balance for the user
+	 * @returns {UpdateBalanceOk | bigint | null} ckBTC balance
+	 */
 	async updateckBtcBalance(): Promise<UpdateBalanceOk | bigint | null> {
 		const { updateBalance } = await minterCanister({
 			identity: this.identity,
 			minterCanisterId: IC_CKBTC_MINTER_CANISTER_ID
 		});
-		console.log('updateBalance'), updateBalance;
 		try {
 			const result = await updateBalance({
 				owner: this.identity.getPrincipal(),
@@ -62,7 +66,6 @@ export class BitfinityBtcBridge {
 				identity: this.identity,
 				ledgerCanisterId: IC_CKBTC_LEDGER_CANISTER_ID
 			});
-			console.log('ckbtcBalance', ckbtcBalance);
 			if (ckbtcBalance > 0n) {
 				return ckbtcBalance;
 			}
@@ -71,16 +74,14 @@ export class BitfinityBtcBridge {
 		}
 	}
 
-	async getBtcBalance() {
-		// get btc balance
-	}
-
-	async getckBTCBalance() {
-		// get ckBTC balance
-	}
-
+	/**
+	 * Send BTC to ckBTC
+	 * @param {Object} params - The parameters for sending BTC to ckBTC.
+	 * @param {number} params.amount - The amount of BTC to send.
+	 * @param {string} params.source - The source address of the BTC transaction.
+	 * @returns {Promise<string>} The transaction hash of the BTC to ckBTC.
+	 */
 	async sendBTcTockBTC({ amount, source }: { amount: number; source: string }) {
-		// send btc to ckBTC
 		try {
 			const network = mapNetworkIdToBitcoinNetwork(BTC_MAINNET_NETWORK_ID);
 			if (!network) {
@@ -98,8 +99,6 @@ export class BitfinityBtcBridge {
 				identity: this.identity
 			});
 
-			console.log('utxosFee', utxosFee);
-
 			const btcSendParams = {
 				destination: this.btcAddress || (await this.getBtcAddress()),
 				amount,
@@ -108,9 +107,7 @@ export class BitfinityBtcBridge {
 				source,
 				identity: this.identity
 			};
-			console.log('btcSendParams', btcSendParams);
 			const result = await sendBtc(btcSendParams);
-			console.log('result', result);
 			return result;
 		} catch (error) {
 			console.error('Error sending BTC', error);
@@ -118,8 +115,14 @@ export class BitfinityBtcBridge {
 		}
 	}
 
+	/**
+	 * Convert ckBTC to oBTC
+	 * @param {Object} params - The parameters for converting ckBTC to oBTC.
+	 * @param {bigint} params.amount - The amount of ckBTC to convert.
+	 * @param {string} params.targetAddress - The target address of the oBTC.
+	 * @returns {Promise<string>} The transaction hash of the ckBTC to oBTC.
+	 */
 	async convertckBTCtoOBtc({ amount, targetAddress }: { amount: bigint; targetAddress: string }) {
-		// check if ckBTC balance is enough before converting
 		const amountToSend = amount
 			? amount
 			: await balance({
@@ -153,6 +156,15 @@ export class BitfinityBtcBridge {
 		const status = await icBridge.checkMintStatus({ ticketId, agent });
 		return status;
 	}
+
+	/**
+	 * Bridge btc to oBTC
+	 * Update the ckBTC balance and convert it to oBTC
+	 * @param {Object} params - The parameters for bridging BTC to oBTC.
+	 * @param {bigint} params.amount - The amount of BTC to bridge.
+	 * @param {string} params.targetAddress - The target address of the oBTC.
+	 * @returns {Promise<string | null>} The transaction hash of the BTC to oBTC or null if there is no balance.
+	 */
 	async bridgeToOBtc({
 		amount = 0n,
 		targetAddress
@@ -160,13 +172,11 @@ export class BitfinityBtcBridge {
 		amount?: bigint;
 		targetAddress: string;
 	}): Promise<string | null> {
-		// update btc balance
 		const balance = await this.updateckBtcBalance();
 		if (!balance) {
 			return null;
 		}
 
-		// convert ckBTC to oBTC
 		const result = await this.convertckBTCtoOBtc({ amount, targetAddress });
 		return result;
 	}
