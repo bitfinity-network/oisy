@@ -21,7 +21,8 @@ export interface _SERVICE {
 }
 
 // Generated IDL factory
-export const idlFactory = ({ IDL }) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const idlFactory = ({ IDL }: { IDL: any }) => {
 	const TokenResp = IDL.Record({
 		decimals: IDL.Nat8,
 		token_id: IDL.Text,

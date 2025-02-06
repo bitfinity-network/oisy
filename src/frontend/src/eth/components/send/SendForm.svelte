@@ -25,7 +25,7 @@
 	export let nativeEthereumToken: Token;
 	// TODO: to be removed once minterInfo breaking changes have been executed on mainnet
 	export let sourceNetwork: EthereumNetwork;
-	export let source: string;
+	export let source: string | undefined = undefined;
 
 	let insufficientFunds: boolean;
 	let invalidDestination: boolean;

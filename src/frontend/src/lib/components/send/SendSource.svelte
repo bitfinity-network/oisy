@@ -9,7 +9,7 @@
 
 	export let token: OptionToken;
 	export let balance: OptionBalance;
-	export let source: string;
+	export let source: string | undefined = undefined;
 </script>
 
 <Value ref="source" element="div">

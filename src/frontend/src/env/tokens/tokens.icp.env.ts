@@ -14,7 +14,7 @@ export const ICP_SYMBOL = 'ICP';
 
 export const ICP_TOKEN_ID: TokenId = parseTokenId(ICP_SYMBOL);
 
-export const ICP_TOKEN: RequiredToken<IcToken & TokenWithLinkedData> = {
+export const ICP_TOKEN: RequiredToken<IcToken & TokenWithLinkedData> & { enabled: boolean } = {
 	id: ICP_TOKEN_ID,
 	network: ICP_NETWORK,
 	standard: 'icp',
