@@ -15,13 +15,16 @@
 		? ($tokenWithFallback as RequiredTokenWithLinkedData)
 		: undefined;
 	$: isIcrcToken = token?.standard === 'icrc';
-	$: isBitfinityToken = nonNullish(token) && token.symbol.startsWith('o');
+	$: isBitfinityToken = nonNullish(token) && token.symbol.startsWith('o') && !isBtcToken;
+	$: isBtcToken = nonNullish(token) && token.twinTokenSymbol === 'BTC';
 	$: shouldShowConvertButton =
 		nonNullish(token) && (isIcrcToken || hasTwinToken(token) || isBitfinityToken);
 	$: targetSymbol = nonNullish(token)
 		? isBitfinityToken
 			? token.symbol.slice(1)
-			: `o${token.symbol}`
+			: isBtcToken
+				? 'ckBTC'
+				: `o${token.symbol}`
 		: '';
 
 	/**

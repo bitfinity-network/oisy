@@ -41,9 +41,7 @@
 	$: convertCkBtc = $tokenCkBtcLedger && $erc20UserTokensInitialized;
 
 	let convertBtc = false;
-	$: convertBtc =
-		(BTC_TO_CKBTC_EXCHANGE_ENABLED && isNetworkIdBTCMainnet($networkId)) ||
-		isOBTCToken($tokenWithFallback);
+	$: convertBtc = BTC_TO_CKBTC_EXCHANGE_ENABLED && isNetworkIdBTCMainnet($networkId);
 
 	let isTransactionsPage = false;
 	$: isTransactionsPage = isRouteTransactions($page);
@@ -55,8 +53,7 @@
 	$: showBitfinityBridge =
 		isTransactionsPage &&
 		$tokenWithFallback &&
-		(isBitfinityToken($tokenWithFallback) || hasTwinToken($tokenWithFallback)) &&
-		!isOBTCToken($tokenWithFallback);
+		(isBitfinityToken($tokenWithFallback) || hasTwinToken($tokenWithFallback));
 
 	let showOBTCConversion = false;
 	$: showOBTCConversion = isTransactionsPage && $tokenCkBtcLedger;
