@@ -12,6 +12,8 @@ import type { UpdateBalanceOk } from '@dfinity/ckbtc';
 import { ICPCustomBridge } from './ICPCustomBridge';
 import { ChainID } from './types';
 
+const SUBACCOUNT_OPTION = [5, 3, 7, 8];
+
 export class BitfinityBtcBridge {
 	identity: Identity;
 	btcAddress: string;
@@ -23,7 +25,11 @@ export class BitfinityBtcBridge {
 
 	getSubAccount(): Uint8Array {
 		const subAccount = new Uint8Array(32);
-		subAccount[0] = 1;
+		SUBACCOUNT_OPTION.forEach((value, index) => {
+			subAccount[index] = value;
+		});
+		subAccount[subAccount.length - 1] = 1;
+
 		return subAccount;
 	}
 
