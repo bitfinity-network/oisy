@@ -270,3 +270,9 @@ export function isIcToken(symbol: string): boolean {
 		   ICRC_CHAIN_FUSION_DEFAULT_LEDGER_CANISTER_IDS.some(id => id.includes(symbol)) ||
 		   ICRC_CHAIN_FUSION_SUGGESTED_LEDGER_CANISTER_IDS.some(id => id.includes(symbol));
 }
+
+/**
+ * Returns true if the token is oBTC
+ */
+export const isOBTCToken = (token?: Token): boolean => 
+	nonNullish(token) && token.symbol === 'oBTC';

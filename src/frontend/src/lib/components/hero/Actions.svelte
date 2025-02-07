@@ -28,7 +28,8 @@
 	import { isRouteTransactions } from '$lib/utils/nav.utils';
 	import { isNetworkIdBTCMainnet } from '$lib/utils/network.utils';
 	import ConvertToBitfinity from '$lib/components/convert/ConvertToBitfinity.svelte';
-	import { hasTwinToken, isBitfinityToken } from '$lib/utils/token.utils';
+	import { hasTwinToken, isBitfinityToken, isOBTCToken } from '$lib/utils/token.utils';
+	import ConvertToOBTC from '$lib/components/convert/ConvertToOBTC.svelte';
 
 	let convertEth = false;
 	$: convertEth = $ethToCkETHEnabled && $erc20UserTokensInitialized;
@@ -40,7 +41,9 @@
 	$: convertCkBtc = $tokenCkBtcLedger && $erc20UserTokensInitialized;
 
 	let convertBtc = false;
-	$: convertBtc = BTC_TO_CKBTC_EXCHANGE_ENABLED && isNetworkIdBTCMainnet($networkId);
+	$: convertBtc =
+		(BTC_TO_CKBTC_EXCHANGE_ENABLED && isNetworkIdBTCMainnet($networkId)) ||
+		isOBTCToken($tokenWithFallback);
 
 	let isTransactionsPage = false;
 	$: isTransactionsPage = isRouteTransactions($page);
@@ -52,7 +55,11 @@
 	$: showBitfinityBridge =
 		isTransactionsPage &&
 		$tokenWithFallback &&
-		(isBitfinityToken($tokenWithFallback) || hasTwinToken($tokenWithFallback));
+		(isBitfinityToken($tokenWithFallback) || hasTwinToken($tokenWithFallback)) &&
+		!isOBTCToken($tokenWithFallback);
+
+	let showOBTCConversion = false;
+	$: showOBTCConversion = isTransactionsPage && $tokenCkBtcLedger;
 </script>
 
 <div role="toolbar" class="flex w-full justify-center pt-10">
@@ -98,6 +105,10 @@
 
 			{#if showBitfinityBridge}
 				<ConvertToBitfinity />
+			{/if}
+
+			{#if showOBTCConversion}
+				<ConvertToOBTC />
 			{/if}
 		{/if}
 
