@@ -14,16 +14,20 @@ export const initAnalytics = async () => {
 		return;
 	}
 
-	await initOrbiter({
-		satelliteId: SATELLITE_ID,
-		orbiterId: ORBITER_ID,
-		options: {
-			performance: false
-		},
-		worker: {
-			path: '/workers/analytics.worker.js'
-		}
-	});
+	try {
+		await initOrbiter({
+			satelliteId: SATELLITE_ID,
+			orbiterId: ORBITER_ID,
+			options: {
+				performance: false
+			},
+			worker: {
+				path: '/workers/analytics.worker.js'
+			}
+		});
+	} catch (err) {
+		console.warn('Analytics initialization failed:', err);
+	}
 };
 
 export const trackEvent = async ({
