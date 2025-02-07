@@ -10,7 +10,7 @@ import {
 import type { OnBridgeParams, Token } from './types';
 import { createActor } from './utils';
 
-const icpChainCanisterId = 'nlgkm-4qaaa-aaaar-qah2q-cai';
+const icpCustomInterfaceCanisterId = 'nlgkm-4qaaa-aaaar-qah2q-cai';
 export class ICPCustomBridge {
 	agent: Agent;
 
@@ -22,7 +22,7 @@ export class ICPCustomBridge {
 		const { token, sourceAddr, targetAddr, targetChainId, amount } = params;
 
 		const actor = await createActor<_SERVICE>({
-			canisterId: icpChainCanisterId,
+			canisterId: icpCustomInterfaceCanisterId,
 			interfaceFactory: ICPCustomsInterfaceFactory,
 			agent: this.agent
 		});
@@ -55,7 +55,7 @@ export class ICPCustomBridge {
 		sourceAddr,
 		amount
 	}: Pick<OnBridgeParams, 'token' | 'sourceAddr' | 'amount'>): Promise<void> {
-		const spender = Principal.fromText(icpChainCanisterId);
+		const spender = Principal.fromText(icpCustomInterfaceCanisterId);
 		const account = Principal.fromText(sourceAddr);
 
 		const { allowance, transactionFee } = IcrcLedgerCanister.create({
@@ -119,38 +119,6 @@ export class ICPCustomBridge {
 			sourceAddr: userAddr,
 			amount
 		});
-	}
-
-	async checkMintStatus({
-		ticketId,
-		agent
-	}: {
-		ticketId: string;
-		agent: Agent;
-	}): Promise<'Finalized' | 'Unknown'> {
-		const actor = createActor<_SERVICE>({
-			canisterId: icpChainCanisterId,
-			interfaceFactory: ICPCustomsInterfaceFactory,
-			agent
-		});
-
-		const status = await actor.mint_token_status(ticketId);
-
-		if ('Finalized' in status) {
-			return 'Finalized';
-		}
-		return 'Unknown';
-	}
-
-	async getTokenList({ agent }: { agent: Agent }) {
-		const actor = createActor<_SERVICE>({
-			canisterId: icpChainCanisterId,
-			interfaceFactory: ICPCustomsInterfaceFactory,
-			agent
-		});
-
-		const tokens = await actor.get_token_list();
-		return tokens;
 	}
 
 	async getMaxFee(tokenId: string): Promise<bigint> {

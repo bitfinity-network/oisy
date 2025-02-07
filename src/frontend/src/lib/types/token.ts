@@ -31,7 +31,6 @@ export type TokenBuy = z.infer<typeof TokenBuySchema>;
 
 export interface TokenLinkedData {
 	twinTokenSymbol?: string;
-	enabled?: boolean;
 }
 
 export type TokenWithLinkedData = Token & TokenLinkedData;

@@ -11,7 +11,7 @@
 	export let amount: OptionAmount = undefined;
 	export let token: Token;
 	export let balance: OptionBalance;
-	export let source: string;
+	export let source: string | undefined = undefined;
 </script>
 
 {#if nonNullish(destination)}

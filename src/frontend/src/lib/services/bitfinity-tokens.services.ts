@@ -19,7 +19,8 @@ export interface SaveBitfinityTokensParams {
 const STORAGE_KEY = 'bitfinity-tokens';
 
 const initBitfinityTokensStore = () => {
-	const storedValue = localStorage.getItem(STORAGE_KEY);
+	const storedValue =
+		typeof localStorage !== 'undefined' ? localStorage.getItem(STORAGE_KEY) : null;
 	const storedTokenMap = new Map<string, boolean>();
 
 	if (storedValue) {
