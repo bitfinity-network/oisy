@@ -21,6 +21,16 @@ export class ICPCustomBridge {
 	async onBridge(params: OnBridgeParams): Promise<string> {
 		const { token, sourceAddr, targetAddr, targetChainId, amount } = params;
 
+		const minFee = await this.getMaxFee(token.id);
+		if (amount <= minFee) {
+			const divisor = BigInt(10 ** token.decimals);
+			throw new Error(
+				`Amount (${Number(amount) / Number(divisor)}) must be greater than the transaction fee (${
+					Number(minFee) / Number(divisor)
+				} ${token.symbol})`
+			);
+		}
+
 		const actor = await createActor<_SERVICE>({
 			canisterId: icpCustomInterfaceCanisterId,
 			interfaceFactory: ICPCustomsInterfaceFactory,
