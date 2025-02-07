@@ -118,6 +118,8 @@
 	$: {
 		console.log('Principal', $authIdentity?.getPrincipal().toText());
 		console.log('Eth Address', $ethAddress);
+		console.log('sendToken', $sendToken);
+		console.log('Send purpose', sendPurpose);
 	}
 
 	let sourceAddress: string;
@@ -325,7 +327,9 @@
 						const twinSymbol = ($sendToken as RequiredTokenWithLinkedData)?.twinTokenSymbol;
 						switch (twinSymbol) {
 							case 'BTC':
-								await handleBtcReverseBridgeTransaction();
+								// NOTE: For the BTC twin symbol, we actually want to convert to ckBTC
+								// hence we have to reverse the bridge transaction with the ICRC bridge
+								await handleIcrcReverseBridgeTransaction();
 								break;
 							default:
 								if (isIcToken(twinSymbol)) {
