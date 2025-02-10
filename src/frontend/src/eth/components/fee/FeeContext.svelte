@@ -62,7 +62,6 @@
 	const errorMsgs: symbol[] = [];
 
 	const updateFeeData = async () => {
-		
 		try {
 			if ($sendToken.standard === 'icrc') {
 				if (!$authIdentity) {
@@ -72,7 +71,7 @@
 				if (!icBridgeInstance) {
 					const agent = await getAgent({ identity: $authIdentity });
 					icBridgeInstance = new ICPCustomBridge(agent);
-				} 
+				}
 
 				const icToken = $sendToken as IcToken;
 				const fee = await icBridgeInstance.getMaxFee(icToken.ledgerCanisterId);
@@ -89,30 +88,10 @@
 			}
 
 			if ($sendToken.standard === 'erc20' && $sendToken.symbol.toLowerCase().includes('o')) {
-				if (!$authIdentity) {
-					throw new Error('No identity available for Bitfinity fee calculation');
-				}
-
-				if (!bitfinityBridgeInstance) {
-					const agent = await getAgent({ identity: $authIdentity });
-					const provider = jsonRpcProviders(BITFINITY_NETWORK_ID);
-					bitfinityBridgeInstance = new BitfinityBridge(
-						BTF_CHAIN,
-						agent,
-						provider,
-						$authIdentity
-					);
-				}
-
-				const fee = await bitfinityBridgeInstance.getBridgeFee(ChainID.sICP);
-				
-				
-				const adjustedFee = BigNumber.from(fee.toString()).div(BigNumber.from(10).pow(10));
-				
 				feeStore.setFee({
-					gas: BigNumber.from(100000), 
-					maxFeePerGas: adjustedFee,
-					maxPriorityFeePerGas: adjustedFee,
+					gas: BigNumber.from(100_000n),
+					maxFeePerGas: BigNumber.from(343597383687n),
+					maxPriorityFeePerGas: BigNumber.from(343597383687n),
 					standard: 'erc20'
 				});
 				return;
