@@ -16,7 +16,7 @@
 	import { replacePlaceholders } from '$lib/utils/i18n.utils';
 	import { isNetworkICP } from '$lib/utils/network.utils';
 
-	export let sourceNetwork: EthereumNetwork | BitfinityChain;
+	export let sourceNetwork: EthereumNetwork | BitfinityChain | undefined = undefined;
 	export let targetNetwork: Network | undefined = undefined;
 	export let token: Token;
 
@@ -34,8 +34,8 @@
 				.network}{/if}</svelte:fragment
 	>
 	<TextWithLogo
-		name={'canisterId' in sourceNetwork ? 'Bitfinity' : sourceNetwork.name}
-		icon={'canisterId' in sourceNetwork ? eth : (sourceNetwork.icon ?? eth)}
+		name={sourceNetwork ? ('canisterId' in sourceNetwork ? 'Bitfinity' : sourceNetwork.name) : ''}
+		icon={sourceNetwork ? ('canisterId' in sourceNetwork ? eth : sourceNetwork.icon ?? eth) : ''}
 	/>
 </Value>
 

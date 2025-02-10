@@ -23,10 +23,10 @@
 
 	export let destination = '';
 	export let targetNetwork: Network | undefined = undefined;
-	export let sourceNetwork: EthereumNetwork | BitfinityChain;
+	export let sourceNetwork: EthereumNetwork | undefined = undefined;
 	export let destinationEditable = true;
 	export let amount: OptionAmount = undefined;
-	export let source: string;
+	export let source: string | undefined = undefined;
 
 	const { feeStore: storeFeeData }: FeeContext = getContext<FeeContext>(FEE_CONTEXT_KEY);
 

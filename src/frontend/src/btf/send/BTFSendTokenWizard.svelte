@@ -201,9 +201,7 @@
 			targetChainId: ChainID.Bitfinity
 		};
 
-		const ticketId = await icBridge.onBridge(bridgeParams);
-		const status = await icBridge.checkMintStatus({ ticketId, agent });
-		console.debug('Bridge status:', status);
+		 await icBridge.onBridge(bridgeParams);
 	};
 
 	const handleIcrcReverseBridgeTransaction = async () => {

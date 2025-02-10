@@ -163,7 +163,7 @@
 			const storedToken = ($bitfinityTokensStore ?? []).find((t) => t.symbol === token.symbol);
 			return {
 				...token,
-				enabled: storedToken?.enabled ?? token.enabled ?? false,
+				enabled: storedToken?.enabled ?? ('enabled' in token && token.enabled) ?? false,
 				version: undefined,
 				standard: 'ethereum' as const,
 				category: 'default' as const
@@ -278,7 +278,7 @@
 					</span>
 
 					<svelte:fragment slot="action">
-						{#if isRequiredTokenWithLinkedData(token) && token.symbol.startsWith('o')}
+						{#if isRequiredTokenWithLinkedData(token) && token.symbol.startsWith('o') && 'enabled' in token}
 							<BitfinityManageTokenToggle
 								{token}
 								checked={modifiedTokens[`${token.network.id.description}-${token.id.description}`]
