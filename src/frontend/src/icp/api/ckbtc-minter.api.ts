@@ -117,7 +117,7 @@ export const getKnownUtxos = async ({
 	return getKnownUtxos(minterAccountParams({ identity }));
 };
 
-const minterCanister = async ({
+export const minterCanister = async ({
 	identity,
 	minterCanisterId
 }: {

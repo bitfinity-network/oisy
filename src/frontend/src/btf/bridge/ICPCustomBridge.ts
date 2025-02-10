@@ -19,7 +19,7 @@ export class ICPCustomBridge {
 	}
 
 	async onBridge(params: OnBridgeParams): Promise<string> {
-		const { token, sourceAddr, targetAddr, targetChainId, amount } = params;
+		const { token, sourceAddr, targetAddr, targetChainId, amount, subAccount } = params;
 
 		const minFee = await this.getMaxFee(token.id);
 		if (amount <= minFee) {
@@ -40,12 +40,13 @@ export class ICPCustomBridge {
 		await this.prepareForGenerateTicket({
 			token,
 			userAddr: sourceAddr,
-			amount
+			amount,
+			subAccount
 		});
 
 		const ticketResult = await actor.generate_ticket_v2({
 			token_id: token.token_id,
-			from_subaccount: [],
+			from_subaccount: subAccount ? [subAccount] : [],
 			target_chain_id: targetChainId,
 			amount,
 			receiver: targetAddr,
@@ -63,8 +64,9 @@ export class ICPCustomBridge {
 	async onApprove({
 		token,
 		sourceAddr,
-		amount
-	}: Pick<OnBridgeParams, 'token' | 'sourceAddr' | 'amount'>): Promise<void> {
+		amount,
+		subAccount
+	}: Pick<OnBridgeParams, 'token' | 'sourceAddr' | 'amount' | 'subAccount'>): Promise<void> {
 		const spender = Principal.fromText(icpCustomInterfaceCanisterId);
 		const account = Principal.fromText(sourceAddr);
 
@@ -83,7 +85,7 @@ export class ICPCustomBridge {
 			},
 			account: {
 				owner: account,
-				subaccount: []
+				subaccount: subAccount ? [subAccount] : []
 			}
 		});
 
@@ -98,7 +100,7 @@ export class ICPCustomBridge {
 				await icrcLedger.icrc2_approve({
 					fee: [],
 					memo: [],
-					from_subaccount: [],
+					from_subaccount: subAccount ? [subAccount] : [],
 					created_at_time: [],
 					amount: approvingAmount,
 					spender: {
@@ -118,16 +120,19 @@ export class ICPCustomBridge {
 	async prepareForGenerateTicket({
 		token,
 		userAddr,
-		amount
+		amount,
+		subAccount
 	}: {
 		token: Token;
 		userAddr: string;
 		amount: bigint;
+		subAccount?: Uint8Array;
 	}) {
 		await this.onApprove({
 			token,
 			sourceAddr: userAddr,
-			amount
+			amount,
+			subAccount
 		});
 	}
 

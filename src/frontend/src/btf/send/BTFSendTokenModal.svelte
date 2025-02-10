@@ -9,7 +9,7 @@
 	import { i18n } from '$lib/stores/i18n.store';
 	import { SEND_CONTEXT_KEY, type SendContext } from '$lib/stores/send.store';
 	import type { Network } from '$lib/types/network';
-	import type { Token } from '$lib/types/token';
+	import type { RequiredTokenWithLinkedData, Token } from '$lib/types/token';
 	import { replacePlaceholders } from '$lib/utils/i18n.utils';
 	import { closeModal } from '$lib/utils/modal.utils';
 	import { goToWizardSendStep } from '$lib/utils/wizard-modal.utils';
@@ -88,8 +88,13 @@
 
 	const getModalTitle = (_step: WizardStep): string => {
 		if (sendPurpose === 'convert-to-twin-token') {
+			const isBtcToken = ($sendToken as RequiredTokenWithLinkedData).twinTokenSymbol === 'BTC';
 			return replacePlaceholders($i18n.convert.text.convert_to_token, {
-				$token: isBitfinityTwinToken ? $sendToken.symbol.slice(1) : `o${$sendToken.symbol}`
+				$token: isBtcToken
+					? 'ckBTC'
+					: isBitfinityTwinToken
+						? $sendToken.symbol.slice(1)
+						: `o${$sendToken.symbol}`
 			});
 		}
 
