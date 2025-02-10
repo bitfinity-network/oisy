@@ -1,5 +1,5 @@
 import type { EthSignTransactionRequest } from '$declarations/signer/signer.did';
-import type { JsonRpcProvider } from '$eth/providers/jsonrpc.provider';
+import { type JsonRpcProvider } from '$eth/providers/jsonrpc.provider';
 import type { ActorSubclass, Agent, Identity } from '@dfinity/agent';
 import { ethers } from 'ethers';
 import { idlFactory, type _SERVICE } from './candids/Omnity.did';
@@ -45,6 +45,11 @@ export class BitfinityBridge {
 		const portContractAddr = this.chain.contractAddress;
 		if (!portContractAddr) {
 			throw new Error('Missing port contract address');
+		}
+
+		const btfBalance = await this.provider.balance(sourceAddr);
+		if (btfBalance.isZero()) {
+			throw new Error('No BTF balance found in source address');
 		}
 
 		try {
