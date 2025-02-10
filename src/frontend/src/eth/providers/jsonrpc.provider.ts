@@ -17,7 +17,7 @@ import {
 	type FeeData,
 	type TransactionResponse
 } from '@ethersproject/providers';
-import { ethers } from 'ethers';
+import { ethers, type PopulatedTransaction } from 'ethers';
 import { get } from 'svelte/store';
 
 export class JsonRpcProvider {
@@ -33,7 +33,7 @@ export class JsonRpcProvider {
 	balance = (address: EthAddress): Promise<BigNumber> => this.provider.getBalance(address);
 
 	getFeeData = async (): Promise<FeeData> => {
-		let fee = await this.provider.getFeeData();
+		const fee = await this.provider.getFeeData();
 
 		return {
 			...fee,
@@ -67,6 +67,19 @@ export class JsonRpcProvider {
 	}): Promise<BigNumber> => {
 		const erc20Contract = new ethers.Contract(contractAddress, ERC20_ABI, this.provider);
 		return erc20Contract.estimateGas.approve(to, amount, { from });
+	};
+
+	populateTransaction = ({
+		contract: { address: contractAddress },
+		to,
+		amount
+	}: {
+		contract: Erc20ContractAddress;
+		to: EthAddress;
+		amount: BigNumber;
+	}): Promise<PopulatedTransaction> => {
+		const erc20Contract = new ethers.Contract(contractAddress, ERC20_ABI, this.provider);
+		return erc20Contract.populateTransaction.transfer(to, amount);
 	};
 
 	sendTransaction = (signedTransaction: string): Promise<TransactionResponse> =>

@@ -419,7 +419,9 @@ const sendTransaction = async ({
 					populate:
 						isErc20Icp(token) && networkICP
 							? infuraErc20IcpProviders(networkId).populateTransaction
-							: infuraErc20Providers(networkId).populateTransaction
+							: networkId === BITFINITY_NETWORK_ID
+								? jsonRpcProviders(networkId).populateTransaction
+								: infuraErc20Providers(networkId).populateTransaction
 				}));
 
 	progress(ProgressStepsSend.SIGN_TRANSFER);
