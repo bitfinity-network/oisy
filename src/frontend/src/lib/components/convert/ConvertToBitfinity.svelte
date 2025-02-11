@@ -11,24 +11,35 @@
 	import { setContext } from 'svelte';
 	import { initSendContext, SEND_CONTEXT_KEY } from '$lib/stores/send.store';
 
+	/**
+	 * The current token with its linked data
+	 */
 	$: token = isRequiredTokenWithLinkedData($tokenWithFallback)
 		? ($tokenWithFallback as RequiredTokenWithLinkedData)
 		: undefined;
-	$: isIcrcToken = token?.standard === 'icrc';
-	$: isBitfinityToken = nonNullish(token) && token.symbol.startsWith('o') && !isBtcToken;
-	$: isBtcToken = nonNullish(token) && token.twinTokenSymbol === 'BTC';
-	$: shouldShowConvertButton =
-		nonNullish(token) && (isIcrcToken || hasTwinToken(token) || isBitfinityToken);
-	$: targetSymbol = nonNullish(token)
-		? isBitfinityToken
-			? token.symbol.slice(1)
-			: isBtcToken
-				? 'ckBTC'
-				: `o${token.symbol}`
-		: '';
 
 	/**
-	 * Send modal context store
+	 * Derived token properties
+	 */
+	$: isIcrcToken = token?.standard === 'icrc';
+	$: isBtcToken = nonNullish(token) && token.twinTokenSymbol === 'BTC';
+	$: isBitfinityToken = nonNullish(token) && token.symbol.startsWith('o') && !isBtcToken;
+	$: shouldShowConvertButton =
+		nonNullish(token) && (isIcrcToken || hasTwinToken(token) || isBitfinityToken);
+
+	/**
+	 * Determines the target symbol for conversion based on token type
+	 */
+	$: targetSymbol = (() => {
+		if (!nonNullish(token)) return '';
+
+		if (isBtcToken) return 'ckBTC';
+		if (token.symbol.startsWith('o')) return token.symbol.slice(1);
+		return `o${token.symbol}`;
+	})();
+
+	/**
+	 * Initialize send context for the conversion modal
 	 */
 	const context = initSendContext({
 		sendPurpose: 'convert-to-twin-token',
