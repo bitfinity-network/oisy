@@ -1,11 +1,11 @@
-import { SchedulerTimer, type Scheduler } from '$lib/schedulers/scheduler';
 import { WALLET_TIMER_INTERVAL_MILLIS } from '$lib/constants/app.constants';
-import { BitfinityBtcBridge } from './BitfinityBtcBridge';
+import { SchedulerTimer, type Scheduler } from '$lib/schedulers/scheduler';
+import { i18n } from '$lib/stores/i18n.store';
+import { toastsError } from '$lib/stores/toasts.store';
 import type { Identity } from '@dfinity/agent';
 import { isNullish } from '@dfinity/utils';
-import { toastsError, toastsShow } from '$lib/stores/toasts.store';
-import { i18n } from '$lib/stores/i18n.store';
 import { get } from 'svelte/store';
+import { BitfinityBtcBridge } from './BitfinityBtcBridge';
 
 interface BtfBridgeData {
 	targetAddress: string;
@@ -54,31 +54,17 @@ export class BtfBridgeScheduler implements Scheduler<BtfBridgeData> {
 
 		try {
 			const btcBridge = new BitfinityBtcBridge(identity);
-			
 
-
-			// Attempt to bridge to oBTC
-			const result = await btcBridge.bridgeToOBtc({
+			await btcBridge.bridgeToOBtc({
 				targetAddress: data.targetAddress
 			});
 
-			if (result === 'Finalized') {
-				toastsShow({
-					text: 'Successfully bridged to oBTC',
-					level: 'success',
-					duration: 2000
-				});
-				this.stop();
-				return;
-			}
-
 			// If not finalized, increment attempts counter
 			this.attempts++;
-
 		} catch (error) {
 			console.error('Bridge error:', error);
 			// Don't stop on error, let it try again until MAX_ATTEMPTS is reached
 			this.attempts++;
 		}
 	};
-} 
+}
