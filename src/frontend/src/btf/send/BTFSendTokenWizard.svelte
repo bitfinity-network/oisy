@@ -39,7 +39,7 @@
 	import type { Network } from '$lib/types/network';
 	import type { QrResponse, QrStatus } from '$lib/types/qr-code';
 	import type { OptionAmount } from '$lib/types/send';
-	import type { OptionToken, Token, TokenId } from '$lib/types/token';
+	import type { OptionToken, RequiredTokenWithLinkedData, Token, TokenId } from '$lib/types/token';
 	import type { IcToken } from '$icp/types/ic-token';
 	import { invalidAmount, isNullishOrEmpty } from '$lib/utils/input.utils';
 	import { parseToken } from '$lib/utils/parse.utils';
@@ -50,7 +50,12 @@
 	import { BITFINITY_NETWORK_ID, ICP_NETWORK, BITFINITY_NETWORK } from '$env/networks.env';
 	import { BTF_CHAIN } from '../constants';
 	import { BitfinityBridge } from '../bridge/BitfinityBridge';
-	import { isOmnityBridgedBitfinityToken } from '$lib/utils/token.utils';
+	import { isIcToken, isOmnityBridgedBitfinityToken } from '$lib/utils/token.utils';
+	import { BitfinityBtcBridge } from '../bridge/BitfinityBtcBridge';
+	import ReceiveAddress from '$lib/components/receive/ReceiveAddress.svelte';
+	import { BTC_MAINNET_NETWORK } from '$env/networks.env';
+	import { btcAddressMainnet } from '$lib/derived/address.derived';
+	import BTFSendBitcoinAddress from './BTFSendBitcoinAddress.svelte';
 
 	export let currentStep: WizardStep | undefined;
 	export let formCancelAction: 'back' | 'close' = 'close';
@@ -113,7 +118,11 @@
 	$: {
 		console.log('Principal', $authIdentity?.getPrincipal().toText());
 		console.log('Eth Address', $ethAddress);
+		console.log('sendToken', $sendToken);
+		console.log('Send purpose', sendPurpose);
 	}
+
+	let sourceAddress: string;
 
 	setContext<FeeContextType>(
 		FEE_CONTEXT_KEY,
@@ -226,6 +235,48 @@
 		return res;
 	};
 
+	const handleBtcBridgeTransaction = async () => {
+		if (isNullish($authIdentity)) {
+			throw new SendValidationError('No identity available for bridge');
+		}
+
+		const parsedAmount = parseToken({
+			value: `${amount}`,
+			unitName: $sendTokenDecimals
+		});
+
+		const btcBridge = new BitfinityBtcBridge($authIdentity);
+		const btcAddress = await btcBridge.getBtcAddress();
+		console.log('btc address', btcAddress);
+
+		const res = await btcBridge.sendBTcTockBTC({
+			amount: parsedAmount.toNumber(),
+			source: btcAddress
+		});
+		console.log('res', res);
+	};
+
+	const handleBtcReverseBridgeTransaction = async () => {
+		if (isNullish($authIdentity)) {
+			throw new SendValidationError('No identity available for bridge');
+		}
+
+		const parsedAmount = parseToken({
+			value: `${amount}`,
+			unitName: $sendTokenDecimals
+		});
+
+		const btcBridge = new BitfinityBtcBridge($authIdentity);
+		const btcAddress = await btcBridge.getBtcAddress();
+		console.log('btc address', btcAddress);
+
+		const res = await btcBridge.sendBTcTockBTC({
+			amount: parsedAmount.toNumber(),
+			source: btcAddress
+		});
+		console.log('res', res);
+	};
+
 	const handleSendError = async (err: unknown) => {
 		if (err instanceof SendValidationError) {
 			toastsError({
@@ -269,9 +320,22 @@
 				try {
 					if ($sendToken.standard === 'icrc') {
 						await handleIcrcBridgeTransaction();
+					} else if ($sendToken.standard === 'bitcoin') {
+						await handleBtcBridgeTransaction();
 					} else if ($sendToken.standard === 'erc20' && isOmnityBridgedBitfinityToken($sendToken)) {
-						// Handle reverse bridge from Bitfinity to ICRC
-						await handleIcrcReverseBridgeTransaction();
+						const twinSymbol = ($sendToken as RequiredTokenWithLinkedData)?.twinTokenSymbol;
+						switch (twinSymbol) {
+							case 'BTC':
+								// NOTE: For the BTC twin symbol, we actually want to convert to ckBTC
+								// hence we have to reverse the bridge transaction with the ICRC bridge
+								await handleIcrcReverseBridgeTransaction();
+								break;
+							default:
+								if (isIcToken(twinSymbol)) {
+									await handleIcrcReverseBridgeTransaction();
+								}
+								break;
+						}
 					}
 				} catch (bridgeError) {
 					await handleSendError(bridgeError);
@@ -289,6 +353,27 @@
 			setTimeout(() => close(), 750);
 		} catch (err: unknown) {
 			await handleSendError(err);
+		}
+	};
+
+	const getSourceAddress = async (): Promise<string> => {
+		if (!$authIdentity) {
+			return '';
+		}
+
+		switch ($sendToken.standard) {
+			case 'icrc':
+				return $authIdentity.getPrincipal().toText();
+			case 'ethereum':
+			case 'erc20':
+				return $ethAddress ?? '';
+			case 'bitcoin': {
+				const btcBridge = new BitfinityBtcBridge($authIdentity);
+				const address = await btcBridge.getBtcAddress();
+				return address;
+			}
+			default:
+				return $ethAddress ?? '';
 		}
 	};
 
@@ -312,11 +397,11 @@
 			erc20Tokens: $enabledErc20Tokens
 		});
 
-	let sourceAddress: string;
-	$: sourceAddress =
-		$sendToken.standard === 'icrc' && $authIdentity
-			? $authIdentity.getPrincipal().toText()
-			: ($ethAddress ?? '');
+	const updateSourceAddress = async () => {
+		sourceAddress = await getSourceAddress();
+	};
+
+	$: updateSourceAddress();
 </script>
 
 <FeeContext
@@ -343,6 +428,19 @@
 		<InProgressWizard
 			progressStep={sendProgressStep}
 			steps={sendSteps({ i18n: $i18n, sendWithApproval })}
+		/>
+	{:else if currentStep?.name === WizardStepsSend.SEND && $sendToken.standard === 'bitcoin' && sendPurpose === 'convert-to-twin-token'}
+		<BTFSendBitcoinAddress on:icClose={close} />
+	{:else if currentStep?.name === WizardStepsSend.REVIEW}
+		<SendReview
+			on:icBack
+			on:icSend={send}
+			{destination}
+			{amount}
+			sourceNetwork={isOmnityBridgedBitfinityToken($sendToken) ? BITFINITY_NETWORK : sourceNetwork}
+			targetNetwork={isOmnityBridgedBitfinityToken($sendToken) ? ICP_NETWORK : targetNetwork}
+			{destinationEditable}
+			source={sourceAddress}
 		/>
 	{:else if currentStep?.name === WizardStepsSend.SEND}
 		<SendForm

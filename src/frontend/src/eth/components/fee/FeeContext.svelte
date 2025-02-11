@@ -27,7 +27,7 @@
 	import { toastsError, toastsHide } from '$lib/stores/toasts.store';
 	import type { Network } from '$lib/types/network';
 	import type { OptionAmount } from '$lib/types/send';
-	import type { Token } from '$lib/types/token';
+	import type { RequiredTokenWithLinkedData, Token } from '$lib/types/token';
 	import { isNetworkICP } from '$lib/utils/network.utils';
 	import { parseToken } from '$lib/utils/parse.utils';
 	import { jsonRpcProviders } from '$eth/providers/jsonrpc.provider';
@@ -39,6 +39,7 @@
 	import type { IcToken } from '$icp/types/ic-token';
 	import { BitfinityBridge } from '../../../btf/bridge/BitfinityBridge';
 	import { BTF_CHAIN } from '../../../btf/constants';
+	import { isOmnityBridgedBitfinityToken } from '$lib/utils/token.utils';
 
 	export let observe: boolean;
 	export let destination = '';

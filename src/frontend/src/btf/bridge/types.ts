@@ -146,4 +146,5 @@ export interface OnBridgeParams {
 	targetChainId: ChainID;
 	setStep?: (step: number) => void;
 	feeRate?: number;
+	subAccount?: Uint8Array;
 }
