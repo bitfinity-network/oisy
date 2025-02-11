@@ -161,9 +161,7 @@ export class BitfinityBtcBridge {
 		};
 
 		const icBridge = new ICPCustomBridge(agent);
-		const ticketId = await icBridge.onBridge(bridgeParams);
-		const status = await icBridge.checkMintStatus({ ticketId, agent });
-		return status;
+		await icBridge.onBridge(bridgeParams);
 	}
 
 	/**
@@ -174,19 +172,12 @@ export class BitfinityBtcBridge {
 	 * @param {string} params.targetAddress - The target address of the oBTC.
 	 * @returns {Promise<string | null>} The transaction hash of the BTC to oBTC or null if there is no balance.
 	 */
-	async bridgeToOBtc({
-		amount = 0n,
-		targetAddress
-	}: {
-		amount?: bigint;
-		targetAddress: string;
-	}): Promise<string | null> {
+	async bridgeToOBtc({ amount = 0n, targetAddress }: { amount?: bigint; targetAddress: string }) {
 		const balance = await this.updateckBtcBalance();
 		if (!balance) {
 			return null;
 		}
 
-		const result = await this.convertckBTCtoOBtc({ amount, targetAddress });
-		return result;
+		this.convertckBTCtoOBtc({ amount, targetAddress });
 	}
 }
