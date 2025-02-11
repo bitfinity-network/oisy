@@ -30,5 +30,5 @@
 <Value ref="amount" element="div">
 	<svelte:fragment slot="label">{$i18n.core.text.amount}</svelte:fragment>
 	{amountDisplay}
-	{token.symbol}
+	{token.symbol.startsWith('o') ? 'BTF' : token.symbol}
 </Value>

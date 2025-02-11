@@ -88,7 +88,7 @@
 				return;
 			}
 
-			if ($sendToken.standard === 'erc20' && $sendToken.symbol.toLowerCase().includes('o')) {
+			if ($sendToken.standard === 'erc20' && isOmnityBridgedBitfinityToken($sendToken)) {
 				feeStore.setFee({
 					gas: BigNumber.from(100_000n),
 					maxFeePerGas: BigNumber.from(343597383687n),

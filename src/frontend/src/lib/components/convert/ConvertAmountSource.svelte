@@ -92,6 +92,6 @@
 			unitName: $sourceToken.decimals,
 			displayDecimals: $sourceToken.decimals
 		})}
-		{$sourceToken.symbol}
+		{$sourceToken.symbol.startsWith('o') ? 'BTF' : $sourceToken.symbol}
 	</button>
 </ConvertInputsContainer>

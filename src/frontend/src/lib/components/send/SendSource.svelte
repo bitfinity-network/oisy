@@ -25,7 +25,7 @@
 			unitName: token.decimals,
 			displayDecimals: token.decimals
 		})}
-		{token.symbol}
+		{token.symbol.startsWith('o') ? 'BTF' : token.symbol}
 	{:else}
 		&ZeroWidthSpace;
 	{/if}

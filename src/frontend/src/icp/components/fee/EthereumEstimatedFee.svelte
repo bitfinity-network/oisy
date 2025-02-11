@@ -34,7 +34,7 @@
 				{#if nonNullish(maxTransactionFee)}
 					<FeeAmountDisplay
 						fee={BigNumber.from(maxTransactionFee)}
-						feeSymbol={feeToken.symbol}
+						feeSymbol={feeToken.symbol.startsWith('o') ? 'BTF' : feeToken.symbol}
 						feeTokenId={feeToken.id}
 						feeDecimals={feeToken.decimals}
 					/>

@@ -34,7 +34,7 @@
 		unitName: feeDecimals,
 		displayDecimals: feeDecimals
 	})}
-	{feeSymbol}
+	{feeSymbol.startsWith('o') ? 'BTF' : feeSymbol}
 </div>
 {#if insufficientFeeFunds && nonNullish(balance)}
 	<p in:slide={SLIDE_DURATION} class="text-cyclamen">
@@ -43,7 +43,7 @@
 				value: balance,
 				displayDecimals: feeDecimals
 			}),
-			$symbol: feeSymbol ?? ''
+			$symbol: feeSymbol.startsWith('o') ? 'BTF' : feeSymbol
 		})}
 	</p>
 {/if}

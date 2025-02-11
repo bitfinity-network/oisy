@@ -63,6 +63,6 @@
 			value: $destinationTokenBalance ?? ZERO,
 			unitName: $destinationToken.decimals
 		})}
-		{$destinationToken.symbol}
+		{$destinationToken.symbol.startsWith('o') ? 'BTF' : $destinationToken.symbol}
 	</span>
 </ConvertInputsContainer>
