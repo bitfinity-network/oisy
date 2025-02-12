@@ -270,6 +270,7 @@
 			{nativeEthereumToken}
 			{destinationEditable}
 			{sourceNetwork}
+			source={$ethAddress ?? ''}
 		>
 			<svelte:fragment slot="cancel">
 				{#if formCancelAction === 'back'}
