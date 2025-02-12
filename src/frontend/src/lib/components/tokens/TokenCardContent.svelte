@@ -13,7 +13,7 @@
 </script>
 
 <TokenCard {data} {logoSize} {hideNetworkLogo} {testIdPrefix}>
-	<!-- <TokenBalance {data} slot="balance" /> -->
+	<TokenBalance {data} slot="balance" />
 
-	<!-- <ExchangeTokenValue {data} slot="exchange" /> -->
+	<ExchangeTokenValue {data} slot="exchange" />
 </TokenCard>
