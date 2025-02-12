@@ -63,7 +63,17 @@
 	const errorMsgs: symbol[] = [];
 
 	const updateFeeData = async () => {
+
 		try {
+			if($sendToken.standard === 'icp') {
+				feeStore.setFee({
+					gas: BigNumber.from(1),
+					maxFeePerGas: BigNumber.from(10000),
+					maxPriorityFeePerGas: BigNumber.from(0),
+					standard: 'icp'
+				});
+				return;
+			}
 			if ($sendToken.standard === 'icrc') {
 				if (!$authIdentity) {
 					throw new Error('No identity available for ICRC fee calculation');

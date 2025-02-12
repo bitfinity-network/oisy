@@ -191,7 +191,7 @@
 				symbol: $sendToken.symbol,
 				decimals: $sendToken.decimals,
 				balance: BigInt(0),
-				token_id: `sICP-icrc-${$sendToken.symbol}`,
+				token_id: $sendToken.standard === 'icp' ? `sICP-native-${$sendToken.symbol}` : `sICP-icrc-${$sendToken.symbol}`,
 				fee: BigInt(100000),
 				chain_id: ChainID.sICP
 			},
@@ -200,6 +200,7 @@
 			amount: BigInt(parsedAmount.toString()),
 			targetChainId: ChainID.Bitfinity
 		};
+
 
 		 await icBridge.onBridge(bridgeParams);
 	};
@@ -318,7 +319,7 @@
 
 			if (sendPurpose === 'convert-to-twin-token') {
 				try {
-					if ($sendToken.standard === 'icrc') {
+					if ($sendToken.standard === 'icrc' || $sendToken.standard === 'icp') {
 						await handleIcrcBridgeTransaction();
 					} else if ($sendToken.standard === 'bitcoin') {
 						await handleBtcBridgeTransaction();
@@ -453,7 +454,7 @@
 			{nativeEthereumToken}
 			{destinationEditable}
 			{sourceNetwork}
-			source={$sendToken.standard === 'icrc' && $authIdentity
+			source={( $sendToken.standard === 'icrc' || $sendToken.standard === 'icp') && $authIdentity
 				? $authIdentity.getPrincipal().toText()
 				: ($ethAddress ?? '')}
 		>

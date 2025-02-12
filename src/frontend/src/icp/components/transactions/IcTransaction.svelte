@@ -45,7 +45,7 @@
 <Transaction
 	on:click={() => modalStore.openIcTransaction({ transaction, token })}
 	styleClass="block w-full border-0"
-	amount={BigNumber.from(amount)}
+	amount={amount !== undefined ? BigNumber.from(amount) : undefined}
 	{type}
 	{timestamp}
 	{status}
