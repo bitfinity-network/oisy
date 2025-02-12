@@ -88,16 +88,6 @@
 				return;
 			}
 
-			if ($sendToken.standard === 'erc20' && isOmnityBridgedBitfinityToken($sendToken)) {
-				feeStore.setFee({
-					gas: BigNumber.from(100_000n),
-					maxFeePerGas: BigNumber.from(343597383687n),
-					maxPriorityFeePerGas: BigNumber.from(343597383687n),
-					standard: 'erc20'
-				});
-				return;
-			}
-
 			const params: GetFeeData = {
 				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 				to: mapAddressStartsWith0x(destination !== '' ? destination : $ethAddress!),
