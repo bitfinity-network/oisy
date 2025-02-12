@@ -1,9 +1,9 @@
-import { PROD } from '$lib/constants/app.constants';
+import { PROD, DISABLED_ANALYTICS } from '$lib/constants/app.constants';
 import { isNullish } from '@dfinity/utils';
 import { initOrbiter, trackEvent as trackEventOrbiter } from '@junobuild/analytics';
 
 export const initAnalytics = async () => {
-	if (!PROD) {
+	if (!PROD || DISABLED_ANALYTICS) {
 		return;
 	}
 
