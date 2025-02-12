@@ -48,14 +48,15 @@ interface TokenBlockscout {
 
 interface TokenTransferBlockscout {
 	block_hash: string;
+	block_number: number;
 	from: TransactionAddressBlockscout;
 	to: TransactionAddressBlockscout;
-	log_index: string;
-	method: null;
-	timestamp: null;
+	log_index: number;
+	method: string | null;
+	timestamp: string;
 	token: TokenBlockscout;
-	total: { token_id: string; decimals?: string | null; value?: string };
-	tx_hash: string;
+	total: { decimals: string | null; value: string };
+	transaction_hash: string;
 	type: string;
 }
 
@@ -178,56 +179,31 @@ export class BlockscoutProvider {
 		address: string;
 		contract: { address: string };
 	}): Promise<Transaction[]> => {
-		const url = new URL(`${this.explorerUrl}/api`);
-		url.searchParams.set('module', 'account');
-		url.searchParams.set('action', 'tokentx');
-		url.searchParams.set('contractaddress', contractAddress);
-		url.searchParams.set('address', address);
-		url.searchParams.set('startblock', '0');
-		url.searchParams.set('endblock', '99999999');
-		url.searchParams.set('sort', 'desc');
+		const url = new URL(`${this.explorerUrl}/api/v2/addresses/${address}/token-transfers`);
+		url.searchParams.set('token_contract_address', contractAddress);
 
-		// TODO: remove { mode: 'cors' }
-		const response = await fetch(url, { mode: 'cors' });
+		const response = await fetch(url);
 
 		if (!response.ok) {
 			throw new Error(`Fetching transactions with Blockscout API failed.`);
 		}
 
-		const { result }: { result: BlockscoutRestTransaction[] | string } = await response.json();
+		const { items } = await response.json();
 
-		if (typeof result === 'string') {
-			throw new Error(result);
-		}
-
-		return result.map(
-			({
-				nonce,
-				gas,
-				gasPrice,
-				hash,
-				blockNumber,
-				blockHash,
-				timeStamp,
-				confirmations,
-				from,
-				to,
-				value
-			}) => ({
-				hash,
-				blockNumber: parseInt(blockNumber),
-				blockHash,
-				timestamp: parseInt(timeStamp),
-				confirmations,
-				from,
-				to,
-				nonce: parseInt(nonce),
-				gasLimit: BigNumber.from(gas),
-				gasPrice: BigNumber.from(gasPrice),
-				value: BigNumber.from(value),
-				chainId: this.chainId
-			})
-		);
+		return items.map((transfer: TokenTransferBlockscout) => ({
+			hash: transfer.transaction_hash,
+			blockNumber: transfer.block_number,
+			blockHash: transfer.block_hash,
+			timestamp: transfer.timestamp ? new Date(transfer.timestamp).getTime() / 1000 : undefined,
+			confirmations: 0,
+			from: transfer.from.hash,
+			to: transfer.to.hash,
+			nonce: 0,
+			gasLimit: BigNumber.from(0),
+			gasPrice: BigNumber.from(0),
+			value: BigNumber.from(transfer.total.value || '0'),
+			chainId: this.chainId
+		}));
 	};
 }
 
