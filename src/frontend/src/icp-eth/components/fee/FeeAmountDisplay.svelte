@@ -17,7 +17,10 @@
 	export let feeDecimals: number;
 
 	let balance: Exclude<OptionBalance, null>;
-	$: balance = nonNullish($balancesStore) ? ($balancesStore[feeTokenId]?.data ?? ZERO) : undefined;
+	$: {
+		const storeData = $balancesStore?.[feeTokenId]?.data;
+		balance = nonNullish(storeData) ? storeData : ZERO;
+	}
 
 	let insufficientFeeFunds = false;
 
@@ -41,6 +44,7 @@
 		{replacePlaceholders($i18n.send.assertion.not_enough_tokens_for_gas, {
 			$balance: formatToken({
 				value: balance,
+				unitName: feeDecimals,
 				displayDecimals: feeDecimals
 			}),
 			$symbol: feeSymbol.startsWith('o') ? 'BTF' : feeSymbol
