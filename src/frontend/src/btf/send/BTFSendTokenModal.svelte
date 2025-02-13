@@ -15,6 +15,7 @@
 	import { goToWizardSendStep } from '$lib/utils/wizard-modal.utils';
 	import BtfSendTokenWizard from './BTFSendTokenWizard.svelte';
 	import { BITFINITY_NETWORK } from '$env/networks.env';
+	import { BITFINITY_TOKEN } from '$env/tokens/tokens.eth.env';
 
 	interface SendModalState {
 		amount?: number;
@@ -64,17 +65,20 @@
 	/**
 	 * Token configuration
 	 */
-	let nativeEthereumToken: Token;
-	$: nativeEthereumToken = {
-		id: $sendToken.id,
-		network: isBitfinityTwinToken ? ($sendToken.network as EthereumNetwork) : BITFINITY_NETWORK,
-		standard: $sendToken.standard,
-		category: $sendToken.category,
-		name: $sendToken.name,
-		symbol: $sendToken.symbol,
-		decimals: $sendToken.decimals,
-		icon: $sendToken.icon
-	};
+	let nativeToken: Token;
+	$: {
+		const isOToken = $sendToken.symbol.toLowerCase().startsWith('o');
+		nativeToken = {
+			id: isOToken ? BITFINITY_TOKEN.id : $sendToken.id,
+			network: isBitfinityTwinToken ? ($sendToken.network as EthereumNetwork) : BITFINITY_NETWORK,
+			standard: isOToken ? BITFINITY_TOKEN.standard : $sendToken.standard,
+			category: isOToken ? BITFINITY_TOKEN.category : $sendToken.category, // Token category can only be 'default' or 'custom'
+			name: isOToken ? BITFINITY_TOKEN.name : $sendToken.name,
+			symbol: isOToken ? BITFINITY_TOKEN.symbol : $sendToken.symbol,
+			decimals: isOToken ? BITFINITY_TOKEN.decimals : $sendToken.decimals,
+			icon: isOToken ? BITFINITY_TOKEN.icon : $sendToken.icon
+		};
+	}
 
 	/**
 	 * Wizard modal configuration
@@ -161,7 +165,7 @@
 	<BtfSendTokenWizard
 		{currentStep}
 		{sourceNetwork}
-		{nativeEthereumToken}
+		nativeEthereumToken={nativeToken}
 		bind:destination
 		bind:targetNetwork
 		bind:amount
