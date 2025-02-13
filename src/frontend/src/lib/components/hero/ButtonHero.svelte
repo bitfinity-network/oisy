@@ -20,7 +20,7 @@
 	link
 	paddingSmall
 >
-	<div class="flex flex-col items-center justify-center gap-2 lg:flex-row">
+	<div class="flex flex-col items-center justify-center gap-2">
 		<slot name="icon" />
 		<div class="min-w-12 max-w-[72px] break-words text-sm lg:text-base">
 			<slot />

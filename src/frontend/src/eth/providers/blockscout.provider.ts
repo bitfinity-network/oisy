@@ -184,26 +184,28 @@ export class BlockscoutProvider {
 
 		const response = await fetch(url);
 
-		if (!response.ok) {
+		if (!response.ok && response.status !== 404) {
 			throw new Error(`Fetching transactions with Blockscout API failed.`);
 		}
 
 		const { items } = await response.json();
 
-		return items.map((transfer: TokenTransferBlockscout) => ({
-			hash: transfer.transaction_hash,
-			blockNumber: transfer.block_number,
-			blockHash: transfer.block_hash,
-			timestamp: transfer.timestamp ? new Date(transfer.timestamp).getTime() / 1000 : undefined,
-			confirmations: 0,
-			from: transfer.from.hash,
-			to: transfer.to.hash,
-			nonce: 0,
-			gasLimit: BigNumber.from(0),
-			gasPrice: BigNumber.from(0),
-			value: BigNumber.from(transfer.total.value || '0'),
-			chainId: this.chainId
-		}));
+		return items
+			? items.map((transfer: TokenTransferBlockscout) => ({
+					hash: transfer.transaction_hash,
+					blockNumber: transfer.block_number,
+					blockHash: transfer.block_hash,
+					timestamp: transfer.timestamp ? new Date(transfer.timestamp).getTime() / 1000 : undefined,
+					confirmations: 0,
+					from: transfer.from.hash,
+					to: transfer.to.hash,
+					nonce: 0,
+					gasLimit: BigNumber.from(0),
+					gasPrice: BigNumber.from(0),
+					value: BigNumber.from(transfer.total.value || '0'),
+					chainId: this.chainId
+				}))
+			: [];
 	};
 }
 
