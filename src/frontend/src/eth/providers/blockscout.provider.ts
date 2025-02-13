@@ -180,7 +180,7 @@ export class BlockscoutProvider {
 		contract: { address: string };
 	}): Promise<Transaction[]> => {
 		const url = new URL(`${this.explorerUrl}/api/v2/addresses/${address}/token-transfers`);
-		url.searchParams.set('token_contract_address', contractAddress);
+		url.searchParams.set('token', contractAddress);
 
 		const response = await fetch(url);
 
