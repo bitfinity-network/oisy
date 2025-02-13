@@ -98,7 +98,9 @@
 					? 'ckBTC'
 					: isBitfinityTwinToken
 						? $sendToken.symbol.slice(1)
-						: `o${$sendToken.symbol}`
+						: $sendToken.symbol.startsWith('o')
+							? $sendToken.symbol.slice(1)
+							: `o${$sendToken.symbol}`
 			});
 		}
 
