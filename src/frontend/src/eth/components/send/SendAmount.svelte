@@ -67,10 +67,17 @@
 
 		// Finally, if ERC20, the ETH balance should be less or greater than the max gas fee
 		const ethBalance = $balancesStore?.[nativeEthereumToken.id]?.data ?? ZERO;
-		if (nonNullish($maxGasFee) && ethBalance.lt($maxGasFee)) {
-			return new InsufficientFundsError(
-				$i18n.send.assertion.insufficient_ethereum_funds_to_cover_the_fees
-			);
+		if (nonNullish($maxGasFee)) {
+			// For Bitfinity network (o-tokens), adjust the maxGasFee to 8 decimals before comparison
+			const adjustedMaxGasFee = nativeEthereumToken.symbol.startsWith('o')
+				? $maxGasFee.div(BigNumber.from(10).pow(10))
+				: $maxGasFee;
+
+			if (ethBalance.lt(adjustedMaxGasFee)) {
+				return new InsufficientFundsError(
+					$i18n.send.assertion.insufficient_ethereum_funds_to_cover_the_fees
+				);
+			}
 		}
 	};
 

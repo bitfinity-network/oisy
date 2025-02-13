@@ -35,8 +35,6 @@
 			timer = setTimeout(calculateFee, 500);
 		})();
 
-	console.log('fee from FeeDisplay', fee);
-
 	onDestroy(() => {
 		if (isNullish(timer)) {
 			return;

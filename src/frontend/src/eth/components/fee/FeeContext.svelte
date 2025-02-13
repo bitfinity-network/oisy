@@ -101,9 +101,11 @@
 					? jsonRpcProviders($sendToken.network.id)
 					: infuraProviders($sendToken.network.id);
 
+			const feeData = await getFeeData();
+
 			if (isSupportedEthTokenId($sendTokenId)) {
 				feeStore.setFee({
-					...(await getFeeData()),
+					...feeData,
 					gas: getEthFeeData({
 						...params,
 						helperContractAddress: toCkEthHelperContractAddress({

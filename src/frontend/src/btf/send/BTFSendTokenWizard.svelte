@@ -120,6 +120,7 @@
 		console.log('Eth Address', $ethAddress);
 		console.log('sendToken', $sendToken);
 		console.log('Send purpose', sendPurpose);
+		console.log('feeDecimalsStore', $feeDecimalsStore, nativeEthereumToken.decimals);
 	}
 
 	let sourceAddress: string;
@@ -201,7 +202,7 @@
 			targetChainId: ChainID.Bitfinity
 		};
 
-		 await icBridge.onBridge(bridgeParams);
+		await icBridge.onBridge(bridgeParams);
 	};
 
 	const handleIcrcReverseBridgeTransaction = async () => {
@@ -222,7 +223,6 @@
 		const agent = await getAgent({ identity: $authIdentity });
 		const provider = jsonRpcProviders(BITFINITY_NETWORK_ID);
 		const bitfinityBridge = new BitfinityBridge(BTF_CHAIN, agent, provider, $authIdentity);
-
 
 		const res = await bitfinityBridge.bridgeToICPCustom({
 			tokenId: `sICP-icrc-${$sendToken.twinTokenSymbol}`,

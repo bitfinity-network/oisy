@@ -23,17 +23,34 @@
 	}
 
 	let insufficientFeeFunds = false;
+	let adjustedFee = fee;
+
+	$: {
+		// If it's a Bitfinity token (o-token), adjust the fee from 18 to 8 decimals
+		if (feeSymbol.startsWith('o')) {
+			adjustedFee = fee.div(BigNumber.from(10).pow(10)); // Convert from 18 to 8 decimals
+		} else {
+			adjustedFee = fee;
+		}
+	}
 
 	const debounceCheckFeeFunds = debounce(
-		() => (insufficientFeeFunds = nonNullish(balance) && balance.lt(fee))
+		() => (insufficientFeeFunds = nonNullish(balance) && balance.lt(adjustedFee))
 	);
 
-	$: balance, fee, debounceCheckFeeFunds();
+	$: balance, adjustedFee, debounceCheckFeeFunds();
+	$: console.log(
+		'balance & fee',
+		balance,
+		adjustedFee,
+		balance?.sub(adjustedFee),
+		insufficientFeeFunds
+	);
 </script>
 
 <div transition:fade>
 	{formatToken({
-		value: fee,
+		value: adjustedFee,
 		unitName: feeDecimals,
 		displayDecimals: feeDecimals
 	})}
