@@ -268,7 +268,8 @@ export function isIcToken(symbol: string): boolean {
 	// or ICRC_CHAIN_FUSION_SUGGESTED_LEDGER_CANISTER_IDS lists
 	return symbol === 'ICP' || 
 		   ICRC_CHAIN_FUSION_DEFAULT_LEDGER_CANISTER_IDS.some(id => id.includes(symbol)) ||
-		   ICRC_CHAIN_FUSION_SUGGESTED_LEDGER_CANISTER_IDS.some(id => id.includes(symbol));
+		   ICRC_CHAIN_FUSION_SUGGESTED_LEDGER_CANISTER_IDS.some(id => id.includes(symbol)) || 
+		   BITFINITY_TOKENS.some(token => token.twinTokenSymbol === symbol);
 }
 
 /**
