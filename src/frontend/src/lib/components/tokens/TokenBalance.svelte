@@ -16,8 +16,8 @@
 				value: data.balance,
 				unitName: data.decimals
 			})}
-		{:else}
-			<span>{$i18n.tokens.balance.error.not_applicable}</span>
+			<!-- {:else}
+			<span>{$i18n.tokens.balance.error.not_applicable}</span> -->
 		{/if}
 	</output>
 </TokenBalanceSkeleton>
