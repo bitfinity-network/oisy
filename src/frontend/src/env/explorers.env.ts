@@ -1,8 +1,7 @@
 const EXPLORER_URLS = {
 	ETHEREUM: 'https://etherscan.io',
 	SEPOLIA: 'https://sepolia.etherscan.io',
-	// BITFINITY: 'https://explorer.mainnet.bitfinity.network',
-	BITFINITY: 'https://bs.mainnet.bitfinity.network',
+	BITFINITY: 'https://explorer.mainnet.bitfinity.network',
 	ICP: 'https://dashboard.internetcomputer.org',
 	CKETH: 'https://dashboard.internetcomputer.org/ethereum',
 	CKETH_SEPOLIA: 'https://dashboard.internetcomputer.org/sepoliaeth',
@@ -11,6 +10,7 @@ const EXPLORER_URLS = {
 	SNS: 'https://dashboard.internetcomputer.org/sns',
 	BTC_MAINNET: 'https://blockstream.info',
 	BTC_TESTNET: 'https://blockstream.info/testnet'
+	
 };
 
 export const {
