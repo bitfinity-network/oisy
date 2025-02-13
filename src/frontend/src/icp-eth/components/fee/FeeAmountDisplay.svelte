@@ -39,13 +39,6 @@
 	);
 
 	$: balance, adjustedFee, debounceCheckFeeFunds();
-	$: console.log(
-		'balance & fee',
-		balance,
-		adjustedFee,
-		balance?.sub(adjustedFee),
-		insufficientFeeFunds
-	);
 </script>
 
 <div transition:fade>
