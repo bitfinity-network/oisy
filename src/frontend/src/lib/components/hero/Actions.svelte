@@ -32,7 +32,9 @@
 	import ConvertToOBTC from '$lib/components/convert/ConvertToOBTC.svelte';
 
 	let convertEth = false;
-	$: convertEth = $ethToCkETHEnabled && $erc20UserTokensInitialized;
+	$: convertEth = $ethToCkETHEnabled && 
+		$erc20UserTokensInitialized && 
+		$tokenWithFallback?.symbol !== "BTF";
 
 	let convertErc20 = false;
 	$: convertErc20 = $erc20ToCkErc20Enabled && $erc20UserTokensInitialized;
@@ -49,11 +51,13 @@
 	let sendAction = true;
 	$: sendAction = !$allBalancesZero || isTransactionsPage;
 
+
 	let showBitfinityBridge = false;
 	$: showBitfinityBridge =
 		isTransactionsPage &&
 		$tokenWithFallback &&
-		(isBitfinityToken($tokenWithFallback) || hasTwinToken($tokenWithFallback));
+		(isBitfinityToken($tokenWithFallback) || hasTwinToken($tokenWithFallback)) &&
+		$tokenWithFallback.symbol !== "BTF";
 
 	let showOBTCConversion = false;
 	$: showOBTCConversion = isTransactionsPage && $tokenCkBtcLedger;
