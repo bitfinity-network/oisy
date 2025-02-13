@@ -25,6 +25,7 @@
 
 <ReceiveAddress
 	labelRef="address"
+	showoBTCDescription={addressToken?.symbol === "oBTC"}
 	address={address ?? ''}
 	{testId}
 	{network}
@@ -32,5 +33,5 @@
 	{copyAriaLabel}
 	{copyButtonTestId}
 >
-	<svelte:fragment slot="title">{addressLabel ?? $i18n.wallet.text.address}</svelte:fragment>
+	<svelte:fragment slot="title">{addressLabel ?? addressToken?.symbol === "oBTC" ? $i18n.receive.bitcoin.text.bitcoin_address : $i18n.wallet.text.address}</svelte:fragment>
 </ReceiveAddress>

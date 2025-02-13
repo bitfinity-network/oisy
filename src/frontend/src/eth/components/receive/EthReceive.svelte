@@ -10,10 +10,22 @@
 	import { i18n } from '$lib/stores/i18n.store';
 	import { modalStore } from '$lib/stores/modal.store';
 	import type { Token } from '$lib/types/token';
+	import { authIdentity } from '$lib/derived/auth.derived';
+	import { BitfinityBtcBridge } from '../../../btf/bridge/BitfinityBtcBridge';
 
 	export let token: Token;
+	let btcAddress = '';
 
 	const isDisabled = (): boolean => $ethAddressNotCertified || $metamaskNotInitialized;
+
+	const getBtcAddress = async () => {
+		if (token.symbol === "oBTC" && $authIdentity) {
+			const bridge = new BitfinityBtcBridge($authIdentity);
+			btcAddress = await bridge.getBtcAddress();
+			return btcAddress;
+		}
+		return $networkAddress;
+	};
 
 	const openReceive = async (modalId: symbol) => {
 		if (isDisabled()) {
@@ -24,6 +36,7 @@
 			}
 		}
 
+		await getBtcAddress();
 		modalStore.openEthReceive(modalId);
 	};
 </script>
@@ -31,10 +44,12 @@
 <ReceiveButtonWithModal open={openReceive} isOpen={$modalEthReceive}>
 	<ReceiveModal
 		slot="modal"
-		address={$networkAddress}
+		address={token.symbol === "oBTC" ? btcAddress : $networkAddress}
 		addressToken={token}
 		network={token.network}
-		copyAriaLabel={$i18n.receive.ethereum.text.ethereum_address_copied}
+		copyAriaLabel={token.symbol === "oBTC" 
+			? $i18n.receive.bitcoin.text.bitcoin_address_copied 
+			: $i18n.receive.ethereum.text.ethereum_address_copied}
 	>
 		<svelte:fragment slot="content">
 			{#if $networkEthereum}
