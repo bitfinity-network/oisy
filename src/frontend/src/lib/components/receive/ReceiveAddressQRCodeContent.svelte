@@ -10,6 +10,7 @@
 	export let address: OptionAddress<Address>;
 	export let addressLabel: string | undefined = undefined;
 	export let addressToken: Token | undefined;
+	export let description: string | undefined = undefined;
 
 	export let testId: string | undefined = undefined;
 	export let copyButtonTestId: string | undefined = undefined;
@@ -18,14 +19,18 @@
 	export let qrCodeAction: ReceiveQRCodeAction;
 	export let copyAriaLabel: string;
 
+	export let title: string = $i18n.wallet.text.address;
+
 	// TODO: replace properties (address, labels etc.) with a mandatory property of type ReceiveQRCode
 </script>
 
-<ReceiveQRCode address={address ?? ''} {addressToken} />
+{#if addressToken?.symbol !== "oBTC"}
+	<ReceiveQRCode address={address ?? ''} {addressToken} />
+{/if}
 
 <ReceiveAddress
 	labelRef="address"
-	showoBTCDescription={addressToken?.symbol === "oBTC"}
+	description={description}
 	address={address ?? ''}
 	{testId}
 	{network}
@@ -33,5 +38,7 @@
 	{copyAriaLabel}
 	{copyButtonTestId}
 >
-	<svelte:fragment slot="title">{addressLabel ?? addressToken?.symbol === "oBTC" ? $i18n.receive.bitcoin.text.bitcoin_address : $i18n.wallet.text.address}</svelte:fragment>
+	<svelte:fragment slot="title">
+		{addressLabel || title}
+	</svelte:fragment>
 </ReceiveAddress>

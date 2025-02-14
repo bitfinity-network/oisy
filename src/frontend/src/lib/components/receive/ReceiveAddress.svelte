@@ -9,11 +9,10 @@
 	import type { Network } from '$lib/types/network';
 	import type { ReceiveQRCodeAction } from '$lib/types/receive';
 	import type { OptionString } from '$lib/types/string';
-	import { i18n } from '$lib/stores/i18n.store';
 
 	export let labelRef: string;
 	export let address: OptionString;
-	export let showoBTCDescription: boolean;
+	export let description: string | undefined = undefined;
 	export let network: Network;
 	export let qrCodeAction: ReceiveQRCodeAction;
 	export let copyAriaLabel: string;
@@ -28,8 +27,8 @@
 <div>
 	<Value ref={labelRef} element="div">
 		<svelte:fragment slot="label"><slot name="title" /></svelte:fragment>
-		{#if showoBTCDescription}
-			<p class="text-sm text-misty-rose">{$i18n.receive.bitcoin.text.from_network_oBTC}</p>
+		{#if description}
+			<p class="text-sm text-misty-rose">{description}</p>
 		{/if}
 		{#if text}
 			<p class="mb-1.5 break-normal py-2 text-misty-rose">
