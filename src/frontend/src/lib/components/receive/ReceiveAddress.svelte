@@ -12,6 +12,7 @@
 
 	export let labelRef: string;
 	export let address: OptionString;
+	export let description: string | undefined = undefined;
 	export let network: Network;
 	export let qrCodeAction: ReceiveQRCodeAction;
 	export let copyAriaLabel: string;
@@ -26,7 +27,9 @@
 <div>
 	<Value ref={labelRef} element="div">
 		<svelte:fragment slot="label"><slot name="title" /></svelte:fragment>
-
+		{#if description}
+			<p class="text-sm text-misty-rose">{description}</p>
+		{/if}
 		{#if text}
 			<p class="mb-1.5 break-normal py-2 text-misty-rose">
 				<slot name="text" />

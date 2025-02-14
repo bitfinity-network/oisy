@@ -246,6 +246,7 @@ interface I18nReceive {
 			bitcoin_address_copied: string;
 			from_network: string;
 			fee_applied: string;
+			from_network_oBTC: string;
 		};
 		info: { no_new_btc: string; check_btc_progress: string };
 		error: { unexpected_btc: string };
