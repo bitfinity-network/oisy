@@ -2,7 +2,6 @@
 	import { IconGitHub } from '@dfinity/gix-components';
 	import IconDfinity from '$lib/components/icons/IconDfinity.svelte';
 	import IconTwitter from '$lib/components/icons/IconTwitter.svelte';
-	import Badge from '$lib/components/ui/Badge.svelte';
 	import ExternalLink from '$lib/components/ui/ExternalLink.svelte';
 	import ExternalLinkIcon from '$lib/components/ui/ExternalLinkIcon.svelte';
 	import { OISY_REPO_URL, OISY_STATUS_URL, OISY_TWITTER_URL } from '$lib/constants/oisy.constants';
@@ -41,7 +40,7 @@
 				<IconGitHub />
 			</ExternalLinkIcon>
 
-			<a
+			<!-- <a
 				href={OISY_STATUS_URL}
 				rel="external noopener noreferrer"
 				target="_blank"
@@ -49,7 +48,7 @@
 				aria-label={replaceOisyPlaceholders($i18n.footer.alt.status)}
 			>
 				<Badge variant="warning">beta</Badge>
-			</a>
+			</a> -->
 		</div>
 
 		<div
