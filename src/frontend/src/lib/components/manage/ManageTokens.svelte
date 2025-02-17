@@ -176,15 +176,22 @@
 	$: noTokensMatch = tokens.length === 0;
 
 	let modifiedTokens: Record<string, TokenToggleable<Token> | SaveBitfinityToken> = {};
-	const onToggle = ({ detail }: CustomEvent<TokenToggleable<Token> & UserTokenState>) => {
-		const { id, network, ...rest } = detail;
-		const { id: networkId } = network;
-		const key = `${networkId.description}-${id.description}`;
+	const onToggle = (event: CustomEvent<TokenToggleable<Token> | SaveBitfinityToken>) => {
+		const token = event.detail;
+		const key = `${token.network.id.description}-${token.id.description}`;
 
-		modifiedTokens = {
-			...modifiedTokens,
-			[key]: { id, network, ...rest }
-		};
+		// For o-tokens (Bitfinity tokens), we want to maintain the state of other selected tokens
+		if (isRequiredTokenWithLinkedData(token) && token.symbol.startsWith('o')) {
+			modifiedTokens = {
+				...modifiedTokens,
+				[key]: token
+			};
+		} else {
+			// For other tokens, keep the existing behavior
+			modifiedTokens = {
+				[key]: token
+			};
+		}
 	};
 
 	let saveDisabled = true;
@@ -282,7 +289,9 @@
 							<BitfinityManageTokenToggle
 								{token}
 								checked={modifiedTokens[`${token.network.id.description}-${token.id.description}`]
-									?.enabled ?? false}
+									?.enabled ??
+									token.enabled ??
+									false}
 								on:icShowOrHideToken={onToggle}
 							/>
 						{:else if icTokenIcrcCustomToken(token)}

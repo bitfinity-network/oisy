@@ -7,15 +7,13 @@
 
 	export let token: TokenToggleable<RequiredTokenWithLinkedData>;
 	export let checked: boolean;
-	$: checked = token?.enabled ?? false;
 
 	const dispatch = createEventDispatcher();
 
 	const toggle = () => {
-		checked = !checked;
 		dispatch('icShowOrHideToken', {
 			...token,
-			enabled: checked,
+			enabled: !checked,
 			version: undefined,
 			standard: 'ethereum',
 			category: 'default'
