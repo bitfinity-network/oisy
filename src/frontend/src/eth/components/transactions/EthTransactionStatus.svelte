@@ -3,6 +3,8 @@
 	import { onDestroy, onMount } from 'svelte';
 	import { fade } from 'svelte/transition';
 	import { infuraProviders } from '$eth/providers/infura.providers';
+	import { jsonRpcProviders } from '$eth/providers/jsonrpc.provider';
+	import { BITFINITY_NETWORK_ID } from '$env/networks.env';
 	import { initMinedTransactionsListener } from '$eth/services/eth-listener.services';
 	import type { WebSocketListener } from '$eth/types/listener';
 	import { tokenWithFallback } from '$lib/derived/token.derived';
@@ -17,8 +19,11 @@
 
 	const loadCurrentBlockNumber = async () => {
 		try {
-			const { getBlockNumber } = infuraProviders($tokenWithFallback.network.id);
-			currentBlockNumber = await getBlockNumber();
+			const networkId = $tokenWithFallback.network.id;
+			const provider = networkId === BITFINITY_NETWORK_ID 
+				? jsonRpcProviders(networkId) 
+				: infuraProviders(networkId);
+			currentBlockNumber = await provider.getBlockNumber();
 		} catch (err: unknown) {
 			disconnect();
 			currentBlockNumber = undefined;
@@ -40,11 +45,23 @@
 	onMount(async () => {
 		await loadCurrentBlockNumber();
 
-		listener = initMinedTransactionsListener({
-			// eslint-disable-next-line require-await
-			callback: async () => debounceLoadCurrentBlockNumber(),
-			networkId: $tokenWithFallback.network.id
-		});
+		const networkId = $tokenWithFallback.network.id;
+		if (networkId !== BITFINITY_NETWORK_ID) {
+			listener = initMinedTransactionsListener({
+				// eslint-disable-next-line require-await
+				callback: async () => debounceLoadCurrentBlockNumber(),
+				networkId
+			});
+		} else {
+			// For Bitfinity, we'll poll for block number updates
+			const interval = setInterval(debounceLoadCurrentBlockNumber, 5000); // Poll every 5 seconds
+			listener = {
+				disconnect: async () => {
+					clearInterval(interval);
+					return Promise.resolve();
+				}
+			};
+		}
 	});
 
 	onDestroy(disconnect);
