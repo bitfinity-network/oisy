@@ -174,4 +174,5 @@ export interface _SERVICE {
 	update_rpcs: ActorMethod<[Array<RpcApi>], undefined>;
 }
 export declare const idlFactory: IDL.InterfaceFactory;
-export declare const init: ({ IDL }: { IDL: IDL }) => IDL.Type[];
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export declare const init: ({ IDL }: { IDL: any }) => IDL.Type[];
