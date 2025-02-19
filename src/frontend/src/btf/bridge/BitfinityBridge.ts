@@ -33,6 +33,19 @@ export class BitfinityBridge {
 		return fee;
 	}
 
+	async generateTicket(txHash: string): Promise<{ finalized: boolean; message?: string }> {
+		const result = await this.actor.generate_ticket(txHash);
+		if ('Ok' in result) {
+			return { finalized: true };
+		}
+		const error = result.Err;
+		if (error === 'duplicate request' || error === 'call hub error') {
+			return { finalized: true };
+		}
+
+		throw new Error('Failed to generate ticket');
+	}
+
 	async bridgeToICPCustom(params: {
 		tokenId: string;
 		sourceAddr: string;
@@ -106,8 +119,9 @@ export class BitfinityBridge {
 			const txResponse = await this.provider.sendTransaction(signedTx);
 
 			const txWait = await txResponse.wait();
+			const ticket = await this.generateTicket(txWait.transactionHash);
 
-			return txWait.transactionHash;
+			return ticket;
 		} catch (error) {
 			console.error('Bridge transaction failed:', error);
 			if (error instanceof Error) {
