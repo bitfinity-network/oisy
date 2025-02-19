@@ -115,13 +115,6 @@
 	let feeContext: FeeContext | undefined;
 	const evaluateFee = () => feeContext?.triggerUpdateFee();
 
-	$: {
-		console.log('Principal', $authIdentity?.getPrincipal().toText());
-		console.log('Eth Address', $ethAddress);
-		console.log('sendToken', $sendToken);
-		console.log('Send purpose', sendPurpose);
-	}
-
 	let sourceAddress: string;
 
 	setContext<FeeContextType>(
@@ -191,7 +184,10 @@
 				symbol: $sendToken.symbol,
 				decimals: $sendToken.decimals,
 				balance: BigInt(0),
-				token_id: $sendToken.standard === 'icp' ? `sICP-native-${$sendToken.symbol}` : `sICP-icrc-${$sendToken.symbol}`,
+				token_id:
+					$sendToken.standard === 'icp'
+						? `sICP-native-${$sendToken.symbol}`
+						: `sICP-icrc-${$sendToken.symbol}`,
 				fee: BigInt(100000),
 				chain_id: ChainID.sICP
 			},
@@ -201,8 +197,7 @@
 			targetChainId: ChainID.Bitfinity
 		};
 
-
-		 await icBridge.onBridge(bridgeParams);
+		await icBridge.onBridge(bridgeParams);
 	};
 
 	const handleIcrcReverseBridgeTransaction = async () => {
@@ -224,15 +219,16 @@
 		const provider = jsonRpcProviders(BITFINITY_NETWORK_ID);
 		const bitfinityBridge = new BitfinityBridge(BTF_CHAIN, agent, provider, $authIdentity);
 
-
 		const res = await bitfinityBridge.bridgeToICPCustom({
-			tokenId: `sICP-icrc-${$sendToken.twinTokenSymbol}`,
+			tokenId:
+				$sendToken.twinTokenSymbol === 'ICP'
+					? `sICP-native-${$sendToken.twinTokenSymbol}`
+					: `sICP-icrc-${$sendToken.twinTokenSymbol}`,
 			sourceAddr: $ethAddress ?? '',
 			targetAddr: principal.toText(),
 			amount: BigInt(parsedAmount.toString()),
 			targetChainId: ChainID.sICP
 		});
-		console.log('res', res);
 		return res;
 	};
 
@@ -248,13 +244,11 @@
 
 		const btcBridge = new BitfinityBtcBridge($authIdentity);
 		const btcAddress = await btcBridge.getBtcAddress();
-		console.log('btc address', btcAddress);
 
 		const res = await btcBridge.sendBTcTockBTC({
 			amount: parsedAmount.toNumber(),
 			source: btcAddress
 		});
-		console.log('res', res);
 	};
 
 	const handleBtcReverseBridgeTransaction = async () => {
@@ -269,13 +263,11 @@
 
 		const btcBridge = new BitfinityBtcBridge($authIdentity);
 		const btcAddress = await btcBridge.getBtcAddress();
-		console.log('btc address', btcAddress);
 
 		const res = await btcBridge.sendBTcTockBTC({
 			amount: parsedAmount.toNumber(),
 			source: btcAddress
 		});
-		console.log('res', res);
 	};
 
 	const handleSendError = async (err: unknown) => {
@@ -454,7 +446,7 @@
 			{nativeEthereumToken}
 			{destinationEditable}
 			{sourceNetwork}
-			source={( $sendToken.standard === 'icrc' || $sendToken.standard === 'icp') && $authIdentity
+			source={($sendToken.standard === 'icrc' || $sendToken.standard === 'icp') && $authIdentity
 				? $authIdentity.getPrincipal().toText()
 				: ($ethAddress ?? '')}
 		>
