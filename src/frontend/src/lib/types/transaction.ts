@@ -17,6 +17,7 @@ export type Transaction = Omit<EthTransaction, 'data'> &
 	Pick<TransactionResponse, 'blockNumber' | 'from' | 'to' | 'timestamp'> & {
 		pendingTimestamp?: number;
 		displayTimestamp?: number;
+		confirmations?: number;
 	};
 
 export type TransactionFeeData = Pick<FeeData, 'maxFeePerGas' | 'maxPriorityFeePerGas'> & {

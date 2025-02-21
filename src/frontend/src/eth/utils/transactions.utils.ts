@@ -6,8 +6,8 @@ import { isNullish, nonNullish } from '@dfinity/utils';
 import type { BigNumber } from '@ethersproject/bignumber';
 import { ethers } from 'ethers';
 
-export const isTransactionPending = ({ blockNumber }: Transaction): boolean =>
-	isNullish(blockNumber);
+export const isTransactionPending = ({ blockNumber, confirmations }: Transaction): boolean =>
+	isNullish(blockNumber) && (isNullish(confirmations) || confirmations === 0);
 
 export const isErc20TransactionApprove = (data: string | undefined): boolean =>
 	nonNullish(data) && data.startsWith(ERC20_APPROVE_HASH);

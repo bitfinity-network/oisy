@@ -188,7 +188,10 @@
 					$sendToken.standard === 'icp'
 						? `sICP-native-${$sendToken.symbol}`
 						: `sICP-icrc-${$sendToken.symbol}`,
-				fee: BigInt(100000),
+				fee:
+					$sendToken.standard === 'erc20'
+						? BigInt(0)
+						: await icBridge.getMaxFee(($sendToken as IcToken).ledgerCanisterId),
 				chain_id: ChainID.sICP
 			},
 			sourceAddr: principal.toText(),

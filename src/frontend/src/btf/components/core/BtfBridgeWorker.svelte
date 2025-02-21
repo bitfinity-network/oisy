@@ -42,6 +42,7 @@
 	};
 
 	onMount(async () => {
+		console.log('BTF bridge worker mounted', storedTargetAddress); // You should see the address here when the application loads.
 		if (storedTargetAddress) {
 			try {
 				worker = await initBtfBridgeWorker({
