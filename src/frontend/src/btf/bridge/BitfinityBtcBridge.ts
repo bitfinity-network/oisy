@@ -78,7 +78,7 @@ export class BitfinityBtcBridge {
 			if (ckbtcBalance > 0n) {
 				return ckbtcBalance;
 			}
-			console.error('Error updating ckBTC balance', error);
+			console.warn('Error updating ckBTC balance');
 			return null;
 		}
 	}
@@ -132,14 +132,6 @@ export class BitfinityBtcBridge {
 	 * @returns {Promise<string>} The transaction hash of the ckBTC to oBTC.
 	 */
 	async convertckBTCtoOBtc({ amount, targetAddress }: { amount: bigint; targetAddress: string }) {
-		const amountToSend = amount
-			? amount
-			: await balance({
-					owner: this.identity.getPrincipal(),
-					subaccount: this.getSubAccount(),
-					identity: this.identity,
-					ledgerCanisterId: IC_CKBTC_LEDGER_CANISTER_ID
-				});
 		const agent = await getAgent({ identity: this.identity });
 
 		const bridgeParams = {
@@ -150,12 +142,12 @@ export class BitfinityBtcBridge {
 				decimals: omnityTokens.BTC.decimals,
 				balance: BigInt(0),
 				token_id: `sICP-icrc-ckBTC`,
-				fee: BigInt(100000),
+				fee: BigInt(10),
 				chain_id: ChainID.sICP
 			},
 			sourceAddr: this.identity.getPrincipal().toText(),
 			targetAddr: targetAddress,
-			amount: amountToSend,
+			amount,
 			targetChainId: ChainID.Bitfinity,
 			subAccount: this.getSubAccount()
 		};
@@ -174,10 +166,11 @@ export class BitfinityBtcBridge {
 	 */
 	async bridgeToOBtc({ amount = 0n, targetAddress }: { amount?: bigint; targetAddress: string }) {
 		const balance = await this.updateckBtcBalance();
+
 		if (!balance) {
 			return null;
 		}
 
-		this.convertckBTCtoOBtc({ amount, targetAddress });
+		await this.convertckBTCtoOBtc({ amount, targetAddress });
 	}
 }
