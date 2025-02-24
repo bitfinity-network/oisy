@@ -64,7 +64,7 @@ export class EtherscanRest {
 				blockNumber: parseInt(blockNumber),
 				blockHash,
 				timestamp: parseInt(timeStamp),
-				confirmations,
+				confirmations: parseInt(confirmations),
 				from,
 				to,
 				nonce: parseInt(nonce),
