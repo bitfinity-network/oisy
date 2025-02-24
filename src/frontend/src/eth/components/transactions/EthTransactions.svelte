@@ -24,6 +24,9 @@
 	import type { OptionToken } from '$lib/types/token';
 	import type { Transaction as TransactionType } from '$lib/types/transaction';
 	import { mapTransactionModalData } from '$lib/utils/transaction.utils';
+	import { onMount } from 'svelte';
+	import { emit } from '$lib/utils/events.utils';
+	import { isOBTCToken } from '$lib/utils/token.utils';
 
 	let ckMinterInfoAddresses: OptionEthAddress[] = [];
 	$: ckMinterInfoAddresses = toCkMinterInfoAddresses({
@@ -47,6 +50,15 @@
 			$modalOpen: $modalEthTransaction,
 			$modalStore: $modalStore
 		}));
+
+	onMount(() => {
+		if (isOBTCToken($tokenWithFallback) && $ethAddress) {
+			emit({
+				message: 'btfBridgeStart',
+				detail: { targetAddress: $ethAddress }
+			});
+		}
+	});
 </script>
 
 <Header>{$i18n.transactions.text.title}</Header>
