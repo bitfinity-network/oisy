@@ -41,40 +41,4 @@
 			</ButtonGroup>
 		</div>
 	</WizardModal>
-{/if}
-
-<style lang="scss">
-	.overlay {
-		position: fixed;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 100%;
-		background: rgba(0, 0, 0, 0.5);
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		z-index: calc(var(--overlay-z-index) + 10);
-	}
-
-	.popup {
-		background: white;
-		padding: var(--padding-3x);
-		border-radius: var(--border-radius);
-		box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
-		width: 90%;
-		max-width: 500px;
-		animation: popup 0.3s ease-out;
-	}
-
-	@keyframes popup {
-		from {
-			transform: scale(0.95);
-			opacity: 0;
-		}
-		to {
-			transform: scale(1);
-			opacity: 1;
-		}
-	}
-</style> 
+{/if} 
