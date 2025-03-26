@@ -5,6 +5,7 @@
 	import { fade } from 'svelte/transition';
 	import { browser } from '$app/environment';
 	import Banner from '$lib/components/core/Banner.svelte';
+	import DevelopmentWarning from '$lib/components/core/DevelopmentWarning.svelte';
 	import Busy from '$lib/components/ui/Busy.svelte';
 	import {
 		TRACK_SYNC_AUTH_AUTHENTICATED_COUNT,
@@ -95,5 +96,6 @@
 {/await}
 
 <Banner />
+<DevelopmentWarning />
 <Toasts maxVisible={3} />
 <Busy />
